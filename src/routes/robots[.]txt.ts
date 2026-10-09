@@ -14,7 +14,7 @@ export const Route = createFileRoute('/robots.txt')({
           'Disallow: /api/',
           'Disallow: /*?*',
           '',
-          `Sitemap: ${envConfigs.app_url}/sitemap.xml`,
+          `Sitemap: ${envConfigs.app_url}/sitemap-index.xml`,
           '',
         ].join('\n');
         return new Response(body, {
