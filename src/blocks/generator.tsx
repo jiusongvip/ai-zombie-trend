@@ -337,9 +337,10 @@ export function Generator() {
           <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
             {/* Photo Upload Section */}
             <div>
-              <h3 className="text-foreground mb-3 text-sm font-semibold">
+              {/* Form-group label, not a content heading — keeps every h3 on the page inside an h2 section. */}
+              <p className="text-foreground mb-3 text-sm font-semibold">
                 {m['landing.generator.step_photos']()}
-              </h3>
+              </p>
               <div className="grid grid-cols-2 gap-3">
                 {/* Photo 1 */}
                 <div>
@@ -390,9 +391,9 @@ export function Generator() {
           <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
             {/* Story Scene Cards */}
             <div className="mb-4">
-              <h3 className="text-foreground mb-3 text-sm font-semibold">
+              <p className="text-foreground mb-3 text-sm font-semibold">
                 {m['landing.generator.pick']()}
-              </h3>
+              </p>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                 {STYLES.map((tag) => {
                   const item = showcaseItems.find((i) => i.tag === tag)!;
@@ -436,9 +437,9 @@ export function Generator() {
             <div className="mb-4 grid grid-cols-2 gap-3">
               {/* Duration (fixed at 15s for zombie) */}
               <div>
-                <h3 className="text-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                <p className="text-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
                   {m['landing.generator.duration']()}
-                </h3>
+                </p>
                 <div className="border-primary/50 bg-primary/10 flex items-center justify-between rounded-lg border px-3 py-2.5">
                   <span className="text-primary text-sm font-medium">
                     15s
@@ -451,9 +452,9 @@ export function Generator() {
 
               {/* Format toggle */}
               <div>
-                <h3 className="text-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                <p className="text-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
                   {m['landing.generator.format']()}
-                </h3>
+                </p>
                 <div className="bg-muted/50 flex rounded-lg p-1">
                   {ratios.map((ratio) => {
                     const active = ratio === aspectRatio;
@@ -569,9 +570,9 @@ export function Generator() {
             {signedIn && recent.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold tracking-wide uppercase opacity-70">
+                  <p className="text-xs font-semibold tracking-wide uppercase opacity-70">
                     {m['landing.generator.recent.title']()}
-                  </h3>
+                  </p>
                   <Link
                     href="/library"
                     className="text-muted-foreground hover:text-primary text-xs transition-colors"

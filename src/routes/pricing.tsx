@@ -13,6 +13,7 @@ import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Pricing } from '@/blocks/pricing';
+import { CtaBand } from '@/blocks/cta-band';
 
 export const Route = createFileRoute('/pricing')({
   loader: () => {
@@ -77,7 +78,8 @@ function PricingPage() {
     <div className="bg-background text-foreground flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <Pricing />
+        <Pricing headingAs="h1" />
+        <CtaBand />
       </main>
       <Footer />
     </div>

@@ -12,6 +12,7 @@ import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Showcase } from '@/blocks/showcase';
+import { CtaBand } from '@/blocks/cta-band';
 
 type Locale = (typeof locales)[number];
 
@@ -37,6 +38,7 @@ function ExamplesPage() {
           </p>
         </div>
         <Showcase />
+        <CtaBand />
       </main>
       <Footer />
     </div>

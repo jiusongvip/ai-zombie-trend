@@ -40,7 +40,13 @@ const ALL_PROVIDERS: PaymentProvider[] = [
 
 type Feature = { icon: LucideIcon; label: string };
 
-export function Pricing({ title }: { title?: string } = {}) {
+export function Pricing({
+  title,
+  headingAs = 'h2',
+}: {
+  title?: string;
+  headingAs?: 'h1' | 'h2';
+} = {}) {
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -172,6 +178,10 @@ export function Pricing({ title }: { title?: string } = {}) {
     startCheckout(pendingPlan, provider);
   }
 
+  // The standalone /pricing page renders the pack title as the page H1; the
+  // homepage embeds this block as one section among many, where it is an H2.
+  const Heading = headingAs;
+
   return (
     <section
       id="pricing"
@@ -179,14 +189,33 @@ export function Pricing({ title }: { title?: string } = {}) {
     >
       <div className="mx-auto max-w-5xl">
         <div className="mb-14 text-center">
-          <h2 className="font-display text-primary text-glow text-3xl font-semibold tracking-tight sm:text-4xl">
+          <Heading className="font-display text-primary text-glow text-3xl font-semibold tracking-tight sm:text-4xl">
             {title ?? m['landing.pricing.title']()}
-          </h2>
+          </Heading>
           <p className="text-muted-foreground mt-4">
             {m['landing.pricing.description']()}
           </p>
         </div>
         <PricingTable groups={groups} onCheckout={handleCheckout} />
+
+        <div className="mt-16">
+          <h2 className="font-display mb-8 text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            {m['landing.pricing.includes_title']()}
+          </h2>
+          <ul className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-2">
+            {commonFeatures.map((feature) => (
+              <li
+                key={feature.label}
+                className="bg-card/60 border-border/60 flex items-center gap-3 rounded-xl border p-4"
+              >
+                <feature.icon className="text-primary size-4 shrink-0" />
+                <span className="text-muted-foreground text-sm">
+                  {feature.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       <PaymentProviderModal
