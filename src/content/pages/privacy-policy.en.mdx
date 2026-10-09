@@ -1,0 +1,73 @@
+export const meta = {
+  title: 'Privacy Policy',
+  description: 'How we collect, use, and protect your personal information.',
+  updated_at: '2026-10-09',
+};
+
+## Introduction
+
+We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our service.
+
+## Information We Collect
+
+We collect the following types of information to provide and improve our service:
+
+1. **Account Information** — Your name, email address, and other details you provide when creating an account.
+2. **Usage Data** — Information about how you interact with the service, including features accessed, frequency of use, and interaction patterns.
+3. **Device Information** — Device type, operating system, and browser type, used to optimize compatibility and performance.
+4. **Cookies** — Small data files stored on your device to remember preferences and improve your experience.
+5. **Payment Information** — Billing details handled by trusted third-party payment processors. We do not store full card numbers on our servers.
+
+## Your Photos and Your Films
+
+This is the part people actually ask about, so here is exactly what happens to the two photos you upload.
+
+**Where they are stored.** Uploads land in storage we control — Cloudflare R2 or S3 when configured, otherwise our own application server. The stored filename is derived from a hash of the image content, not from your account or your original file name.
+
+**Stored as you sent them.** We keep the original bytes rather than re-encoding the file, so metadata travels with it. A photo exported from a phone can carry GPS coordinates and device details — check and strip that before uploading.
+
+**Uploading before you sign up.** You can stage both photos and pick a story without an account; only the render itself requires one. Every upload must be an image, is capped at 10 MB per file, and requests are rate-limited. Your staged pair survives the sign-up round-trip, so you never re-upload.
+
+**Who else sees them.** To produce your film, the two photos are passed to the video model provider — ByteDance Seedance, called through fal — for that single generation. That is the only reason they leave our servers.
+
+**We do not train on you.** Your photos and your finished films are not used to train any model, ours or anyone else's.
+
+**Who can view the result.** A finished film appears only in your own library. Nothing is published to the public example wall unless you send it to us and we agree to feature it.
+
+**Keeping and removing.** There is no automatic expiry: staged uploads and finished films are kept until you ask us to remove them. Deleting a film from your library hides it from your account immediately; the transaction record stays for accounting. If you want the underlying photos and renders purged from storage as well, email us using the address below and we will remove them.
+
+**One thing we ask of you.** Upload faces you have permission to use — your own, or someone who has agreed. It is the same rule that keeps your film publishable on TikTok or Reels.
+
+## How We Use Your Information
+
+We use the data we collect to:
+
+- Provide, maintain, and improve the service.
+- Process transactions and send related confirmations.
+- Send technical notices, security alerts, and support messages.
+- Respond to your questions, feedback, and support requests.
+- Detect, prevent, and address fraud and abuse.
+
+## Data Sharing
+
+We do not sell your personal information. We may share data only in these limited cases:
+
+- With service providers who help us operate the service, under confidentiality agreements.
+- To comply with legal obligations or respond to lawful requests from public authorities.
+- To protect our rights, property, or safety, or that of our users.
+
+## Data Security
+
+We implement industry-standard security measures including encryption in transit, access controls, and regular reviews. No method of transmission over the Internet is 100% secure, but we work continuously to protect your information.
+
+## Your Rights
+
+You have the right to access, update, export, or delete your personal information. You can do this through your account settings or by contacting us at the email address below.
+
+## Changes to This Policy
+
+We may update this Privacy Policy from time to time. We will notify you of any material changes by updating the date at the top of this page and, where appropriate, sending a notice through the service.
+
+## Contact Us
+
+If you have questions about this Privacy Policy, please contact us at the email address provided on our website.
