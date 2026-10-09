@@ -37,6 +37,7 @@ export const Route = createFileRoute('/blog/$slug')({
       meta: [
         { title: `${post.title} | ${envConfigs.app_name}` },
         { name: 'description', content: post.description },
+        { property: 'og:url', content: canonical },
         { property: 'og:type', content: 'article' },
         { property: 'og:title', content: post.title },
         { property: 'og:description', content: post.description },

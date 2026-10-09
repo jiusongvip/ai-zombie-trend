@@ -72,6 +72,7 @@ export const Route = createFileRoute('/')({
       meta: [
         { title: loaderData?.title },
         { name: 'description', content: description },
+        { property: 'og:url', content: urlFor(locale) },
         { property: 'og:type', content: 'website' },
         { property: 'og:title', content: loaderData?.title },
         { property: 'og:description', content: description },

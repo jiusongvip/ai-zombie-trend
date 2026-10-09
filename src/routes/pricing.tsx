@@ -35,6 +35,7 @@ export const Route = createFileRoute('/pricing')({
       meta: [
         { title },
         { name: 'description', content: description },
+        { property: 'og:url', content: urlFor(locale) },
         { property: 'og:type', content: 'website' },
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },

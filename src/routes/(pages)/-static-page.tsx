@@ -93,6 +93,7 @@ export function staticPageRouteOptions(
         meta: [
           { title: meta.title },
           { name: 'description', content: meta.description },
+          { property: 'og:url', content: canonical },
           { property: 'og:type', content: options.article ? 'article' : 'website' },
           { property: 'og:title', content: meta.title },
           { property: 'og:description', content: meta.description },
