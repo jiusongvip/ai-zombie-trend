@@ -26,6 +26,19 @@ export function Footer() {
         { label: m['landing.footer.terms'](), href: '/terms-of-service' },
       ],
     },
+    {
+      title: m['landing.footer.contact'](),
+      links: [
+        {
+          label: m['landing.footer.contact_email'](),
+          href: 'mailto:jiusongvip@gmail.com',
+        },
+        {
+          label: m['landing.footer.contact_support'](),
+          href: '/sign-in?callbackUrl=%2Fsettings%2Ftickets',
+        },
+      ],
+    },
   ];
 
   return (
