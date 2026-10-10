@@ -24,6 +24,7 @@ export function Footer() {
       links: [
         { label: m['landing.footer.privacy'](), href: '/privacy-policy' },
         { label: m['landing.footer.terms'](), href: '/terms-of-service' },
+        { label: m['landing.footer.refunds'](), href: '/refund-policy' },
       ],
     },
     {

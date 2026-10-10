@@ -41,6 +41,8 @@ interface FilmDraft {
   aspectRatio: string;
   imageUrl?: string;
   lastFrameUrl?: string;
+  consent?: boolean;
+  shareToWall?: boolean;
 }
 
 const DRAFT_KEY = 'zombie-draft';
@@ -118,6 +120,8 @@ export function Generator() {
   const [lastFrame, setLastFrame] = useState<FrameSlotValue>(EMPTY_FRAME);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [consented, setConsented] = useState(false);
+  const [shareToWall, setShareToWall] = useState(false);
 
   // Restore draft after sign-up
   useEffect(() => {
@@ -222,6 +226,8 @@ export function Generator() {
     aspectRatio,
     imageUrl: firstFrame.url,
     lastFrameUrl: lastFrame.url,
+    consent: consented,
+    shareToWall,
   });
 
   const generateMutation = useMutation({
@@ -259,11 +265,13 @@ export function Generator() {
     ? m['studio.form.upload_uploading']()
     : !hasBothPhotos
       ? m['landing.generator.needs_photos']()
-      : !providerReady
-        ? m['studio.form.no_provider']()
-        : !canAfford
-          ? m['landing.generator.insufficient']()
-          : null;
+      : !consented
+        ? m['landing.generator.need_consent']()
+        : !providerReady
+          ? m['studio.form.no_provider']()
+          : !canAfford
+            ? m['landing.generator.insufficient']()
+            : null;
 
   const loadSettings = (task: VideoTaskView) => {
     if (task.sourceImageUrl) {
@@ -379,6 +387,12 @@ export function Generator() {
                   </p>
                 </div>
               </div>
+
+              {/* Photo-permission rule, next to the upload slots */}
+              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
+                <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
+                {m['landing.generator.photo_rules']()}
+              </p>
 
               {/* Privacy note */}
               <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
@@ -505,6 +519,36 @@ export function Generator() {
                     : m['studio.result.cost']({ credits: cost })}
                 </p>
               </div>
+            </div>
+
+            {/* Likeness consent — the server refuses the render without it */}
+            <div className="mt-4 space-y-2.5">
+              <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
+                <input
+                  type="checkbox"
+                  checked={consented}
+                  onChange={(event) => setConsented(event.target.checked)}
+                  className="accent-primary mt-0.5 size-4 shrink-0"
+                />
+                <span>
+                  {m['landing.generator.consent_body']()}{' '}
+                  <Link
+                    href="/terms-of-service"
+                    className="text-foreground underline"
+                  >
+                    {m['landing.generator.consent_terms']()}
+                  </Link>
+                </span>
+              </label>
+              <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
+                <input
+                  type="checkbox"
+                  checked={shareToWall}
+                  onChange={(event) => setShareToWall(event.target.checked)}
+                  className="accent-primary mt-0.5 size-4 shrink-0"
+                />
+                <span>{m['landing.generator.share_body']()}</span>
+              </label>
             </div>
 
             {/* CTA Button */}

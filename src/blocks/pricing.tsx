@@ -13,6 +13,7 @@ import {
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
+import { Link } from '@/core/i18n/navigation';
 import { formatPrice, pricingCatalog } from '@/config/pricing';
 import { apiPost } from '@/lib/api-client';
 import { openAuthDialog } from '@/lib/auth-dialog';
@@ -188,13 +189,37 @@ export function Pricing({
       <div className="mx-auto max-w-5xl">
         <div className="mb-14 text-center">
           <Heading className="font-display text-primary text-glow text-3xl font-semibold tracking-tight sm:text-4xl">
-            {title ?? m['landing.pricing.title']()}
+            {title ?? m['landing.pricing.heading']()}
           </Heading>
           <p className="text-muted-foreground mt-4">
             {m['landing.pricing.description']()}
           </p>
         </div>
         <PricingTable groups={groups} onCheckout={handleCheckout} />
+
+        <p className="text-muted-foreground mt-6 text-center text-xs sm:text-[13px]">
+          {m['landing.pricing.legal_lead']()}{' '}
+          <Link
+            href="/terms-of-service"
+            className="hover:text-primary underline underline-offset-4 transition-colors"
+          >
+            {m['landing.footer.terms']()}
+          </Link>
+          {' · '}
+          <Link
+            href="/privacy-policy"
+            className="hover:text-primary underline underline-offset-4 transition-colors"
+          >
+            {m['landing.footer.privacy']()}
+          </Link>
+          {' · '}
+          <Link
+            href="/refund-policy"
+            className="hover:text-primary underline underline-offset-4 transition-colors"
+          >
+            {m['landing.footer.refunds']()}
+          </Link>
+        </p>
 
         <div className="mt-16">
           <h2 className="font-display mb-8 text-center text-2xl font-semibold tracking-tight sm:text-3xl">

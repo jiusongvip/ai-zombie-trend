@@ -11,6 +11,7 @@ const STATIC_PATHS = [
   '/blog',
   '/privacy-policy',
   '/terms-of-service',
+  '/refund-policy',
 ];
 
 // Site content baseline date for pages without an explicit last-modified stamp.

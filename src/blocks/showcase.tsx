@@ -35,8 +35,8 @@ function toCommunityItem(c: CommunityClipDto): ShowcaseItem {
     cover: c.poster ?? '',
     video: c.video,
     prompt: {
-      en: 'A community creation, generated straight from two photos with AI Zombie Video',
-      zh: '社区作品：用两张照片经 AI Zombie Video 直接生成',
+      en: `A community creation, generated straight from two photos with ${envConfigs.app_name}`,
+      zh: `社区作品：用两张照片经 ${envConfigs.app_name} 直接生成`,
     },
   };
 }
@@ -158,8 +158,14 @@ export function Showcase({
           ))}
         </div>
 
-        <p className="text-muted-foreground mt-10 text-center text-xs">
-          {m['landing.explore.note']({ appName: envConfigs.app_name })}
+        <p className="text-muted-foreground mx-auto mt-10 max-w-3xl text-center text-xs leading-5">
+          {m['landing.explore.note']()}{' '}
+          <a
+            href="mailto:jiusongvip@gmail.com?subject=Content%20report"
+            className="hover:text-foreground underline"
+          >
+            {m['landing.explore.report']()}
+          </a>
         </p>
       </div>
     </section>
@@ -231,6 +237,12 @@ function ShowcaseCard({
       <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
         <Play className="size-3 fill-current" />
         {item.model}
+      </span>
+
+      {/* Every card is synthetic media, and the label travels with it — a
+          viewer should never have to scroll to the footer to learn that. */}
+      <span className="absolute top-2.5 right-2.5 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-medium text-white/90 backdrop-blur-sm">
+        {m['landing.explore.ai_badge']()}
       </span>
 
       {/* Prompt overlay — hover on desktop, always visible on mobile. */}

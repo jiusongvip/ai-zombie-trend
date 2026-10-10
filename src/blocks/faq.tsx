@@ -2,7 +2,7 @@ import { formatPrice, lowestPricePerFilmInCents } from '@/config/pricing';
 import { m } from '@/paraglide/messages.js';
 import type { locales } from '@/paraglide/runtime.js';
 
-const QS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const;
+const QS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
 
 /**
  * The FAQ in one place so the rendered accordion and the FAQPage JSON-LD can
