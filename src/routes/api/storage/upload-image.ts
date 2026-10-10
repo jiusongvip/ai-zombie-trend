@@ -3,7 +3,11 @@ import path from 'node:path';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
-import { getStorage } from '@/modules/storage/service';
+import {
+  getStorage,
+  recordUpload,
+  sweepExpiredUploadsSoon,
+} from '@/modules/storage/service';
 import { md5 } from '@/lib/hash';
 import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
 import { respData, respErr } from '@/lib/resp';
@@ -15,7 +19,6 @@ const extFromMime = (mimeType: string) => {
     'image/png': 'png',
     'image/webp': 'webp',
     'image/gif': 'gif',
-    'image/svg+xml': 'svg',
     'image/avif': 'avif',
     'image/heic': 'heic',
     'image/heif': 'heif',
@@ -34,6 +37,10 @@ async function POST({ request }: { request: Request }) {
   });
   if (limited) return limited;
 
+  // Every upload is a chance to collect photos whose retention window has
+  // closed. Fire-and-forget so the caller never waits on the sweep.
+  sweepExpiredUploadsSoon();
+
   try {
     // Uploads are open to guests on purpose: the homepage generator lets
     // people stage their two photos before signing in, and only the render
@@ -43,6 +50,11 @@ async function POST({ request }: { request: Request }) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     if (!files.length) return respErr('No files provided');
+
+    // Only the generator's source photos join the retention ledger. Other
+    // consumers of this endpoint (rich text, avatars) are site content with a
+    // different lifecycle, and sweeping them would silently break pages.
+    const isSourcePhoto = formData.get('scope') === 'photo';
 
     const storage = await getStorage();
     const uploadResults: Array<{
@@ -56,6 +68,13 @@ async function POST({ request }: { request: Request }) {
       if (!file.type.startsWith('image/')) {
         return respErr(`File ${file.name} is not an image`);
       }
+      // SVG is markup, and it is the declared content type the storage layer
+      // stores and serves inline — from our own origin that is script
+      // execution. Blocked on the declared type as well as the final extension
+      // below, because either one alone can be spoofed.
+      if (file.type === 'image/svg+xml') {
+        return respErr('SVG images are not supported');
+      }
 
       const arrayBuffer = await file.arrayBuffer();
       const body = new Uint8Array(arrayBuffer);
@@ -66,6 +85,11 @@ async function POST({ request }: { request: Request }) {
           /[^a-zA-Z0-9]/g,
           ''
         ) || 'bin';
+      // A content type the browser did not declare as SVG still cannot be
+      // stored under an .svg name — that path is what a static host serves.
+      if (ext === 'svg') {
+        return respErr('SVG images are not supported');
+      }
       // R2Provider prepends its own uploadPath (default `uploads`), so the object
       // key is the bare filename. The local fallback uses `public/uploads/<file>`.
       const objectKey = `${digest}.${ext}`;
@@ -123,6 +147,14 @@ async function POST({ request }: { request: Request }) {
         filename: file.name,
         deduped: false,
       });
+    }
+
+    if (isSourcePhoto) {
+      await Promise.all(
+        uploadResults.map((result) =>
+          recordUpload({ key: result.key, url: result.url })
+        )
+      );
     }
 
     return respData({

@@ -70,6 +70,8 @@ export async function createTask(params: {
   costCredits?: number;
   options?: any;
   scene?: string;
+  consent?: string;
+  shareToWall?: boolean;
 }): Promise<any> {
   const {
     userId,
@@ -80,6 +82,8 @@ export async function createTask(params: {
     costCredits,
     options,
     scene,
+    consent,
+    shareToWall,
   } = params;
 
   return db().transaction(async (tx: any) => {
@@ -95,7 +99,9 @@ export async function createTask(params: {
       costCredits: costCredits || 0,
       options: options ? JSON.stringify(options) : null,
       scene: scene || '',
+      consent: consent ?? null,
     };
+    if (shareToWall) taskData.featured = true;
 
     const [task] = await tx.insert(aiTask).values(taskData).returning();
 
@@ -211,8 +217,9 @@ export async function getTasks(params: {
 
 /**
  * Clips for the public community wall: successful, not soft-deleted, and
- * still featured. `featured` defaults true (auto-show), so this is everything
- * except the ones an admin has explicitly toggled off. Newest first.
+ * featured. `featured` defaults false, so this is the opt-in set only —
+ * uploads that declared wall sharing at submit time, plus admin curations.
+ * Newest first.
  */
 export async function listFeaturedTasks(params: {
   mediaType: string;

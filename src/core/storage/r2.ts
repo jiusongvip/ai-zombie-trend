@@ -86,6 +86,28 @@ export class R2Provider implements StorageProvider {
     }
   };
 
+  /** Delete an object. R2 answers 204 on success and 404 when it is gone. */
+  deleteFile = async (options: { key: string; bucket?: string }) => {
+    try {
+      const uploadBucket = options.bucket || this.configs.bucket;
+      if (!uploadBucket) return false;
+      const uploadPath = this.getUploadPath();
+      const url = `${this.getEndpoint()}/${uploadBucket}/${uploadPath}/${options.key}`;
+
+      const { AwsClient } = await import('aws4fetch');
+      const client = new AwsClient({
+        accessKeyId: this.configs.accessKeyId,
+        secretAccessKey: this.configs.secretAccessKey,
+        region: this.configs.region || 'auto',
+      });
+
+      const response = await client.fetch(new Request(url, { method: 'DELETE' }));
+      return response.ok || response.status === 404;
+    } catch {
+      return false;
+    }
+  };
+
   async uploadFile(
     options: StorageUploadOptions
   ): Promise<StorageUploadResult> {

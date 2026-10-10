@@ -4,7 +4,11 @@ import { getAuth } from '@/core/auth';
 import { envConfigs } from '@/config';
 import { getVideoModel } from '@/config/video-models';
 import { getBalance } from '@/modules/credits/service';
-import { generateVideo, toTaskView } from '@/modules/video/service';
+import {
+  CONSENT_POLICY_VERSION,
+  generateVideo,
+  toTaskView,
+} from '@/modules/video/service';
 import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
 import { respData, respErr } from '@/lib/resp';
 
@@ -61,6 +65,15 @@ async function POST({ request }: { request: Request }) {
       return respErr('End frame must be a reachable http(s) URL');
     }
 
+    // Any render built from an uploaded photograph needs the likeness consent
+    // declaration; sharing to the public wall needs it too.
+    const consent = body.consent === true ? CONSENT_POLICY_VERSION : undefined;
+    if (imageUrl && !consent) {
+      return respErr(
+        'You must confirm you may use the uploaded photo before generating'
+      );
+    }
+
     // Fail fast with a clear message instead of letting the transaction throw.
     const balance = await getBalance(session.user.id);
     if (balance < model.creditCost) {
@@ -90,6 +103,8 @@ async function POST({ request }: { request: Request }) {
           ? body.cameraMovement
           : undefined,
       shotSize: typeof body.shotSize === 'string' ? body.shotSize : undefined,
+      consent,
+      shareToWall: body.shareToWall === true,
     });
 
     return respData({ task: toTaskView(task) });

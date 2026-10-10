@@ -67,6 +67,12 @@ export const VIDEO_MEDIA_TYPE = 'video';
 /** Credit transaction scene label, so `/settings/credits` reads sensibly. */
 const CREDIT_SCENE = 'video_generation';
 
+/**
+ * Bump when the consent wording in `messages/*.json` changes — the accepted
+ * version is stored on the task, so a wording change stays provable per render.
+ */
+export const CONSENT_POLICY_VERSION = 'v1';
+
 // ─── Providers ──────────────────────────────────────────────────────────────
 
 /**
@@ -329,6 +335,10 @@ export interface GenerateVideoParams {
   style?: VideoStyleId;
   cameraMovement?: VideoCameraId;
   shotSize?: VideoShotId;
+  /** Policy version of the likeness-consent declaration accepted at submit. */
+  consent?: string;
+  /** Uploader opted in to publishing the clip on the public community wall. */
+  shareToWall?: boolean;
 }
 
 /**
@@ -345,6 +355,15 @@ export async function generateVideo(params: GenerateVideoParams) {
       mode === 'image-to-video'
         ? 'This model does not accept a source image'
         : 'This model requires a source image'
+    );
+  }
+
+  // A render built from someone's photograph requires the uploader to have
+  // declared they may use those likeness(es). Enforced here, not only in the
+  // route, so no caller can reach the provider without it.
+  if (mode === 'image-to-video' && params.consent !== CONSENT_POLICY_VERSION) {
+    throw new Error(
+      'You must confirm you may use the uploaded photos before generating'
     );
   }
 
@@ -418,6 +437,8 @@ export async function generateVideo(params: GenerateVideoParams) {
     costCredits: model.creditCost,
     options: persistedOptions,
     scene: CREDIT_SCENE,
+    consent: params.consent,
+    shareToWall: params.shareToWall === true && params.consent === CONSENT_POLICY_VERSION,
   });
 
   try {

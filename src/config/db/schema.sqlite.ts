@@ -504,12 +504,15 @@ export const aiTask = table(
     costCredits: integer('cost_credits').notNull().default(0),
     scene: text('scene').notNull().default(''),
     creditId: text('credit_id'),
-    // Community-wall visibility flag. Defaults TRUE: every successful clip
-    // surfaces on the public wall automatically; an admin toggles it off to
-    // pull a specific clip down (opt-out curation).
+    // Community-wall visibility. Defaults FALSE: a likeness-based render is
+    // never published on its own — it appears publicly only when the uploader
+    // opts in at submit time, or an admin curates it.
     featured: integer('featured', { mode: 'boolean' })
       .notNull()
-      .default(true),
+      .default(false),
+    // Likeness-consent declaration accepted before the render started (policy
+    // version, e.g. "v1"). Null only on rows predating the gate.
+    consent: text('consent'),
   },
   (table) => [
     index('idx_ai_task_user_media_type').on(table.userId, table.mediaType),
@@ -708,3 +711,30 @@ export type InviteCode = typeof inviteCode.$inferSelect;
 export type NewInviteCode = typeof inviteCode.$inferInsert;
 export type UserInvite = typeof userInvite.$inferSelect;
 export type NewUserInvite = typeof userInvite.$inferInsert;
+
+// ─── Uploaded files (retention ledger) ───────────────────────────────────────
+
+/**
+ * One row per staged photo upload so deletion is provable: the render that
+ * consumed it purges it, and anything still staged past the retention window is
+ * swept on the next upload. `purgedAt` null means the file is still on storage.
+ */
+export const uploadedFile = table(
+  'uploaded_file',
+  {
+    id: text('id').primaryKey(),
+    key: text('key').notNull(),
+    url: text('url').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+    purgedAt: integer('purged_at', { mode: 'timestamp_ms' }),
+  },
+  (t) => [
+    index('idx_uploaded_file_created').on(t.createdAt),
+    index('idx_uploaded_file_purged').on(t.purgedAt),
+  ]
+);
+
+export type UploadedFile = typeof uploadedFile.$inferSelect;
+export type NewUploadedFile = typeof uploadedFile.$inferInsert;

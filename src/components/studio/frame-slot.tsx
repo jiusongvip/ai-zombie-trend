@@ -21,17 +21,63 @@ export interface FrameSlotLabels {
   imageOnly: string;
 }
 
+/** Longest edge kept after re-encoding — models do not need more than this. */
+const MAX_UPLOAD_EDGE = 2048;
+
 /**
- * Uploads one image to the app's own storage endpoint.
+ * Re-encode the photo in the browser before it leaves the device: canvas
+ * output carries no EXIF block, so GPS coordinates and device details are
+ * never uploaded, and drawing honours the photo's own orientation tag.
+ */
+async function toCleanImage(file: File): Promise<File> {
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch {
+    throw new Error('This image could not be read. Try a JPG, PNG or WebP.');
+  }
+
+  const scale = Math.min(
+    1,
+    MAX_UPLOAD_EDGE / Math.max(bitmap.width, bitmap.height)
+  );
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    bitmap.close();
+    throw new Error('This image could not be processed.');
+  }
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/jpeg', 0.92)
+  );
+  if (!blob) throw new Error('This image could not be processed.');
+
+  return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'photo'}.jpg`, {
+    type: 'image/jpeg',
+  });
+}
+
+/**
+ * Uploads one source photo to the app's own storage endpoint.
  *
  * `@/lib/api-client` cannot carry a multipart body — `request()` forces a JSON
  * content type whenever a body is present — so binary uploads go through a raw
- * `fetch`. This mirrors `ImageUploader`'s uploader exactly; only the chrome
- * around it is different.
+ * `fetch`. `scope=photo` tells the server this object is a personal likeness:
+ * it joins the 24-hour retention ledger, unlike the site-content uploads that
+ * `ImageUploader` and the rich-text editor stage here.
  */
 async function uploadFrame(file: File): Promise<string> {
   const body = new FormData();
-  body.append('files', file);
+  body.append('files', await toCleanImage(file));
+  body.append('scope', 'photo');
 
   const response = await fetch('/api/storage/upload-image', {
     method: 'POST',

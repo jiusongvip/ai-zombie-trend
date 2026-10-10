@@ -5,7 +5,11 @@ import { envConfigs } from '@/config';
 import { getZombieStyle } from '@/config/zombie-styles';
 import { getBalance } from '@/modules/credits/service';
 import { getVideoModel } from '@/config/video-models';
-import { generateVideo, toTaskView } from '@/modules/video/service';
+import {
+  CONSENT_POLICY_VERSION,
+  generateVideo,
+  toTaskView,
+} from '@/modules/video/service';
 import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
 import { respData, respErr } from '@/lib/resp';
 
@@ -60,6 +64,14 @@ async function POST({ request }: { request: Request }) {
       return respErr('Photos must be reachable http(s) URLs');
     }
 
+    // The uploader must declare they may use both likeness(es) before a
+    // face-driven render is accepted. generateVideo re-checks this invariant.
+    if (body.consent !== true) {
+      return respErr(
+        'You must confirm you may use the uploaded photos before generating'
+      );
+    }
+
     const model = getVideoModel(style.modelId);
     if (!model) return respErr('Model unavailable');
 
@@ -85,6 +97,8 @@ async function POST({ request }: { request: Request }) {
       aspectRatio,
       imageUrl,
       lastFrameUrl,
+      consent: CONSENT_POLICY_VERSION,
+      shareToWall: body.shareToWall === true,
     });
 
     return respData({ task: toTaskView(task) });

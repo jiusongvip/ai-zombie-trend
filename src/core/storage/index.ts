@@ -62,6 +62,9 @@ export interface StorageProvider {
   // upload file
   uploadFile(options: StorageUploadOptions): Promise<StorageUploadResult>;
 
+  // delete an object by key (optional)
+  deleteFile?: (options: { key: string; bucket?: string }) => Promise<boolean>;
+
   // download and upload
   downloadAndUpload(
     options: StorageDownloadUploadOptions
@@ -133,6 +136,16 @@ export class StorageManager {
     const provider = this.ensureDefaultProvider();
     if (!provider.exists) return false;
     return provider.exists(options);
+  }
+
+  // delete an object using default provider (if supported)
+  async deleteFile(options: {
+    key: string;
+    bucket?: string;
+  }): Promise<boolean> {
+    const provider = this.ensureDefaultProvider();
+    if (!provider.deleteFile) return false;
+    return provider.deleteFile(options);
   }
 
   // get public url using default provider (if supported)
