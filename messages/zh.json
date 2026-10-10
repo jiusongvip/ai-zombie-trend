@@ -986,7 +986,9 @@
   "landing.pricing.soon": "即将开放",
   "landing.pricing.soon_toast": "购买通道即将开放，感谢您的耐心等待。",
   "landing.pricing.credits_unit": "积分",
-  "landing.pricing.per_video": "约可生成 {n} 支影片",
+  "landing.pricing.tier_counts": "可出 {standard} 条 480p · {hd} 条 720p",
+  "landing.pricing.tier_counts_standard": "可出 {standard} 条 480p",
+  "landing.pricing.cost_per_tier": "480p 单条 {standard} 积分，720p 单条 {hd} 积分。",
   "landing.pricing.feature_all_styles": "全部风格：情侣、宠物、好友、家人",
   "landing.pricing.feature_no_watermark": "无水印成片",
   "landing.pricing.feature_scored": "15 秒带配乐 MP4",
@@ -1012,6 +1014,8 @@
   "landing.faq.a8": "模板站给您一张照片上的丧尸妆效，快、几乎不用做决定。这个趋势靠的是两张照片之间的转变故事——开场帧到结尾帧的过渡、调色、配乐在这里一次做完，而人物、服装、节奏是您那条片子独有的。",
   "landing.faq.q9": "可以随便拿别人的照片做丧尸视频吗？",
   "landing.faq.a9": "不可以，网站也会拦住这种尝试。每次渲染前您都要确认所上传的脸属于您本人、您的宠物，或已同意出镜的人，这份确认会与任务一并留存。您输入的文本、上传的照片、最终成片都会依次接受检查；除非您在提交时主动勾选分享，任何成片都不会公开展示。如果有人未经您授权使用了您的肖像，请发邮件至 jiusongvip@gmail.com，我们会下架相关内容。",
+  "landing.faq.q10": "480p 和 720p 有什么区别？",
+  "landing.faq.a10": "两个档位出的是同一支 15 秒、四镜头的影片，调色与配乐完全一致。480p 是这条趋势平时发布的尺寸，手机小屏上颗粒与暗部本身就是氛围的一部分；720p 把五官、发丝和麦田的光线解析得更干净，投屏、截取海报或上传 YouTube 时更合适。积分包就是积分，一份余额两个档位通用。",
   "landing.cta.title": "准备好加入这波趋势了吗？",
   "landing.cta.desc": "两张照片进，15 秒丧尸成片出。单条低至 {price}。",
   "landing.cta.button": "生成我的丧尸视频",
@@ -1069,5 +1073,6 @@
   "landing.generator.recent.all": "查看作品库",
   "landing.generator.draft_restored": "草稿已恢复——确认后点击生成。",
   "landing.generator.duration": "时长",
-  "landing.generator.cinematic": "电影感"
+  "landing.generator.cinematic": "电影感",
+  "landing.generator.quality": "画质"
 }

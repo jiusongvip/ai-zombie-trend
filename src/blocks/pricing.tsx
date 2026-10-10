@@ -14,7 +14,12 @@ import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
 import { Link } from '@/core/i18n/navigation';
-import { formatPrice, pricingCatalog } from '@/config/pricing';
+import {
+  CREDITS_PER_FILM,
+  CREDITS_PER_HD_FILM,
+  formatPrice,
+  pricingCatalog,
+} from '@/config/pricing';
 import { apiPost } from '@/lib/api-client';
 import { openAuthDialog } from '@/lib/auth-dialog';
 import { currentPathWithQuery } from '@/lib/redirect';
@@ -80,7 +85,13 @@ export function Pricing({
   const plans: PricingPlan[] = Object.values(pricingCatalog).map((p) => ({
     id: p.productId,
     name: p.productName,
-    description: m['landing.pricing.per_video']({ n: p.films }),
+    description:
+      p.hdFilms > 0
+        ? m['landing.pricing.tier_counts']({
+            standard: p.films,
+            hd: p.hdFilms,
+          })
+        : m['landing.pricing.tier_counts_standard']({ standard: p.films }),
     price: formatPrice(p.priceInCents),
     originalPrice: p.originalPriceInCents
       ? formatPrice(p.originalPriceInCents)
@@ -193,6 +204,12 @@ export function Pricing({
           </Heading>
           <p className="text-muted-foreground mt-4">
             {m['landing.pricing.description']()}
+          </p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {m['landing.pricing.cost_per_tier']({
+              standard: CREDITS_PER_FILM,
+              hd: CREDITS_PER_HD_FILM,
+            })}
           </p>
         </div>
         <PricingTable groups={groups} onCheckout={handleCheckout} />

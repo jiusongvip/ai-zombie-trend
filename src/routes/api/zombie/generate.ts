@@ -2,9 +2,9 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { getAuth } from '@/core/auth';
 import { envConfigs } from '@/config';
-import { getZombieStyle } from '@/config/zombie-styles';
-import { getBalance } from '@/modules/credits/service';
 import { getVideoModel } from '@/config/video-models';
+import { getZombieFilmTier, getZombieStyle } from '@/config/zombie-styles';
+import { getBalance } from '@/modules/credits/service';
 import {
   CONSENT_POLICY_VERSION,
   generateVideo,
@@ -25,9 +25,10 @@ function absolutizeUrl(url: string): string {
 }
 
 /**
- * The homepage's one-button render: two uploaded photos + a style id in, a
- * generation task out. Prompt, model, duration and resolution all come from
- * the server-side style catalog — the client never sees or sends any of them.
+ * The homepage's one-button render: two uploaded photos, a style id and a
+ * resolution tier in, a generation task out. Prompt, model, duration and the
+ * billed price all come from the server-side catalogs — the client only ever
+ * picks between the ids the styles endpoint hands it.
  */
 async function POST({ request }: { request: Request }) {
   const limited = enforceMinIntervalRateLimit(request, {
@@ -72,7 +73,11 @@ async function POST({ request }: { request: Request }) {
       );
     }
 
-    const model = getVideoModel(style.modelId);
+    // The quality choice is the one paid decision the client makes, so it is
+    // resolved to a catalog model server-side — an unknown value falls back to
+    // the default tier rather than reaching the provider.
+    const tier = getZombieFilmTier(body.resolution);
+    const model = getVideoModel(tier.modelId);
     if (!model) return respErr('Model unavailable');
 
     // Whitelisted against the model's own list — anything else falls back to
@@ -90,10 +95,10 @@ async function POST({ request }: { request: Request }) {
 
     const task = await generateVideo({
       userId: session.user.id,
-      modelId: style.modelId,
+      modelId: tier.modelId,
       prompt: style.prompt,
       duration: style.duration,
-      resolution: style.resolution,
+      resolution: tier.resolution,
       aspectRatio,
       imageUrl,
       lastFrameUrl,

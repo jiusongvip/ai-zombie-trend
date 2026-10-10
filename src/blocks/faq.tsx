@@ -2,7 +2,7 @@ import { formatPrice, lowestPricePerFilmInCents } from '@/config/pricing';
 import { m } from '@/paraglide/messages.js';
 import type { locales } from '@/paraglide/runtime.js';
 
-const QS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
+const QS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] as const;
 
 /**
  * The FAQ in one place so the rendered accordion and the FAQPage JSON-LD can
@@ -13,7 +13,10 @@ export function faqEntries(locale: (typeof locales)[number]) {
   const price = formatPrice(lowestPricePerFilmInCents());
   return QS.map((n) => ({
     name: m[`landing.faq.q${n}` as 'landing.faq.q1']({ price }, { locale }),
-    acceptedAnswer: m[`landing.faq.a${n}` as 'landing.faq.a1']({ price }, { locale }),
+    acceptedAnswer: m[`landing.faq.a${n}` as 'landing.faq.a1'](
+      { price },
+      { locale }
+    ),
   }));
 }
 
@@ -26,9 +29,9 @@ export function Faq() {
           {m['landing.faq.title']()}
         </h2>
 
-        <div className="divide-border/70 divide-y rounded-xl border border-border/70">
+        <div className="divide-border/70 border-border/70 divide-y rounded-xl border">
           {QS.map((n) => (
-            <details key={n} className="group px-5 py-4 open:bg-card/50">
+            <details key={n} className="group open:bg-card/50 px-5 py-4">
               <summary className="hover:text-primary flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium transition-colors marker:hidden sm:text-base">
                 {m[`landing.faq.q${n}` as 'landing.faq.q1']({ price })}
                 <span className="text-muted-foreground group-open:text-primary shrink-0 transition-transform group-open:rotate-45">

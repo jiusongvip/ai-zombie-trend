@@ -986,7 +986,9 @@
   "landing.pricing.soon": "Opening soon",
   "landing.pricing.soon_toast": "Purchases open soon — thank you for your patience.",
   "landing.pricing.credits_unit": "credits",
-  "landing.pricing.per_video": "≈ {n} films per pack",
+  "landing.pricing.tier_counts": "{standard} × 480p · {hd} × 720p",
+  "landing.pricing.tier_counts_standard": "{standard} × 480p",
+  "landing.pricing.cost_per_tier": "A 480p film costs {standard} credits, a 720p film {hd} credits.",
   "landing.pricing.feature_all_styles": "All styles: couple, pet, friends, family",
   "landing.pricing.feature_no_watermark": "No watermark",
   "landing.pricing.feature_scored": "15-second MP4 with soundtrack",
@@ -1012,6 +1014,8 @@
   "landing.faq.a8": "A template site gives you a zombie look on one photo — fast, with almost no decisions. This trend is a four-shot film carried by two identities: how the survivor and the one they love are held through the cabin and the wheat field. The grade and the soundtrack are done in one pass here, and the people, outfits and pacing belong to your film alone.",
   "landing.faq.q9": "Can I turn anyone's photo into a zombie?",
   "landing.faq.a9": "No, and the site stops you from trying. Before every render you confirm that the faces are your own, your own pet, or people who agreed to appear, and we keep that declaration with the job. The prompt, the photos and the finished clip are each screened, and nothing is published publicly unless you opted in at submit time. If a clip used your likeness without permission, email jiusongvip@gmail.com and we take it down.",
+  "landing.faq.q10": "What is the difference between 480p and 720p?",
+  "landing.faq.a10": "Both tiers render the same 15-second, four-shot film from your two photos, with the same grade and soundtrack. 480p is the size the trend is normally posted at, and on a phone its grain and shadow read as part of the look. 720p resolves faces, hair and the wheat-field light more cleanly, which is what you want for a projector, a printed frame or a YouTube upload. Packs are plain credits, so one balance covers both tiers.",
   "landing.cta.title": "Ready to Join the Trend?",
   "landing.cta.desc": "Two photos in. A 15-second zombie film out. As low as {price} per film.",
   "landing.cta.button": "Make Your Zombie Film",
@@ -1069,5 +1073,6 @@
   "landing.generator.recent.all": "View library",
   "landing.generator.draft_restored": "Draft restored — hit generate when ready.",
   "landing.generator.duration": "Duration",
-  "landing.generator.cinematic": "Cinematic"
+  "landing.generator.cinematic": "Cinematic",
+  "landing.generator.quality": "Quality"
 }

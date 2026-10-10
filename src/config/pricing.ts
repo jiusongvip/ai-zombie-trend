@@ -9,16 +9,24 @@
  *
  * Packs are sold by FILM COUNT and `credits` is derived as
  * `films * CREDITS_PER_FILM`, so the advertised film count and what the credits
- * actually buy can never drift apart. `CREDITS_PER_FILM` must equal the
- * `creditCost` of `ZOMBIE_FILM_MODEL_ID` in `config/video-models.ts` — that is
- * the number the render pipeline really charges.
+ * actually buy can never drift apart. `films` counts the standard tier; the HD
+ * count per pack is derived from the same credit total, so both numbers on the
+ * pricing page come from one source.
+ *
+ * The two constants must equal the `creditCost` of the matching tier in
+ * `config/video-models.ts` (`sd-2-vip-480` / `sd-2-vip-720`) — those are the
+ * numbers the render pipeline really charges.
  *
  * Packs are one-time purchases (no subscription) and credits do not expire.
  */
 
 import { PaymentInterval, PaymentType } from '@/core/payment/types';
 
+/** Credits for one 480p film — the tier every pack is sized against. */
 export const CREDITS_PER_FILM = 20;
+
+/** Credits for one 720p film. */
+export const CREDITS_PER_HD_FILM = 40;
 
 export type PricingPlanInfo = {
   name: string;
@@ -38,6 +46,8 @@ export type PricingProduct = {
   currency: string;
   films: number;
   credits: number;
+  /** Films this pack funds at the 720p tier — whole films only. */
+  hdFilms: number;
   creditsValidDays?: number;
   plan?: PricingPlanInfo;
 };
@@ -60,6 +70,7 @@ function pack(
     currency: 'usd',
     films,
     credits,
+    hdFilms: Math.floor(credits / CREDITS_PER_HD_FILM),
   };
 }
 

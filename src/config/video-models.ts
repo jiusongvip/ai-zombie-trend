@@ -93,6 +93,34 @@ export function defaultResolutionFor(resolutions: string[]): string {
 /** Shared fal duration convention: `"5"` / `"10"` as a string. */
 const seconds = (n: number) => String(n);
 
+/**
+ * Options shared by both HFSY Seedance 2 VIP tiers (`sd-2-vip-480` /
+ * `sd-2-vip-720`). The endpoints take an identical body — resolution is encoded
+ * in the model id, not sent as a parameter — so the two catalog rows differ
+ * only in id and price.
+ */
+const hfsySeedance = {
+  durations: [5, 10, 15],
+  defaultDuration: 5,
+  // First entry is the generator default and the API's own default.
+  aspectRatios: ['9:16', '16:9', '1:1', '4:3', '3:4', '21:9'],
+  audio: true,
+  // The second frame is a second *character reference*, not an end frame —
+  // this model has no first-to-last transition, it reads both as @image refs.
+  supportsLastFrame: true,
+  buildInput: (o: VideoOptions) => {
+    const images = [o.imageUrl, o.lastFrameUrl].filter(Boolean) as string[];
+    return {
+      orientation: ['16:9', '4:3', '21:9'].includes(o.aspectRatio)
+        ? 'landscape'
+        : 'portrait',
+      ratio: o.aspectRatio,
+      duration: o.duration,
+      ...(images.length ? { images } : {}),
+    };
+  },
+};
+
 export const videoModels: VideoModel[] = [
   // ─── fal · text to video ────────────────────────────────────────────────
   {
@@ -383,26 +411,20 @@ export const videoModels: VideoModel[] = [
     // Flat per-generation price like every other row here. Upstream is billed
     // per second (¥0.25/s), so 20 credits still covers the 15s worst case.
     creditCost: 20,
-    durations: [5, 10, 15],
-    defaultDuration: 5,
-    // First entry is the generator default and the API's own default.
-    aspectRatios: ['9:16', '16:9', '1:1', '4:3', '3:4', '21:9'],
+    ...hfsySeedance,
     resolutions: ['480p'],
-    audio: true,
-    // The second frame is a second *character reference*, not an end frame —
-    // this model has no first-to-last transition, it reads both as @image refs.
-    supportsLastFrame: true,
-    buildInput: (o) => {
-      const images = [o.imageUrl, o.lastFrameUrl].filter(Boolean) as string[];
-      return {
-        orientation: ['16:9', '4:3', '21:9'].includes(o.aspectRatio)
-          ? 'landscape'
-          : 'portrait',
-        ratio: o.aspectRatio,
-        duration: o.duration,
-        ...(images.length ? { images } : {}),
-      };
-    },
+  },
+  {
+    id: 'sd-2-vip-720',
+    provider: 'hfsy',
+    label: 'Seedance 2 VIP · HD',
+    vendor: 'ByteDance',
+    modes: ['text-to-video', 'image-to-video'],
+    // The HD twin of `sd-2-vip-480`: same constraints, same request shape, only
+    // the model id and the per-second rate differ (¥0.45/s upstream).
+    creditCost: 40,
+    ...hfsySeedance,
+    resolutions: ['720p'],
   },
 ];
 

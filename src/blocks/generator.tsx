@@ -27,11 +27,23 @@ import { Button } from '@/components/ui/button';
 const STYLES: ShowcaseTag[] = ['couple', 'pet', 'friend', 'family'];
 const MAX_FRAME_MB = 10;
 const FALLBACK_RATIOS = ['9:16', '16:9'];
+/** Shown while the real tier list is in flight — no prices, same two choices. */
+const FALLBACK_TIERS: ZombieTier[] = [
+  { resolution: '480p', creditCost: 0 },
+  { resolution: '720p', creditCost: 0 },
+];
 
 const cssAspect = (ratio: string) => ratio.replace(':', ' / ');
 
+interface ZombieTier {
+  resolution: string;
+  creditCost: number;
+}
+
 interface ZombieStylesResponse {
-  styles: { id: string; creditCost: number }[];
+  styles: { id: string }[];
+  /** Resolution tiers on offer, cheapest first — the first one is preselected. */
+  tiers: ZombieTier[];
   aspectRatios: string[];
   providerReady: boolean;
 }
@@ -39,6 +51,7 @@ interface ZombieStylesResponse {
 interface FilmDraft {
   style: ShowcaseTag;
   aspectRatio: string;
+  resolution: string;
   imageUrl?: string;
   lastFrameUrl?: string;
   consent?: boolean;
@@ -75,6 +88,8 @@ function takeDraft(): FilmDraft | null {
           FALLBACK_RATIOS.includes(parsed.aspectRatio)
             ? parsed.aspectRatio
             : FALLBACK_RATIOS[0],
+        resolution:
+          typeof parsed.resolution === 'string' ? parsed.resolution : '',
         imageUrl: parsed.imageUrl,
         lastFrameUrl: parsed.lastFrameUrl,
       };
@@ -116,6 +131,8 @@ export function Generator() {
   // Form state
   const [style, setStyle] = useState<ShowcaseTag>('couple');
   const [aspectRatio, setAspectRatio] = useState(FALLBACK_RATIOS[0]);
+  // Empty until the tier list lands or the user picks — see `activeResolution`.
+  const [resolution, setResolution] = useState('');
   const [firstFrame, setFirstFrame] = useState<FrameSlotValue>(EMPTY_FRAME);
   const [lastFrame, setLastFrame] = useState<FrameSlotValue>(EMPTY_FRAME);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
@@ -129,6 +146,7 @@ export function Generator() {
     if (!draft) return;
     setStyle(draft.style);
     setAspectRatio(draft.aspectRatio);
+    setResolution(draft.resolution);
     setFirstFrame({ url: draft.imageUrl, status: 'uploaded' });
     setLastFrame({ url: draft.lastFrameUrl, status: 'uploaded' });
     toast.info(m['landing.generator.draft_restored']());
@@ -159,7 +177,16 @@ export function Generator() {
     staleTime: 5 * 60_000,
   });
   const providerReady = stylesQuery.data?.providerReady !== false;
-  const cost = stylesQuery.data?.styles[0]?.creditCost ?? 0;
+  const tiers = stylesQuery.data?.tiers.length
+    ? stylesQuery.data.tiers
+    : FALLBACK_TIERS;
+  // The first tier is the server's own default, so an untouched form and a
+  // draft carrying a since-removed tier both land on a billable resolution.
+  const activeResolution = tiers.some((tier) => tier.resolution === resolution)
+    ? resolution
+    : tiers[0].resolution;
+  const cost =
+    tiers.find((tier) => tier.resolution === activeResolution)?.creditCost ?? 0;
   const ratios = stylesQuery.data?.aspectRatios.length
     ? stylesQuery.data.aspectRatios.filter((r) => ['9:16', '16:9'].includes(r))
     : FALLBACK_RATIOS;
@@ -224,6 +251,7 @@ export function Generator() {
   const draft = (): FilmDraft => ({
     style,
     aspectRatio,
+    resolution: activeResolution,
     imageUrl: firstFrame.url,
     lastFrameUrl: lastFrame.url,
     consent: consented,
@@ -448,8 +476,8 @@ export function Generator() {
               </div>
             </div>
 
-            {/* Duration & Format */}
-            <div className="mb-4 grid grid-cols-2 gap-3">
+            {/* Duration, Format & Quality */}
+            <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
               {/* Duration (fixed at 15s for zombie) */}
               <div>
                 <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
@@ -485,6 +513,40 @@ export function Generator() {
                       >
                         {tDynamic(
                           `landing.generator.format.${ratio === '9:16' ? 'vertical' : 'wide'}`
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quality toggle — the one paid choice in this form */}
+              <div className="col-span-2 lg:col-span-1">
+                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                  {m['landing.generator.quality']()}
+                </p>
+                <div className="bg-muted/50 flex rounded-lg p-1">
+                  {tiers.map((tier) => {
+                    const active = tier.resolution === activeResolution;
+                    return (
+                      <button
+                        key={tier.resolution}
+                        type="button"
+                        onClick={() => setResolution(tier.resolution)}
+                        className={cn(
+                          'flex-1 rounded-md px-2 py-1.5 text-center text-sm leading-tight font-medium transition-all',
+                          active
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        {tier.resolution}
+                        {tier.creditCost > 0 && (
+                          <span className="block text-[11px] font-normal">
+                            {m['studio.result.cost']({
+                              credits: tier.creditCost,
+                            })}
+                          </span>
                         )}
                       </button>
                     );
