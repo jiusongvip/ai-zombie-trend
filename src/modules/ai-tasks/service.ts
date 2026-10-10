@@ -100,8 +100,11 @@ export async function createTask(params: {
       options: options ? JSON.stringify(options) : null,
       scene: scene || '',
       consent: consent ?? null,
+      // Always written: a deployed database may still carry `featured DEFAULT
+      // true` from before the wall became opt-in, and an omitted column would
+      // let that default publish a stranger's likeness on its own.
+      featured: shareToWall === true,
     };
-    if (shareToWall) taskData.featured = true;
 
     const [task] = await tx.insert(aiTask).values(taskData).returning();
 
