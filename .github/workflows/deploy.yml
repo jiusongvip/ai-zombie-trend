@@ -60,7 +60,7 @@ jobs:
         env:
           NITRO_PRESET: cloudflare_module
           VITE_APP_URL: https://www.ai-zombie-trend.com
-          VITE_APP_NAME: AI Zombie Video
+          VITE_APP_NAME: AI Zombie Trend
           VITE_APP_DESCRIPTION: Turn two photos into a viral AI zombie love story video. 15 seconds, scored, no watermark, no prompts.
           VITE_APP_LOGO: /logo.svg
           VITE_DEFAULT_LOCALE: en

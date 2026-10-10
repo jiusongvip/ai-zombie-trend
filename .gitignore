@@ -79,3 +79,7 @@ package-lock.json
 # cross-agent skill symlinks (plain text pointers to .claude/skills on Windows)
 /.agents/
 /.codex/
+
+# private build/positioning notes — names third-party sites and competitor
+# pricing; keep it on disk, out of a repository anyone can read.
+/BUILD-FRAMEWORK.md

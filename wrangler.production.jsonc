@@ -16,7 +16,7 @@
     // Must match .env.production — baked into the client bundle for canonical /
     // og:url / sitemap, and read at runtime for better-auth trustedOrigins.
     "VITE_APP_URL": "https://www.ai-zombie-trend.com",
-    "VITE_APP_NAME": "AI Zombie Video",
+    "VITE_APP_NAME": "AI Zombie Trend",
   },
   "d1_databases": [
     {
