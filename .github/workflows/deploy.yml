@@ -1,0 +1,77 @@
+# Push-to-main auto-deploy for the ai-zombie-trend Cloudflare Worker.
+#
+# Replicates the local `pnpm cf:deploy` chain: db-setup -> NITRO_PRESET=cloudflare_module
+# vite build -> wrangler deploy. The Worker and its D1 database already exist; this only
+# ships new code. Runtime secrets (AUTH_SECRET, CONFIG_ENCRYPTION_KEY, provider keys) live
+# on the Worker via `wrangler secret put` and SURVIVE every deploy — this workflow does not
+# and must not re-set them.
+#
+# Required GitHub repository secrets (Settings > Secrets and variables > Actions):
+#   CLOUDFLARE_API_TOKEN   token with "Workers Scripts: Edit" (deploy only, no D1 writes)
+#   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account id
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Serialize deploys; never cancel an in-flight Worker upload.
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # wrangler.jsonc is gitignored, but nitro's cloudflare_module preset reads it at
+      # build time to merge the D1 binding + custom-domain routes into the deployable
+      # .output/server/wrangler.json. Without it the deployed Worker would have NO
+      # bindings and NO routes. Reconstruct it from the committed production config.
+      - name: Materialize wrangler.jsonc
+        run: cp wrangler.production.jsonc wrangler.jsonc
+
+      # Build-time (non-secret) env. In production these come from the environment rather
+      # than the gitignored .env.production. DATABASE_PROVIDER=d1 keeps mysql2/postgres out
+      # of the workerd bundle (vite.config reads it from wrangler.jsonc above as the truth).
+      - name: Build (nitro cloudflare_module)
+        env:
+          NITRO_PRESET: cloudflare_module
+          VITE_APP_URL: https://www.ai-zombie-trend.com
+          VITE_APP_NAME: AI Zombie Video
+          VITE_APP_DESCRIPTION: Turn two photos into a viral AI zombie love story video. 15 seconds, scored, no watermark, no prompts.
+          VITE_APP_LOGO: /logo.svg
+          VITE_DEFAULT_LOCALE: en
+          DATABASE_PROVIDER: d1
+        run: pnpm cf:build
+
+      # Deploy the self-contained config nitro emitted. wrangler resolves `main` and the
+      # assets directory relative to this file's location (.output/server), so run from the
+      # repo root and point --config at it.
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy --config .output/server/wrangler.json

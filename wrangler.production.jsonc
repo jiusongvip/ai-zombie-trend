@@ -1,0 +1,35 @@
+// Cloudflare Workers deploy config — PRODUCTION (committed, safe: no secrets).
+// Source of truth for CI (.github/workflows/deploy.yml copies it to wrangler.jsonc
+// before building; the local working copy wrangler.jsonc is gitignored).
+// Mirrors the live Worker bindings: D1 ai-zombie-trend-db + www/apex custom domains.
+// Changing routes or the D1 id here changes what CI deploys — treat edits like code.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-zombie-trend",
+  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2026-10-01",
+  "observability": {
+    "enabled": true,
+  },
+  "vars": {
+    "DATABASE_PROVIDER": "d1",
+    // Must match .env.production — baked into the client bundle for canonical /
+    // og:url / sitemap, and read at runtime for better-auth trustedOrigins.
+    "VITE_APP_URL": "https://www.ai-zombie-trend.com",
+    "VITE_APP_NAME": "AI Zombie Video",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ai-zombie-trend-db",
+      "database_id": "914711ad-0f4e-4e66-91a0-a42381814031",
+      "migrations_dir": "drizzle",
+    },
+  ],
+  // www is the canonical host; the apex is bound here too so Cloudflare can
+  // serve it, and a zone-level Dynamic URL Redirect rule 301s apex -> www.
+  "routes": [
+    { "pattern": "www.ai-zombie-trend.com", "custom_domain": true },
+    { "pattern": "ai-zombie-trend.com", "custom_domain": true },
+  ],
+}
