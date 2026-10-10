@@ -1,73 +1,157 @@
 export const meta = {
   title: 'Privacy Policy',
-  description: 'How we collect, use, and protect your personal information.',
+  description:
+    'Exactly what we store about you, who processes it, and how long it stays.',
   updated_at: '2026-10-10',
 };
 
-## Introduction
+Last updated: October 10, 2026.
 
-We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our service.
+The short version: we keep your email, your account records, the two photos while
+they are being rendered, and the films you make. Photos leave our storage within
+24 hours. Your card number never reaches us, we do not sell your data, and we do
+not train models on you.
 
-## Information We Collect
+## What we collect
 
-We collect the following types of information to provide and improve our service:
+- **Account** — your email address, the name you give us, a hashed password, and
+  one record per sign-in session (IP address, the browser's user-agent string,
+  and the time). Sessions exist so an unfamiliar sign-in can be spotted.
+- **Your photos** — the two images you upload for a render.
+- **Your films** — the generated video, plus the style, duration, aspect ratio and
+  scene text needed to produce it, so you can re-run or edit it later.
+- **Orders** — amount, currency, the payment provider, that provider's
+  confirmation record, and the billing email it attaches to the transaction.
+- **Usage** — anonymous page views, described under Analytics.
 
-1. **Account Information** — Your name, email address, and other details you provide when creating an account.
-2. **Usage Data** — Information about how you interact with the service, including features accessed, frequency of use, and interaction patterns.
-3. **Device Information** — Device type, operating system, and browser type, used to optimize compatibility and performance.
-4. **Cookies** — Small data files stored on your device to remember preferences and improve your experience.
-5. **Payment Information** — Billing details handled by trusted third-party payment processors. We do not store full card numbers on our servers.
+We do not ask for, and do not receive: your card number, CVV or expiry date
+(those stay with the payment processor), your contacts, your photo library beyond
+the two files you choose, or anything else on your device.
 
-## Your Photos and Your Films
+## Your photos and your films
 
-This is the part people actually ask about, so here is exactly what happens to the two photos you upload.
+This is the part people actually ask about, so here is exactly what happens to the
+two photos you upload.
 
-**Where they are stored.** Uploads land in storage we control — Cloudflare R2 or S3 when configured, otherwise our own application server. The stored filename is derived from a hash of the image content, not from your account or your original file name.
+**Stripped before they leave your device.** The generator re-encodes each photo in
+your browser before uploading it. The bytes we receive are a flattened JPEG, so
+EXIF metadata — GPS coordinates, device model, the original file name — never
+reaches our servers. If you upload through another surface, strip that metadata
+yourself first.
 
-**Stripped before they are sent.** The generator re-encodes each photo in your browser before uploading it. The bytes we receive are a flattened JPEG, so EXIF metadata — GPS coordinates, device model, the original file name — never reaches our servers. If you upload through another surface, strip that metadata yourself first.
+**Content-addressed.** Uploads land in storage we control — Cloudflare R2 or S3
+when configured, otherwise our own application server. The stored filename derives
+from a hash of the image content, not from your account or your original file
+name, so there is no list of usernames to walk.
 
-**Uploading before you sign up.** You can stage both photos and pick a story without an account; only the render itself requires one. Every upload must be an image, is capped at 10 MB per file, and requests are rate-limited. Your staged pair survives the sign-up round-trip, so you never re-upload.
+**Rendered by one provider, for one job.** To produce your film, the two photos
+are passed to the video model provider — ByteDance Seedance, called through fal —
+for that single generation. That is the only reason they leave our servers. They
+are screened for content on the way in, and the finished film is screened again
+before it is handed back to you.
 
-**Who else sees them.** To produce your film, the two photos are passed to the video model provider — ByteDance Seedance, called through fal — for that single generation. That is the only reason they leave our servers.
+**Deleted within 24 hours.** The photos you stage are removed from storage
+automatically within 24 hours, whether the render finished, failed, or was never
+started — every upload is entered in a retention ledger, and a sweep deletes the
+object when its window closes.
 
-**We do not train on you.** Your photos and your finished films are not used to train any model, ours or anyone else's.
+**Yours until you remove it.** A finished film appears only in your own library. It
+reaches the public example wall only if you tick the sharing option when you
+submit the render — that option is off by default, and nothing about your likeness
+is published without it. Films do not expire on their own; deleting one hides it
+from your account immediately, and the order record stays for accounting. If you
+want the rendered files purged from storage as well, email us below and we will
+remove them.
 
-**Who can view the result.** A finished film appears only in your own library. It reaches the public example wall only if you tick the sharing option when you submit the render — that option is off by default, and nothing about your likeness is published without it.
+**No model training.** Your photos and your films are not used to train any model,
+ours or anyone else's.
 
-**Keeping and removing.** The photos you stage for a render are deleted from storage automatically within 24 hours, whether the render finished, failed, or was never started — every upload is entered in a retention ledger and a sweep removes the object when its window closes. Finished films do not expire on their own; they stay in your library until you delete them. Deleting a film hides it from your account immediately, and the transaction record stays for accounting. If you want the rendered files purged from storage as well, email us using the address below and we will remove them.
+**One thing we ask of you.** Upload faces you have permission to use — your own, or
+someone who has agreed. Before a photo-driven render starts, you confirm that
+declaration on the form, and we record the version of the wording you accepted
+against that render.
 
-**One thing we ask of you.** Upload faces you have permission to use — your own, or someone who has agreed. It is the same rule that keeps your film publishable on TikTok or Reels.
+## Who processes your data
 
-## How We Use Your Information
+Each of these receives the least it needs to do its job, under its own terms:
 
-We use the data we collect to:
+| Processor | What it receives | Why |
+| --- | --- | --- |
+| Cloudflare | Your upload bytes and the finished film; request metadata for hosting | Application hosting and object storage |
+| fal — ByteDance Seedance | Your two photos plus the direction for the scene | Rendering the film |
+| SeeAPI | Your photos, your scene text, and the finished film | Content screening |
+| Your payment provider (Stripe, PayPal, Creem, Alipay, WeChat Pay and similar) | The order amount, description and your billing email | Taking payment; they hold the card details, we do not |
+| Resend | Your email address, and nothing else | The two messages listed under Email |
+| Umami | Page path, referrer domain, coarse device info | Analytics, on our own instance |
+| Google | Your email and name | Only if you choose Sign in with Google |
 
-- Provide, maintain, and improve the service.
-- Process transactions and send related confirmations.
-- Send technical notices, security alerts, and support messages.
-- Respond to your questions, feedback, and support requests.
-- Detect, prevent, and address fraud and abuse.
+## Cookies and local storage
 
-## Data Sharing
+Our own site uses a session cookie so you stay signed in, plus small preferences
+(language and theme). Umami's script may set a first-party cookie to count a
+visitor once rather than many times. There are no advertising cookies, no
+cross-site trackers, and no third-party pixels on this site.
 
-We do not sell your personal information. We may share data only in these limited cases:
+## Analytics
 
-- With service providers who help us operate the service, under confidentiality agreements.
-- To comply with legal obligations or respond to lawful requests from public authorities.
-- To protect our rights, property, or safety, or that of our users.
+Page views go to a self-hosted Umami instance we operate, not to an advertising
+network. It records which page was viewed, where the visitor came from, and rough
+device and country information. It does not receive your email, your prompts, your
+photo or film URLs, or any private identifier, and it keeps no IP address. Google
+Analytics is not loaded on this site; if that ever changes, this page will say so
+and you will be asked before any analytics cookie is set.
 
-## Data Security
+## Email
 
-We implement industry-standard security measures including encryption in transit, access controls, and regular reviews. No method of transmission over the Internet is 100% secure, but we work continuously to protect your information.
+We send email only when you ask for it: an account-verification link and a
+password-reset link. There is no newsletter, no marketing, and no reminder about
+an unfinished checkout.
 
-## Your Rights
+## Children
 
-You have the right to access, update, export, or delete your personal information. You can do this through your account settings or by contacting us at the email address below.
+This service is not directed at children. We do not knowingly accept accounts or
+photographs from anyone under 16 (or under the age of digital consent in your
+country, if that is higher). A photograph of a child can be used only by a parent
+or guardian who has the right to consent for them; if you believe a child's data
+has reached us, email us and we will remove the account and its material.
 
-## Changes to This Policy
+## Where your data lives
 
-We may update this Privacy Policy from time to time. We will notify you of any material changes by updating the date at the top of this page and, where appropriate, sending a notice through the service.
+Our application and storage run on Cloudflare's global network, with the origin
+configured in the United States. The processors named above operate in their own
+regions and rely on their own transfer mechanisms; we send each of them the
+minimum required for the step it performs.
 
-## Contact Us
+## Security
 
-If you have questions about this Privacy Policy, please contact us at **jiusongvip@gmail.com**.
+Traffic is encrypted in transit with TLS. Provider credentials saved in the admin
+panel are encrypted at rest (AES-256-GCM). Passwords are hashed. The likeness
+declaration and the content screen are enforced on the server, so neither can be
+skipped by a modified client, and photo screening fails closed — an unchecked
+photo is never rendered. Generation and upload endpoints are rate-limited, and
+those counters live in memory rather than in the database. Administrative access
+is role-based and limited to the people who need it.
+
+## Your rights
+
+You can access, correct, export and delete your personal information from your
+account settings, and you can ask us to erase the rendered files as well. You may
+also object to processing, ask for a copy of your data in a portable form, and
+withdraw a consent declaration you previously gave us — withdrawing it does not
+affect renders already made under it.
+
+Email us below to exercise any of this. We may need to confirm it is your account
+before we act, and we answer requests within 30 days. If you are in the EU, the
+UK, or Switzerland, you can also raise a complaint with your local data protection
+authority; elsewhere, with your national consumer or data regulator.
+
+## Changes to this policy
+
+We update this page when our practices change. A material change gets a new date
+at the top of this page and, where it affects you, a notice through the service.
+
+## Contact
+
+Questions about this policy, a data request, or a report about content on the
+public wall: **jiusongvip@gmail.com**. It reaches a human, and it works whether or
+not you have an account.
