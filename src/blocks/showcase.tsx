@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 
-const TAGS: ShowcaseTag[] = ['couple', 'pet', 'friend', 'halloween'];
+const TAGS: ShowcaseTag[] = ['couple', 'pet', 'friend', 'family'];
 
 /** Shape of one item from `GET /api/video/community`. */
 interface CommunityClipDto {

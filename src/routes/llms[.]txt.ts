@@ -16,7 +16,7 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
     path: '/examples',
     title: 'Examples',
     description:
-      'Rendered frames from the two-photo pipeline across the couple, pet, friends and Halloween stories.',
+      'Rendered frames from the two-photo pipeline across the couple, pet, friends and family stories.',
   },
   {
     path: '/pricing',

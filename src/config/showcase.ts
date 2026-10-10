@@ -5,7 +5,7 @@
  * in the homepage generator.
  */
 
-export type ShowcaseTag = 'couple' | 'pet' | 'friend' | 'halloween';
+export type ShowcaseTag = 'couple' | 'pet' | 'friend' | 'family';
 
 export interface ShowcaseItem {
   id: string;
@@ -123,15 +123,15 @@ export const showcaseItems: ShowcaseItem[] = [
     },
   },
   {
-    id: 'zombie-halloween-party',
+    id: 'zombie-family',
     modelId: 'fal-ai/veo3.1',
     model: 'Veo 3.1',
     aspect: '9:16',
-    tag: 'halloween',
-    cover: '/images/showcase/zombie-halloween-party.webp',
+    tag: 'family',
+    cover: '/images/showcase/zombie-family.webp',
     prompt: {
-      en: 'Halloween version, four shots: costumed and crying, the survivor aims a gun at their zombified friend, then lowers it and opens their arms; the leap match-cuts into an embrace under a golden sunset',
-      zh: '万圣节版四镜头：穿着派对装、泪流满面的幸存者用枪指着已丧尸化的好友，随后放下枪、张开双臂；扑跃经匹配剪辑，在金色落日下拥作一团',
+      en: 'Family version, four shots: the grown child cannot fire on the zombified parent they were raised by, drops the gun and opens both arms; the leap match-cuts into a tight embrace under a golden sunset',
+      zh: '亲情版四镜头：幸存的子女对着已丧尸化的至亲终究没能扣下扳机，放下枪、张开双臂；那一扑经匹配剪辑，在金色落日下化作一个紧拥',
     },
   },
 ];

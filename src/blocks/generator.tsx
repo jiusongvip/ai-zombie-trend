@@ -23,7 +23,7 @@ import { Filmstrip } from '@/components/studio/filmstrip';
 import { Stage } from '@/components/studio/stage';
 import { Button } from '@/components/ui/button';
 
-const STYLES: ShowcaseTag[] = ['couple', 'pet', 'friend', 'halloween'];
+const STYLES: ShowcaseTag[] = ['couple', 'pet', 'friend', 'family'];
 const MAX_FRAME_MB = 10;
 const FALLBACK_RATIOS = ['9:16', '16:9'];
 
