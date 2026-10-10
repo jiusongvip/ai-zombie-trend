@@ -283,7 +283,7 @@ export function priceSpecificationSchema(params: {
       offerCount: params.credits,
       valueAdded: [
         `${params.credits} credits for $${(params.priceInCents / 100).toFixed(2)}`,
-        `${params.films} films included`,
+        `${params.films} films at 480p`,
       ],
     },
   };
@@ -291,10 +291,8 @@ export function priceSpecificationSchema(params: {
 
 /** Collapse a list of schema objects into TanStack Router's `scripts` head slot. */
 export function jsonLd(...nodes: unknown[]) {
-  return nodes
-    .filter(Boolean)
-    .map((node) => ({
-      type: 'application/ld+json',
-      children: JSON.stringify(node),
-    }));
+  return nodes.filter(Boolean).map((node) => ({
+    type: 'application/ld+json',
+    children: JSON.stringify(node),
+  }));
 }
