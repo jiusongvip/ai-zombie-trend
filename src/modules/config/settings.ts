@@ -184,6 +184,12 @@ export function getSettingGroups(): SettingGroup[] {
       description: 'HFSY video generation gateway (Seedance / Volcengine)',
       tab: 'ai',
     },
+    {
+      name: 'seeapi',
+      title: 'SeeAPI Moderation',
+      description: 'NSFW text / image / video moderation (seeapi.com)',
+      tab: 'ai',
+    },
 
     // Analytics
     {
@@ -917,6 +923,16 @@ export function getSettings(): Setting[] {
       type: 'password',
       placeholder: 'sk-xxx',
       group: 'hfsy',
+      tab: 'ai',
+    },
+
+    // ─── AI / SeeAPI (NSFW moderation) ───────────────────────────────
+    {
+      name: 'seeapi_api_key',
+      title: 'API Key',
+      type: 'password',
+      placeholder: 'sk_seeapi_xxx',
+      group: 'seeapi',
       tab: 'ai',
     },
 

@@ -44,6 +44,10 @@ import {
   updateTask,
 } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
+import {
+  moderateGeneratedVideos,
+  moderateGenerationInput,
+} from '@/modules/moderation/service';
 import { getStorage } from '@/modules/storage/service';
 import { getUuid } from '@/lib/hash';
 import {
@@ -305,6 +309,13 @@ export async function generateVideo(params: GenerateVideoParams) {
   };
   const persistedOptions: VideoOptions = { ...providerOptions, prompt };
 
+  // Tiered NSFW gates before any credit reservation: prompt text first, then
+  // input images — a rejection here costs the checks, never a generation.
+  await moderateGenerationInput({
+    prompt,
+    imageUrls: [providerOptions.imageUrl, providerOptions.lastFrameUrl],
+  });
+
   const manager = await buildProviderManager();
   const provider = manager.getProvider(model.provider);
   if (!provider) {
@@ -355,6 +366,30 @@ export async function generateVideo(params: GenerateVideoParams) {
 // ─── Poll / sync ────────────────────────────────────────────────────────────
 
 /**
+ * Output moderation can outlast a poll tick, and browser polling shares the
+ * path with webhooks — lock per task so concurrent syncs await one moderation
+ * run instead of re-billing it.
+ */
+const outputModerationLocks = new Map<
+  string,
+  Promise<{ flagged: boolean; reason?: string }>
+>();
+
+function gateGeneratedVideos(
+  taskId: string,
+  videoUrls: string[]
+): Promise<{ flagged: boolean; reason?: string }> {
+  let pending = outputModerationLocks.get(taskId);
+  if (!pending) {
+    pending = moderateGeneratedVideos(videoUrls).finally(() => {
+      outputModerationLocks.delete(taskId);
+    });
+    outputModerationLocks.set(taskId, pending);
+  }
+  return pending;
+}
+
+/**
  * Refresh one task from its provider and persist the normalized result.
  * A no-op for terminal tasks, so it is safe to call on every poll tick.
  */
@@ -379,13 +414,35 @@ export async function refreshVideoTask(taskId: string) {
       model: model.id,
     });
 
+    let status = toTaskStatus(result.taskStatus);
+    let videos = result.taskInfo?.videos ?? [];
+    let errorMessage = result.taskInfo?.errorMessage ?? '';
+
+    // Final NSFW gate: a flagged render never reaches SUCCESS — failing the
+    // task routes it through updateTask's credit revocation, and the video
+    // URLs are dropped from the persisted result.
+    if (status === AITaskStatus.SUCCESS && videos.length > 0) {
+      const verdict = await gateGeneratedVideos(
+        task.id,
+        videos
+          .map((v: { videoUrl?: string }) => v.videoUrl)
+          .filter((u: string | undefined): u is string => Boolean(u))
+      );
+      if (verdict.flagged) {
+        status = AITaskStatus.FAILED;
+        videos = [];
+        errorMessage =
+          verdict.reason || 'Generated video was flagged by content moderation';
+      }
+    }
+
     await updateTask({
       taskId: task.id,
-      status: toTaskStatus(result.taskStatus),
+      status,
       taskResult: {
-        videos: result.taskInfo?.videos ?? [],
+        videos,
         status: result.taskInfo?.status ?? '',
-        errorMessage: result.taskInfo?.errorMessage ?? '',
+        errorMessage,
       },
     });
   } catch (error: any) {
