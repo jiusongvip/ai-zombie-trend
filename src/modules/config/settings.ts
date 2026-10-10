@@ -5,6 +5,8 @@
  * and they'll automatically appear in the admin panel.
  */
 
+import { envConfigs } from '@/config';
+
 export interface Setting {
   name: string;
   title: string;
@@ -381,6 +383,7 @@ export function getSettings(): Setting[] {
       placeholder: 'xxx.apps.googleusercontent.com',
       group: 'google_auth',
       tab: 'auth',
+      tip: `In Google Cloud → OAuth consent screen → Authorized redirect URIs, add ${envConfigs.app_url}/api/auth/callback/google`,
     },
     {
       name: 'google_client_secret',

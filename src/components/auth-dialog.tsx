@@ -256,6 +256,7 @@ export function AuthDialog() {
                             {passwordResetEnabled && (
                               <Link
                                 href="/forgot-password"
+                                onClick={closeAuthDialog}
                                 className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
                               >
                                 {m['common.sign.forgot_password']()}
@@ -300,6 +301,7 @@ export function AuthDialog() {
                       {m['common.sign.no_account']()}{' '}
                       <Link
                         href={`/sign-up?callbackUrl=${encodeURIComponent(afterLoginUrl)}`}
+                        onClick={closeAuthDialog}
                         className="underline underline-offset-4"
                       >
                         {m['common.sign.sign_up_title']()}
