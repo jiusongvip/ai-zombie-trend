@@ -504,10 +504,21 @@ export const aiTask = table(
     costCredits: integer('cost_credits').notNull().default(0),
     scene: text('scene').notNull().default(''),
     creditId: text('credit_id'),
+    // Community-wall visibility flag. Defaults TRUE: every successful clip
+    // surfaces on the public wall automatically; an admin toggles it off to
+    // pull a specific clip down (opt-out curation).
+    featured: integer('featured', { mode: 'boolean' })
+      .notNull()
+      .default(true),
   },
   (table) => [
     index('idx_ai_task_user_media_type').on(table.userId, table.mediaType),
     index('idx_ai_task_media_type_status').on(table.mediaType, table.status),
+    index('idx_ai_task_media_status_featured').on(
+      table.mediaType,
+      table.status,
+      table.featured
+    ),
   ]
 );
 

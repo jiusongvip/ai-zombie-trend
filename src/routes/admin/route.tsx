@@ -57,6 +57,7 @@ function AdminLayout() {
       items: [
         { href: '/admin/categories', label: m['admin.nav.categories']() },
         { href: '/admin/posts', label: m['admin.nav.posts']() },
+        { href: '/admin/videos', label: '社区墙精选' },
         { href: '/admin/tickets', label: m['admin.nav.tickets']() },
       ],
     },

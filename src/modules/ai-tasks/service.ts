@@ -210,11 +210,11 @@ export async function getTasks(params: {
 }
 
 /**
- * Recent successful tasks across all users, newest first — backs the public
- * community wall. Soft-deleted rows are excluded, so deleting a clip from a
- * user's library also takes it off the wall without any extra flag column.
+ * Clips for the public community wall: successful, not soft-deleted, and
+ * still featured. `featured` defaults true (auto-show), so this is everything
+ * except the ones an admin has explicitly toggled off. Newest first.
  */
-export async function listPublishedTasks(params: {
+export async function listFeaturedTasks(params: {
   mediaType: string;
   limit?: number;
 }) {
@@ -226,11 +226,48 @@ export async function listPublishedTasks(params: {
       and(
         eq(aiTask.mediaType, mediaType),
         eq(aiTask.status, AITaskStatus.SUCCESS),
+        eq(aiTask.featured, true),
         isNull(aiTask.deletedAt)
       )
     )
     .orderBy(desc(aiTask.createdAt))
     .limit(limit);
+}
+
+/**
+ * Recent successful tasks across all users for the admin curation screen —
+ * featured or not — newest first, with a total for pagination.
+ */
+export async function listSuccessfulTasks(params: {
+  mediaType: string;
+  page?: number;
+  limit?: number;
+}) {
+  const { mediaType, page = 1, limit = 24 } = params;
+  const where = and(
+    eq(aiTask.mediaType, mediaType),
+    eq(aiTask.status, AITaskStatus.SUCCESS),
+    isNull(aiTask.deletedAt)
+  );
+  const [items, [{ total }]] = await Promise.all([
+    db()
+      .select()
+      .from(aiTask)
+      .where(where)
+      .orderBy(desc(aiTask.createdAt))
+      .limit(limit)
+      .offset((page - 1) * limit),
+    db().select({ total: count() }).from(aiTask).where(where),
+  ]);
+  return { items, total };
+}
+
+/** Feature or un-feature a task for the community wall. */
+export async function setTaskFeatured(taskId: string, featured: boolean) {
+  return db()
+    .update(aiTask)
+    .set({ featured })
+    .where(eq(aiTask.id, taskId));
 }
 
 /**
