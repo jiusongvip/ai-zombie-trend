@@ -134,4 +134,30 @@ export const showcaseItems: ShowcaseItem[] = [
       zh: '亲情版四镜头：幸存的子女对着已丧尸化的至亲终究没能扣下扳机，放下枪、张开双臂；那一扑经匹配剪辑，在金色落日下化作一个紧拥',
     },
   },
+  {
+    id: 'zombie-family-live-1',
+    modelId: 'sd-2-vip-480',
+    model: 'Seedance 2 VIP',
+    aspect: '9:16',
+    tag: 'family',
+    cover: '/images/showcase/zombie-family.webp',
+    video: 'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-1.mp4',
+    prompt: {
+      en: 'A real family film generated with AI Zombie Video: two photos become the survivor and their zombified parent, running the four-shot story from the dark cabin to the sunset embrace',
+      zh: '用 AI Zombie Video 实跑的亲情成片：两张照片化身幸存者与其丧尸化的至亲，完整跑通从昏暗木屋到落日相拥的四镜头故事',
+    },
+  },
+  {
+    id: 'zombie-family-live-2',
+    modelId: 'sd-2-vip-480',
+    model: 'Seedance 2 VIP',
+    aspect: '9:16',
+    tag: 'family',
+    cover: '/images/showcase/zombie-family.webp',
+    video: 'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-2.mp4',
+    prompt: {
+      en: 'Another family generation from two photos — the grown child lowers the gun, opens both arms, and the zombified parent’s leap match-cuts into a tight embrace under a golden sunset',
+      zh: '另一条从两张照片生成的亲情成片——子女放下枪、张开双臂，丧尸化至亲的那记扑跃经匹配剪辑，在金色落日下化作一个紧拥',
+    },
+  },
 ];
