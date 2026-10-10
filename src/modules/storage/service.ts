@@ -150,20 +150,30 @@ export function sweepExpiredUploadsSoon() {
  * A long-lived server (node) also gets a real timer, so retention holds even
  * during a quiet spell with no uploads to piggyback on. The handle lives on
  * `globalThis` so module reloads cannot stack timers, and `unref` keeps it from
- * holding the process open. On a request-scoped runtime the timer simply never
- * fires, and the opportunistic sweep above is what runs.
+ * holding the process open. Cloudflare Workers forbids creating timers at
+ * global (module-eval) scope — doing so throws and takes down every request —
+ * so this is gated to a real Node runtime and additionally wrapped in a
+ * try/catch. On a request-scoped runtime the timer is never created and the
+ * opportunistic `sweepExpiredUploadsSoon()` is what enforces retention.
  */
 const SWEEP_TIMER_KEY = Symbol.for('shipany.uploadRetentionSweepTimer');
 const globalRef = globalThis as Record<symbol, ReturnType<typeof setInterval> | undefined>;
-if (!globalRef[SWEEP_TIMER_KEY]) {
-  const timer = setInterval(
-    () =>
-      purgeExpiredUploads().catch((error: any) =>
-        console.warn('[storage] upload sweep failed:', error?.message)
-      ),
-    SWEEP_INTERVAL_MS
-  );
-  timer.unref?.();
-  globalRef[SWEEP_TIMER_KEY] = timer;
+const isNodeRuntime =
+  typeof process !== 'undefined' && !!process.versions?.node;
+if (isNodeRuntime && !globalRef[SWEEP_TIMER_KEY]) {
+  try {
+    const timer = setInterval(
+      () =>
+        purgeExpiredUploads().catch((error: any) =>
+          console.warn('[storage] upload sweep failed:', error?.message)
+        ),
+      SWEEP_INTERVAL_MS
+    );
+    timer.unref?.();
+    globalRef[SWEEP_TIMER_KEY] = timer;
+  } catch {
+    // Non-Node runtimes (e.g. Cloudflare Workers) reject global-scope timers;
+    // retention is still enforced opportunistically on each upload.
+  }
 }
 
