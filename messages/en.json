@@ -986,7 +986,7 @@
   "landing.pricing.soon": "Opening soon",
   "landing.pricing.soon_toast": "Purchases open soon — thank you for your patience.",
   "landing.pricing.credits_unit": "credits",
-  "landing.pricing.tier_counts": "Either {standard} × 480p or {hd} × 720p",
+  "landing.pricing.tier_counts": "{standard} × 480p or {hd} × 720p",
   "landing.pricing.tier_counts_standard": "{standard} × 480p",
   "landing.pricing.cost_per_tier": "Every pack is one balance you spend render by render: {standard} credits buys a 480p film, {hd} credits buys a 720p film.",
   "landing.pricing.feature_all_styles": "All styles: couple, pet, friends, family",
