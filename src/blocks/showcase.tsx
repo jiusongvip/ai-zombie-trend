@@ -152,7 +152,7 @@ export function Showcase({
           )}
         </div>
 
-        <div className="columns-2 gap-3 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 [&>*]:mb-3">
+        <div className="columns-2 gap-3 sm:columns-3 md:columns-4 lg:columns-6 [&>*]:mb-3">
           {items.map((item) => (
             <ShowcaseCard key={item.id} item={item} locale={locale} onTry={tryItem} />
           ))}
