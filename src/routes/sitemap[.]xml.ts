@@ -13,6 +13,9 @@ const STATIC_PATHS = [
   '/terms-of-service',
 ];
 
+// Site content baseline date for pages without an explicit last-modified stamp.
+const STATIC_LASTMOD = '2026-10-09';
+
 type Entry = {
   path: string;
   lastModified?: string;
@@ -26,23 +29,28 @@ function urlFor(path: string, locale: string): string {
   }).href;
 }
 
+// Normalize an ISO timestamp (or fall back to the baseline) to YYYY-MM-DD.
+function toDate(value?: string): string {
+  return (value ?? STATIC_LASTMOD).slice(0, 10);
+}
+
+// One <url> block per locale: hreflang <xhtml:link> alternates are no longer
+// emitted, so each localized page must be listed on its own or the /zh pages
+// would drop out of the index entirely.
 function entryXml(e: Entry): string {
-  const alternates = locales
+  const lastmod = toDate(e.lastModified);
+  return locales
     .map(
       (loc) =>
-        `    <xhtml:link rel="alternate" hreflang="${loc}" href="${urlFor(e.path, loc)}"/>`
+        [
+          '  <url>',
+          `    <loc>${urlFor(e.path, loc)}</loc>`,
+          `    <lastmod>${lastmod}</lastmod>`,
+          `    <changefreq>${e.changeFrequency}</changefreq>`,
+          `    <priority>${e.priority}</priority>`,
+          '  </url>',
+        ].join('\n')
     )
-    .join('\n');
-  return [
-    '  <url>',
-    `    <loc>${urlFor(e.path, baseLocale)}</loc>`,
-    alternates,
-    e.lastModified ? `    <lastmod>${e.lastModified}</lastmod>` : null,
-    `    <changefreq>${e.changeFrequency}</changefreq>`,
-    `    <priority>${e.priority}</priority>`,
-    '  </url>',
-  ]
-    .filter(Boolean)
     .join('\n');
 }
 
@@ -91,7 +99,7 @@ export const Route = createFileRoute('/sitemap.xml')({
 
         const xml = [
           '<?xml version="1.0" encoding="UTF-8"?>',
-          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">',
           ...entries.map(entryXml),
           '</urlset>',
           '',
