@@ -25,9 +25,9 @@ import { cn } from '@/lib/utils';
 import type { VideoTaskView } from '@/lib/video-types';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
+import { useAuthGate } from '@/hooks/use-auth-gate';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
-import { useAuthGate } from '@/hooks/use-auth-gate';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -51,9 +51,10 @@ type StatusTab = (typeof STATUS_TABS)[number];
  * Library of rendered films.
  *
  * A page, not a console tab: the product lives on the homepage, so history
- * gets the same marketing shell. Guests are bounced to sign-in by `useAuthGate`
- * with the way back preserved. Prompts are deliberately never shown — the
- * scene templates are backend configuration, not user-facing content.
+ * gets the same marketing shell. Guests are prompted to sign in in place by
+ * `useAuthGate`, with the way back preserved. Scene prompts are deliberately
+ * never shown — the templates are backend configuration, not user-facing
+ * content.
  */
 function TaskCard({
   task,
@@ -233,7 +234,9 @@ function LibraryPage() {
         <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">{m['studio.library.title']()}</h1>
+              <h1 className="text-2xl font-bold">
+                {m['studio.library.title']()}
+              </h1>
               <p className="text-muted-foreground">
                 {m['studio.library.description']()}
               </p>
@@ -299,7 +302,11 @@ function LibraryPage() {
             <>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {items.map((task) => (
-                  <TaskCard key={task.id} task={task} onDelete={setPendingDelete} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onDelete={setPendingDelete}
+                  />
                 ))}
               </div>
 

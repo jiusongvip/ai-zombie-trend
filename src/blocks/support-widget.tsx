@@ -5,11 +5,12 @@ import { toast } from 'sonner';
 import { useSession } from '@/core/auth/client';
 import { Link } from '@/core/i18n/navigation';
 import { apiPost } from '@/lib/api-client';
+import { openAuthDialog } from '@/lib/auth-dialog';
 import { currentPathWithQuery } from '@/lib/redirect';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
 import { ImageUploader } from '@/components/image-uploader';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -88,12 +89,12 @@ export function SupportWidget() {
               <p className="text-muted-foreground text-sm">
                 {m['common.support.sign_in_notice']()}
               </p>
-              <Link
-                href={`/sign-in?callbackUrl=${encodeURIComponent(currentPathWithQuery('/'))}`}
-                className={cn(buttonVariants())}
+              <Button
+                variant="outline"
+                onClick={() => openAuthDialog(currentPathWithQuery('/'))}
               >
                 {m['common.support.sign_in']()}
-              </Link>
+              </Button>
             </div>
           ) : (
             <form

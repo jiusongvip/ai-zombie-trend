@@ -13,11 +13,11 @@ import {
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
-import { useRouter } from '@/core/i18n/navigation';
+import { formatPrice, pricingCatalog } from '@/config/pricing';
 import { apiPost } from '@/lib/api-client';
+import { openAuthDialog } from '@/lib/auth-dialog';
 import { currentPathWithQuery } from '@/lib/redirect';
 import { m } from '@/paraglide/messages.js';
-import { formatPrice, pricingCatalog } from '@/config/pricing';
 import { usePublicConfig } from '@/hooks/use-public-config';
 import {
   PaymentProviderModal,
@@ -47,7 +47,6 @@ export function Pricing({
   title?: string;
   headingAs?: 'h1' | 'h2';
 } = {}) {
-  const router = useRouter();
   const { data: session } = useSession();
 
   const { data: configsData } = usePublicConfig();
@@ -154,8 +153,7 @@ export function Pricing({
     }
 
     if (!session?.user) {
-      const callbackUrl = encodeURIComponent(currentPathWithQuery('/pricing'));
-      router.push(`/sign-in?callbackUrl=${callbackUrl}`);
+      openAuthDialog(currentPathWithQuery('/pricing'));
       return;
     }
 

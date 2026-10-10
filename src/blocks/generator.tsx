@@ -11,15 +11,16 @@ import { CheckCircle2, Loader2, Lock, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
-import { Link, useRouter } from '@/core/i18n/navigation';
 import { tDynamic } from '@/core/i18n/dynamic';
+import { Link } from '@/core/i18n/navigation';
 import { showcaseItems, type ShowcaseTag } from '@/config/showcase';
 import { apiGet, apiPost, type PageResult } from '@/lib/api-client';
+import { currentLocationPath, openAuthDialog } from '@/lib/auth-dialog';
 import { cn } from '@/lib/utils';
 import type { VideoTaskView } from '@/lib/video-types';
 import { m } from '@/paraglide/messages.js';
-import { FrameSlot, type FrameSlotValue } from '@/components/studio/frame-slot';
 import { Filmstrip } from '@/components/studio/filmstrip';
+import { FrameSlot, type FrameSlotValue } from '@/components/studio/frame-slot';
 import { Stage } from '@/components/studio/stage';
 import { Button } from '@/components/ui/button';
 
@@ -107,7 +108,6 @@ const EMPTY_FRAME: FrameSlotValue = { status: 'idle' };
  */
 export function Generator() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { data: session } = useSession();
   const signedIn = !!session?.user;
 
@@ -156,9 +156,9 @@ export function Generator() {
   });
   const providerReady = stylesQuery.data?.providerReady !== false;
   const cost = stylesQuery.data?.styles[0]?.creditCost ?? 0;
-  const ratios = (stylesQuery.data?.aspectRatios.length
+  const ratios = stylesQuery.data?.aspectRatios.length
     ? stylesQuery.data.aspectRatios.filter((r) => ['9:16', '16:9'].includes(r))
-    : FALLBACK_RATIOS);
+    : FALLBACK_RATIOS;
 
   const creditsQuery = useQuery({
     queryKey: ['user-credits', 'balance'],
@@ -207,7 +207,8 @@ export function Generator() {
 
   const startedAtRef = useRef<number | null>(null);
   if (activeTask?.polling && startedAtRef.current === null) {
-    startedAtRef.current = new Date(activeTask.createdAt).getTime() || Date.now();
+    startedAtRef.current =
+      new Date(activeTask.createdAt).getTime() || Date.now();
   }
   if (!activeTask?.polling) startedAtRef.current = null;
   const elapsed = useElapsed(startedAtRef.current, !!activeTask?.polling);
@@ -247,8 +248,8 @@ export function Generator() {
   function onGenerate() {
     if (!signedIn) {
       saveDraft(draft());
-      const callbackUrl = `${window.location.pathname}#generator`;
-      router.push(`/sign-up?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      // Come back to the form itself, not the top of the page.
+      openAuthDialog(`${currentLocationPath('/').split('#')[0]}#generator`);
       return;
     }
     generateMutation.mutate(draft());
@@ -318,8 +319,8 @@ export function Generator() {
       <div className="mx-auto w-full max-w-6xl xl:max-w-[84rem] 2xl:max-w-[104rem]">
         {/* Dev warning */}
         {import.meta.env.DEV && !providerReady && stylesQuery.isSuccess && (
-          <div className="border-amber-500/40 bg-amber-500/10 mb-6 flex items-start gap-3 rounded-xl border p-4">
-            <TriangleAlert className="text-amber-600 mt-0.5 size-5 shrink-0" />
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
+            <TriangleAlert className="mt-0.5 size-5 shrink-0 text-amber-600" />
             <div className="space-y-1 text-sm">
               <p className="font-medium">
                 {m['landing.generator.notice.title']()}
@@ -417,10 +418,10 @@ export function Generator() {
                         className="aspect-[4/3] size-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
                       />
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent px-2.5 pt-8 pb-2.5">
-                        <p className="text-white text-xs font-semibold leading-tight">
+                        <p className="text-xs leading-tight font-semibold text-white">
                           {tDynamic(`landing.usecases.${tag}.title`)}
                         </p>
-                        <p className="text-white/70 mt-0.5 text-[10px] leading-tight">
+                        <p className="mt-0.5 text-[10px] leading-tight text-white/70">
                           {tDynamic(`landing.usecases.${tag}.desc`)}
                         </p>
                       </div>
@@ -437,13 +438,11 @@ export function Generator() {
             <div className="mb-4 grid grid-cols-2 gap-3">
               {/* Duration (fixed at 15s for zombie) */}
               <div>
-                <p className="text-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
                   {m['landing.generator.duration']()}
                 </p>
                 <div className="border-primary/50 bg-primary/10 flex items-center justify-between rounded-lg border px-3 py-2.5">
-                  <span className="text-primary text-sm font-medium">
-                    15s
-                  </span>
+                  <span className="text-primary text-sm font-medium">15s</span>
                   <span className="text-muted-foreground text-xs">
                     {m['landing.generator.cinematic']()}
                   </span>
@@ -452,7 +451,7 @@ export function Generator() {
 
               {/* Format toggle */}
               <div>
-                <p className="text-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
                   {m['landing.generator.format']()}
                 </p>
                 <div className="bg-muted/50 flex rounded-lg p-1">
@@ -470,7 +469,6 @@ export function Generator() {
                             : 'text-muted-foreground hover:text-foreground'
                         )}
                       >
-                        {ratio}{' '}
                         {tDynamic(
                           `landing.generator.format.${ratio === '9:16' ? 'vertical' : 'wide'}`
                         )}
@@ -495,7 +493,7 @@ export function Generator() {
                     : '—'}
                 </p>
               </div>
-              <div className="text-right space-y-0.5">
+              <div className="space-y-0.5 text-right">
                 <p className="text-muted-foreground text-xs">
                   {m['studio.form.after_label']()}
                 </p>
@@ -512,7 +510,7 @@ export function Generator() {
             {/* CTA Button */}
             <Button
               size="lg"
-              className="w-full rounded-xl bg-primary text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90 disabled:opacity-50"
+              className="bg-primary shadow-primary/25 hover:bg-primary/90 w-full rounded-xl text-base font-semibold shadow-lg disabled:opacity-50"
               onClick={onGenerate}
               disabled={generateMutation.isPending || !!blockedReason}
             >

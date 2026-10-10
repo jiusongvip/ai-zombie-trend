@@ -14,16 +14,13 @@ import { ThemeProvider } from 'next-themes';
 
 import { envConfigs } from '@/config';
 import { getQueryClient } from '@/lib/query-client';
-import {
-  jsonLd,
-  organizationSchema,
-  webSiteSchema,
-} from '@/lib/schema';
+import { jsonLd, organizationSchema, webSiteSchema } from '@/lib/schema';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { Ads } from '@/components/analytics/ads';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Plausible } from '@/components/analytics/plausible';
 import { Umami } from '@/components/analytics/umami';
+import { AuthDialog } from '@/components/auth-dialog';
 import { CustomerService } from '@/components/customer-service';
 import { GoogleOneTap } from '@/components/google-one-tap';
 import { SandboxPreviewBridge } from '@/components/sandbox-preview-bridge';
@@ -120,6 +117,7 @@ function RootComponent() {
         <SandboxPreviewBridge />
         <Toaster position="top-center" richColors />
         <GoogleOneTap />
+        <AuthDialog />
         {analytics?.gaId ? (
           <GoogleAnalytics measurementId={analytics.gaId} />
         ) : null}

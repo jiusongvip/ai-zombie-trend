@@ -6,14 +6,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useSession } from '@/core/auth/client';
 import { usePathname, useRouter } from '@/core/i18n/navigation';
 import { apiGet } from '@/lib/api-client';
+import { openAuthDialog } from '@/lib/auth-dialog';
 import { useUserPermissions } from '@/hooks/use-user-permissions';
 
 /**
  * Shared authorization gate for every authenticated surface (`AppLayout` for
  * the console, `/library` for the film history page).
  *
- * Extracted rather than duplicated: this decides who may see a page and where
- * an unauthorized visitor is sent, so the surfaces must not be able to drift
+ * Extracted rather than duplicated: this decides who may see a page and how an
+ * unauthorized visitor is prompted, so the surfaces must not be able to drift
  * apart on it.
  *
  * Resolution order mirrors the original imperative flow:
@@ -32,10 +33,9 @@ export function useAuthGate({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Guard against a double redirect: useLocation() flips to "/sign-in" the moment
-  // we navigate (while the shell is still mounted), which would otherwise re-fire
-  // the effect and overwrite callbackUrl with the sign-in path itself.
-  const redirectingRef = useRef(false);
+  // This effect re-runs on every session/query change while the shell is
+  // mounted; without the latch a dismissed sign-in modal would reopen itself.
+  const promptShownRef = useRef(false);
 
   // Invite-only gate: needs the user's membership status (also covers social
   // logins). `needsInvite` is computed server-side in /api/user/info.
@@ -64,14 +64,13 @@ export function useAuthGate({
     if (isPending) return;
 
     if (!session?.user) {
-      if (redirectingRef.current) return;
-      redirectingRef.current = true;
-      // Remember where the user was headed so sign-in can send them back.
+      if (promptShownRef.current) return;
+      promptShownRef.current = true;
+      // Sign in in place — the modal brings the visitor back here afterwards.
       // pathname is already locale-free; append the live query string.
       const search =
         typeof window !== 'undefined' ? window.location.search : '';
-      const callbackUrl = `${pathname}${search}`;
-      router.push(`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      openAuthDialog(`${pathname}${search}`);
       return;
     }
 
@@ -79,8 +78,8 @@ export function useAuthGate({
     // (incl. social) users to the redeem page. Admins are exempt server-side.
     if (userInfoQuery.isPending) return;
     if (needsInvite) {
-      if (!redirectingRef.current) {
-        redirectingRef.current = true;
+      if (!promptShownRef.current) {
+        promptShownRef.current = true;
         router.push('/redeem-invite');
       }
       return;

@@ -6,6 +6,7 @@ import { ArrowRight, Menu, X } from 'lucide-react';
 import { useSession } from '@/core/auth/client';
 import { Link } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
+import { openAuthDialog } from '@/lib/auth-dialog';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
 import { LocaleSelector } from '@/components/locale-selector';
@@ -76,13 +77,17 @@ export function SiteHeader({ navLinks }: { navLinks?: NavLink[] }) {
             />
           ) : (
             <>
-              <Link
-                href="/sign-in"
+              <button
+                type="button"
+                onClick={() => openAuthDialog()}
                 className="text-muted-foreground hover:text-foreground text-sm transition-colors"
               >
                 {m['common.nav.sign_in']()}
-              </Link>
-              <Link href="/#generator" className={cn(buttonVariants(), 'gap-1.5')}>
+              </button>
+              <Link
+                href="/#generator"
+                className={cn(buttonVariants(), 'gap-1.5')}
+              >
                 {m['common.nav.get_started']()}
                 <ArrowRight className="size-4" />
               </Link>
@@ -142,13 +147,16 @@ export function SiteHeader({ navLinks }: { navLinks?: NavLink[] }) {
               />
             ) : (
               <>
-                <Link
-                  href="/sign-in"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openAuthDialog();
+                  }}
                   className="text-muted-foreground hover:text-foreground px-3 py-2 text-sm transition-colors"
-                  onClick={() => setMobileOpen(false)}
                 >
                   {m['common.nav.sign_in']()}
-                </Link>
+                </button>
                 <Link
                   href="/#generator"
                   className={cn(buttonVariants(), 'gap-1.5')}
