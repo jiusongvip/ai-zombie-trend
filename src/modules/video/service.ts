@@ -40,6 +40,7 @@ import {
   findTask,
   findTaskByProviderTaskId,
   getTasks,
+  listPublishedTasks,
   softDeleteTask,
   updateTask,
 } from '@/modules/ai-tasks/service';
@@ -156,6 +157,51 @@ export async function getConfiguredProviders(): Promise<VideoProviderName[]> {
   if (configs.replicate_api_token) names.push('replicate');
   if (configs.hfsy_api_key) names.push('hfsy');
   return names;
+}
+
+// ─── Community wall ───────────────────────────────────────────────────────
+
+/** One community clip for the public explore wall. */
+export interface CommunityClip {
+  id: string;
+  video: string;
+  poster?: string;
+  aspect: '16:9' | '9:16';
+  model: string;
+  createdAt: string;
+}
+
+/**
+ * Recent successful generations from every user, newest first — the public
+ * "community wall" on the landing page. Gated by the `community_wall_enabled`
+ * admin flag (default on); soft-deleting a task removes it from the wall.
+ */
+export async function getCommunityClips(limit = 24): Promise<CommunityClip[]> {
+  const configs = await getAllConfigs();
+  if (configs.community_wall_enabled === 'false') return [];
+
+  const tasks = await listPublishedTasks({ mediaType: VIDEO_MEDIA_TYPE, limit });
+  const clips: CommunityClip[] = [];
+  for (const task of tasks) {
+    const result = (parseJson(task.taskResult) ?? {}) as {
+      videos?: { videoUrl?: string; thumbnailUrl?: string }[];
+    };
+    const video = result.videos?.[0]?.videoUrl;
+    if (!video) continue;
+    const options = (parseJson(task.options) ?? {}) as Partial<VideoOptions>;
+    const model = getVideoModel(task.model);
+    clips.push({
+      id: task.id,
+      video,
+      poster: result.videos?.[0]?.thumbnailUrl,
+      aspect: ['16:9', '4:3', '21:9'].includes(options.aspectRatio || '')
+        ? '16:9'
+        : '9:16',
+      model: model?.label ?? task.model,
+      createdAt: new Date(task.createdAt).toISOString(),
+    });
+  }
+  return clips;
 }
 
 // ─── Status mapping ─────────────────────────────────────────────────────────

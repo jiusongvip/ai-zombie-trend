@@ -210,6 +210,30 @@ export async function getTasks(params: {
 }
 
 /**
+ * Recent successful tasks across all users, newest first — backs the public
+ * community wall. Soft-deleted rows are excluded, so deleting a clip from a
+ * user's library also takes it off the wall without any extra flag column.
+ */
+export async function listPublishedTasks(params: {
+  mediaType: string;
+  limit?: number;
+}) {
+  const { mediaType, limit = 24 } = params;
+  return db()
+    .select()
+    .from(aiTask)
+    .where(
+      and(
+        eq(aiTask.mediaType, mediaType),
+        eq(aiTask.status, AITaskStatus.SUCCESS),
+        isNull(aiTask.deletedAt)
+      )
+    )
+    .orderBy(desc(aiTask.createdAt))
+    .limit(limit);
+}
+
+/**
  * Count tasks matching the same filters as `getTasks` — for pagination totals.
  */
 export async function countTasks(params: {

@@ -37,6 +37,19 @@ export const showcaseItems: ShowcaseItem[] = [
     },
   },
   {
+    id: 'zombie-couple-film-live',
+    modelId: 'sd-2-vip-480',
+    model: 'Seedance 2 VIP',
+    aspect: '9:16',
+    tag: 'couple',
+    cover: '/images/showcase/zombie-cabin.webp',
+    video: 'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/hfsy/video/79cf471c-1260-4692-9228-fd3c10ff27f8.mp4',
+    prompt: {
+      en: 'A real couple film generated live on the homepage: two uploaded photos become the survivor and their zombified partner, running the full four-shot story from the dark cabin to the sunset wheat-field embrace',
+      zh: '在首页实跑生成的情侣成片：两张上传照片化身幸存者与其丧尸化的爱人，完整跑通从昏暗木屋到落日麦田相拥的四镜头故事',
+    },
+  },
+  {
     id: 'zombie-pet-film',
     modelId: 'bytedance/seedance-2.0/image-to-video',
     model: 'Seedance 2',

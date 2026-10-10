@@ -13,6 +13,34 @@ import { getLocale } from '@/paraglide/runtime.js';
 
 const TAGS: ShowcaseTag[] = ['couple', 'pet', 'friend', 'halloween'];
 
+/** Shape of one item from `GET /api/video/community`. */
+interface CommunityClipDto {
+  id: string;
+  video: string;
+  poster?: string;
+  aspect: '16:9' | '9:16';
+  model: string;
+  createdAt: string;
+}
+
+/** Adapt a community clip to the card's `ShowcaseItem` shape. */
+function toCommunityItem(c: CommunityClipDto): ShowcaseItem {
+  return {
+    id: `community-${c.id}`,
+    modelId: 'community',
+    model: c.model,
+    aspect: c.aspect,
+    // Community clips carry no curated story tag; surfaced only on "all".
+    tag: 'couple',
+    cover: c.poster ?? '',
+    video: c.video,
+    prompt: {
+      en: 'A community creation, generated straight from two photos with AI Zombie Video',
+      zh: '社区作品：用两张照片经 AI Zombie Video 直接生成',
+    },
+  };
+}
+
 /**
  * The explore feed — the homepage's main body, laid out like Hailuo/Pika's
  * community wall: full-bleed masonry, filter tabs, minimal chrome. Every card
@@ -29,11 +57,41 @@ export function Showcase({
   const locale = getLocale();
   const router = useRouter();
   const [tag, setTag] = useState<ShowcaseTag | 'all'>(tagFilter ?? 'all');
+  const [community, setCommunity] = useState<ShowcaseItem[]>([]);
 
-  const items =
+  useEffect(() => {
+    if (tagFilter) return; // explore-only: a scoped embed skips the fetch
+    let alive = true;
+    fetch('/api/video/community?limit=24')
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive) return;
+        const items: CommunityClipDto[] = j?.data?.items ?? [];
+        setCommunity(items.map(toCommunityItem));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [tagFilter]);
+
+  const staticItems =
     tag === 'all'
       ? showcaseItems
       : showcaseItems.filter((item) => item.tag === tag);
+
+  // Community clips are uncategorised real generations — surface them only on
+  // the "all" tab, and skip any whose file already shows as a curated card.
+  const curatedVideos = new Set(
+    showcaseItems.map((i) => i.video).filter(Boolean)
+  );
+  const items =
+    tag === 'all'
+      ? [
+          ...staticItems,
+          ...community.filter((c) => !curatedVideos.has(c.video)),
+        ]
+      : staticItems;
 
   /**
    * Hand the card's story to the generator workbench. On the homepage the
@@ -94,7 +152,7 @@ export function Showcase({
           )}
         </div>
 
-        <div className="columns-2 gap-3 lg:columns-3 xl:columns-4 [&>*]:mb-3">
+        <div className="columns-2 gap-3 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 [&>*]:mb-3">
           {items.map((item) => (
             <ShowcaseCard key={item.id} item={item} locale={locale} onTry={tryItem} />
           ))}
@@ -154,11 +212,11 @@ function ShowcaseCard({
         <video
           ref={videoRef}
           src={item.video}
-          poster={item.cover}
+          poster={item.cover || undefined}
           muted
           loop
           playsInline
-          preload="none"
+          preload={item.cover ? 'none' : 'metadata'}
           className="absolute inset-0 size-full object-cover"
         />
       ) : (
