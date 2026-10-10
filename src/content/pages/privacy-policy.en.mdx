@@ -75,15 +75,15 @@ against that render.
 
 Each of these receives the least it needs to do its job, under its own terms:
 
-| Processor | What it receives | Why |
-| --- | --- | --- |
-| Cloudflare | Your upload bytes and the finished film; request metadata for hosting | Application hosting and object storage |
-| fal — ByteDance Seedance | Your two photos plus the direction for the scene | Rendering the film |
-| SeeAPI | Your photos, your scene text, and the finished film | Content screening |
-| Your payment provider (Stripe, PayPal, Creem, Alipay, WeChat Pay and similar) | The order amount, description and your billing email | Taking payment; they hold the card details, we do not |
-| Resend | Your email address, and nothing else | The two messages listed under Email |
-| Umami | Page path, referrer domain, coarse device info | Analytics, on our own instance |
-| Google | Your email and name | Only if you choose Sign in with Google |
+| Processor                                                                     | What it receives                                                      | Why                                                   |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------- |
+| Cloudflare                                                                    | Your upload bytes and the finished film; request metadata for hosting | Application hosting and object storage                |
+| fal — ByteDance Seedance                                                      | Your two photos plus the direction for the scene                      | Rendering the film                                    |
+| SeeAPI                                                                        | Your photos, your scene text, and the finished film                   | Content screening                                     |
+| Your payment provider (Stripe, PayPal, Creem, Alipay, WeChat Pay and similar) | The order amount, description and your billing email                  | Taking payment; they hold the card details, we do not |
+| Resend                                                                        | Your email address, and nothing else                                  | The two messages listed under Email                   |
+| Umami                                                                         | Page path, referrer domain, coarse device info                        | Analytics, on our own instance                        |
+| Google                                                                        | Your email and name                                                   | Only if you choose Sign in with Google                |
 
 ## Cookies and local storage
 
@@ -124,8 +124,9 @@ minimum required for the step it performs.
 
 ## Security
 
-Traffic is encrypted in transit with TLS. Provider credentials saved in the admin
-panel are encrypted at rest (AES-256-GCM). Passwords are hashed. The likeness
+Traffic is encrypted in transit with TLS. Provider credentials live in the
+database behind role-based access — they are not in the codebase and are never
+sent to your browser. Passwords are hashed. The likeness
 declaration and the content screen are enforced on the server, so neither can be
 skipped by a modified client, and photo screening fails closed — an unchecked
 photo is never rendered. Generation and upload endpoints are rate-limited, and
