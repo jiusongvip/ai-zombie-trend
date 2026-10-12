@@ -60,9 +60,13 @@ async function toCleanImage(file: File): Promise<File> {
   );
   if (!blob) throw new Error('This image could not be processed.');
 
-  return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'photo'}.jpg`, {
-    type: 'image/jpeg',
-  });
+  return new File(
+    [blob],
+    `${file.name.replace(/\.[^.]+$/, '') || 'photo'}.jpg`,
+    {
+      type: 'image/jpeg',
+    }
+  );
 }
 
 /**
@@ -139,6 +143,11 @@ export function FrameSlot({
   className?: string;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // The visible preview is kept as a local `blob:` object URL (the same pattern
+  // aizombie.org and every major generator uses). The hosted R2 URL lives only
+  // in `url`/`value.url` and is handed to the model — it is never shown. The
+  // object URL is revoked on replace / clear / unmount to avoid leaks.
+  const blobRef = useRef<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [state, setState] = useState<{
     url?: string;
@@ -162,6 +171,14 @@ export function FrameSlot({
     });
   }, [value.url]);
 
+  // Release the held object URL when the slot unmounts.
+  useEffect(
+    () => () => {
+      if (blobRef.current) URL.revokeObjectURL(blobRef.current);
+    },
+    []
+  );
+
   const accept = async (file: File) => {
     if (!file.type?.startsWith('image/')) {
       toast.error(labels.imageOnly);
@@ -172,14 +189,16 @@ export function FrameSlot({
       return;
     }
 
+    if (blobRef.current) URL.revokeObjectURL(blobRef.current);
     const blob = URL.createObjectURL(file);
+    blobRef.current = blob;
     setState({ status: 'uploading', preview: blob });
     onChange({ status: 'uploading' });
 
     try {
       const url = await uploadFrame(file);
-      URL.revokeObjectURL(blob);
-      setState({ url, preview: url, status: 'uploaded' });
+      // Keep the `blob:` as the shown preview; `url` (R2) is only the model input.
+      setState({ url, preview: blob, status: 'uploaded' });
       onChange({ url, status: 'uploaded' });
     } catch (error: any) {
       setState({ status: 'error', preview: blob });
@@ -193,6 +212,10 @@ export function FrameSlot({
   };
 
   const clear = () => {
+    if (blobRef.current) {
+      URL.revokeObjectURL(blobRef.current);
+      blobRef.current = null;
+    }
     setState({ status: 'idle' });
     onChange({ status: 'idle' });
   };
