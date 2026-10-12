@@ -27,6 +27,7 @@ import { Pricing } from '@/blocks/pricing';
 import { ShotList } from '@/blocks/shot-list';
 import { Showcase } from '@/blocks/showcase';
 import { SupportWidget } from '@/blocks/support-widget';
+import { TrendNote } from '@/blocks/trend-note';
 
 /**
  * Single-page landing for the "ai zombie trend" keyword: compact poster hero
@@ -45,6 +46,7 @@ function HomePage() {
         <ShotList />
         <Showcase />
         <HowItWorks />
+        <TrendNote />
         <Pricing />
         <Faq />
         <CtaBand />

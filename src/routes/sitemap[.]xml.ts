@@ -9,13 +9,14 @@ const STATIC_PATHS = [
   '/examples',
   '/pricing',
   '/blog',
+  '/about',
   '/privacy-policy',
   '/terms-of-service',
   '/refund-policy',
 ];
 
 // Site content baseline date for pages without an explicit last-modified stamp.
-const STATIC_LASTMOD = '2026-10-09';
+const STATIC_LASTMOD = '2026-10-12';
 
 type Entry = {
   path: string;
@@ -41,16 +42,15 @@ function toDate(value?: string): string {
 function entryXml(e: Entry): string {
   const lastmod = toDate(e.lastModified);
   return locales
-    .map(
-      (loc) =>
-        [
-          '  <url>',
-          `    <loc>${urlFor(e.path, loc)}</loc>`,
-          `    <lastmod>${lastmod}</lastmod>`,
-          `    <changefreq>${e.changeFrequency}</changefreq>`,
-          `    <priority>${e.priority}</priority>`,
-          '  </url>',
-        ].join('\n')
+    .map((loc) =>
+      [
+        '  <url>',
+        `    <loc>${urlFor(e.path, loc)}</loc>`,
+        `    <lastmod>${lastmod}</lastmod>`,
+        `    <changefreq>${e.changeFrequency}</changefreq>`,
+        `    <priority>${e.priority}</priority>`,
+        '  </url>',
+      ].join('\n')
     )
     .join('\n');
 }

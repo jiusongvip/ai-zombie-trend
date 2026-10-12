@@ -69,6 +69,9 @@ export const Route = createRootRoute({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { title: envConfigs.app_name },
         { name: 'description', content: envConfigs.app_description },
+        // One canonical brand string everywhere: title suffix, og:site_name
+        // and the Organization schema all read envConfigs.app_name.
+        { property: 'og:site_name', content: envConfigs.app_name },
       ],
       links: [
         { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },

@@ -16,6 +16,13 @@ import { baseLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 type Locale = (typeof locales)[number];
 
 /**
+ * Machine-readable freshness stamp for the evergreen app pages. Same
+ * convention as `STATIC_LASTMOD` in routes/sitemap.xml — bump when landing
+ * content materially changes.
+ */
+const CONTENT_MODIFIED = '2026-10-12';
+
+/**
  * Absolute origin used for every emitted URL.
  *
  * Mirrors the reasoning in `__root.tsx`: `head()` re-runs in the browser during
@@ -49,6 +56,9 @@ function publisher() {
     '@id': `${siteUrl()}#organization`,
     name: envConfigs.app_name,
     url: siteUrl(),
+    // Real, public profiles only — sameAs to a URL we don't own splits the
+    // entity instead of consolidating it.
+    sameAs: ['https://github.com/jiusongvip/ai-zombie-trend'],
     logo: {
       '@type': 'ImageObject',
       url: `${baseUrl()}/logo.svg`,
@@ -96,6 +106,7 @@ export function webApplicationSchema(params: {
     browserRequirements: 'Requires JavaScript',
     softwareVersion: '1',
     description: params.description,
+    dateModified: CONTENT_MODIFIED,
     image: `${baseUrl()}/images/showcase/zombie-cabin.webp`,
     inLanguage: params.locale,
     isAccessibleForFree: params.freeTrial ?? false,

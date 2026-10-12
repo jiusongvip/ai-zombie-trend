@@ -28,6 +28,12 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
     title: 'Blog',
     description: 'Guides to the AI zombie trend, workflow and photo privacy.',
   },
+  {
+    path: '/about',
+    title: 'About',
+    description:
+      'Who builds AI Zombie Trend, how the two-photo pipeline works, and the consent, privacy and synthetic-media labeling principles behind it.',
+  },
 ];
 
 export const Route = createFileRoute('/llms.txt')({
