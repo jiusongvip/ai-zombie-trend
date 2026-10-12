@@ -119,6 +119,7 @@ export function FrameSlot({
   maxHeight,
   maxSizeMB = 10,
   disabled = false,
+  invalid = false,
   labels,
   className,
 }: {
@@ -138,6 +139,8 @@ export function FrameSlot({
   maxHeight?: string;
   maxSizeMB?: number;
   disabled?: boolean;
+  /** The submit gate flagged this empty slot — draws it in the error colour. */
+  invalid?: boolean;
   labels: FrameSlotLabels;
   className?: string;
 }) {
@@ -277,6 +280,7 @@ export function FrameSlot({
             : 'border-border bg-muted/40 hover:border-primary/40 hover:bg-muted/60 border-dashed',
           dragActive && 'border-primary bg-primary/5 border-solid',
           disabled && 'pointer-events-none opacity-50',
+          invalid && 'border-destructive bg-destructive/5',
           !disabled && 'cursor-pointer'
         )}
       >

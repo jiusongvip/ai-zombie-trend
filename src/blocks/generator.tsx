@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   keepPreviousData,
   useMutation,
@@ -119,6 +119,16 @@ function useElapsed(startedAt: number | null, active: boolean) {
 
 const EMPTY_FRAME: FrameSlotValue = { status: 'idle' };
 
+/** A gate failure, printed where the failure is rather than in a top-of-screen toast. */
+function FieldNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-destructive mt-2 flex items-start gap-1.5 text-xs leading-snug">
+      <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
 /**
  * Redesigned generator — a three-column workbench on large screens so the
  * whole flow (upload → story → submit) lives in the first screen: photo
@@ -141,6 +151,9 @@ export function Generator() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consented, setConsented] = useState(false);
   const [shareToWall, setShareToWall] = useState(false);
+  // Gate messages stay hidden until the first click, then track live — each one
+  // disappears the moment its own condition is met.
+  const [attempted, setAttempted] = useState(false);
 
   // Restore draft after sign-up
   useEffect(() => {
@@ -222,6 +235,9 @@ export function Generator() {
   const activeTask = activeTaskQuery.data?.task ?? null;
 
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const photosRef = useRef<HTMLDivElement | null>(null);
+  const creditsRef = useRef<HTMLDivElement | null>(null);
+  const consentRef = useRef<HTMLDivElement | null>(null);
   const revealStage = () => {
     const el = stageRef.current;
     if (!el) return;
@@ -281,32 +297,34 @@ export function Generator() {
     },
   });
 
-  /** Everything still missing, worst first — the CTA stays clickable and reports these. */
-  function blockingReasons(): string[] {
-    const reasons: string[] = [];
-    if (uploading) reasons.push(m['studio.form.upload_uploading']());
-    if (!hasBothPhotos) reasons.push(m['landing.generator.needs_photos']());
-    if (!consented) reasons.push(m['landing.generator.need_consent']());
-    if (!providerReady) reasons.push(m['studio.form.no_provider']());
-    if (!canAfford) reasons.push(m['landing.generator.insufficient']());
-    return reasons;
+  /** Each gate renders beside the control it refers to, never as a toast. */
+  const missing = {
+    photos: uploading || !hasBothPhotos,
+    consent: !consented,
+    service: !providerReady,
+    credits: !canAfford,
+  };
+  const blocked =
+    missing.photos || missing.consent || missing.service || missing.credits;
+
+  function revealMissing() {
+    const spots: Array<[boolean, HTMLElement | null]> = [
+      [missing.photos, photosRef.current],
+      [missing.consent, consentRef.current],
+      [missing.service || missing.credits, creditsRef.current],
+    ];
+    const spot = spots.find(([bad]) => bad)?.[1];
+    if (!spot) return;
+    const { top, bottom } = spot.getBoundingClientRect();
+    if (top < 0 || bottom > window.innerHeight) {
+      spot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   function onGenerate() {
-    const reasons = blockingReasons();
-    if (reasons.length) {
-      toast.error(m['landing.generator.blocked_title'](), {
-        description:
-          reasons.length > 1 ? (
-            <ul className="list-disc space-y-1 pl-4">
-              {reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          ) : (
-            reasons[0]
-          ),
-      });
+    if (blocked) {
+      setAttempted(true);
+      revealMissing();
       return;
     }
     if (!signedIn) {
@@ -317,8 +335,6 @@ export function Generator() {
     }
     generateMutation.mutate(draft());
   }
-
-  const blockedReason = blockingReasons()[0] ?? null;
 
   const loadSettings = (task: VideoTaskView) => {
     if (task.sourceImageUrl) {
@@ -361,6 +377,9 @@ export function Generator() {
 
   const statusLabel = (status: string) => tDynamic(`studio.status.${status}`);
 
+  /** Empty slots only turn red once a click has asked for them. */
+  const photosInvalid = attempted && !uploading;
+
   return (
     <section
       id="generator"
@@ -392,7 +411,7 @@ export function Generator() {
           {/* ── Left: Photo Upload Card ──────────────────────────────── */}
           <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
             {/* Photo Upload Section */}
-            <div>
+            <div ref={photosRef}>
               {/* Form-group label, not a content heading — keeps every h3 on the page inside an h2 section. */}
               <p className="text-foreground mb-3 text-sm font-semibold">
                 {m['landing.generator.step_photos']()}
@@ -406,6 +425,7 @@ export function Generator() {
                     aspectRatio={FRAME_ASPECT}
                     maxHeight="min(38vh, 22rem)"
                     maxSizeMB={MAX_FRAME_MB}
+                    invalid={photosInvalid && !firstFrame.url}
                     labels={frameLabels}
                   />
                   <p className="text-foreground mt-2 text-sm font-medium">
@@ -424,6 +444,7 @@ export function Generator() {
                     aspectRatio={FRAME_ASPECT}
                     maxHeight="min(38vh, 22rem)"
                     maxSizeMB={MAX_FRAME_MB}
+                    invalid={photosInvalid && !lastFrame.url}
                     labels={frameLabels}
                   />
                   <p className="text-foreground mt-2 text-sm font-medium">
@@ -434,6 +455,13 @@ export function Generator() {
                   </p>
                 </div>
               </div>
+
+              {attempted && uploading && (
+                <FieldNote>{m['studio.form.upload_uploading']()}</FieldNote>
+              )}
+              {attempted && !uploading && !hasBothPhotos && (
+                <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
+              )}
 
               {/* Photo-permission rule, next to the upload slots */}
               <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
@@ -577,36 +605,63 @@ export function Generator() {
             </div>
 
             {/* Credit info */}
-            <div className="border-border/60 mb-4 flex items-center justify-between border-t pt-3">
-              <div className="space-y-0.5">
-                <p className="text-muted-foreground text-xs">
-                  {m['studio.form.balance_label']()}
-                </p>
-                <p className="text-foreground text-sm font-medium tabular-nums">
-                  {signedIn
-                    ? balance !== undefined
-                      ? m['studio.form.balance_value']({ balance })
-                      : '…'
-                    : '—'}
-                </p>
+            <div
+              ref={creditsRef}
+              className="border-border/60 mb-4 border-t pt-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-muted-foreground text-xs">
+                    {m['studio.form.balance_label']()}
+                  </p>
+                  <p className="text-foreground text-sm font-medium tabular-nums">
+                    {signedIn
+                      ? balance !== undefined
+                        ? m['studio.form.balance_value']({ balance })
+                        : '…'
+                      : '—'}
+                  </p>
+                </div>
+                <div className="space-y-0.5 text-right">
+                  <p className="text-muted-foreground text-xs">
+                    {m['studio.form.after_label']()}
+                  </p>
+                  <p className="text-foreground text-sm font-medium tabular-nums">
+                    {signedIn && balance !== undefined
+                      ? m['studio.form.after_value']({
+                          left: Math.max(0, balance - cost),
+                        })
+                      : m['studio.result.cost']({ credits: cost })}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-0.5 text-right">
-                <p className="text-muted-foreground text-xs">
-                  {m['studio.form.after_label']()}
-                </p>
-                <p className="text-foreground text-sm font-medium tabular-nums">
-                  {signedIn && balance !== undefined
-                    ? m['studio.form.after_value']({
-                        left: Math.max(0, balance - cost),
-                      })
-                    : m['studio.result.cost']({ credits: cost })}
-                </p>
-              </div>
+
+              {attempted && !providerReady && (
+                <FieldNote>{m['studio.form.no_provider']()}</FieldNote>
+              )}
+              {attempted && !canAfford && (
+                <FieldNote>
+                  {m['landing.generator.insufficient']()}{' '}
+                  <Link
+                    href="/pricing"
+                    className="underline underline-offset-4"
+                  >
+                    {m['landing.generator.top_up']()}
+                  </Link>
+                </FieldNote>
+              )}
             </div>
 
             {/* Likeness consent — the server refuses the render without it */}
-            <div className="mt-4 space-y-2.5">
-              <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
+            <div ref={consentRef} className="mt-4 space-y-2.5">
+              <label
+                className={cn(
+                  'hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors',
+                  attempted && !consented
+                    ? 'text-destructive'
+                    : 'text-muted-foreground'
+                )}
+              >
                 <input
                   type="checkbox"
                   checked={consented}
@@ -617,12 +672,20 @@ export function Generator() {
                   {m['landing.generator.consent_body']()}{' '}
                   <Link
                     href="/terms-of-service"
-                    className="text-foreground underline"
+                    className={cn(
+                      'underline',
+                      attempted && !consented
+                        ? 'text-destructive'
+                        : 'text-foreground'
+                    )}
                   >
                     {m['landing.generator.consent_terms']()}
                   </Link>
                 </span>
               </label>
+              {attempted && !consented && (
+                <FieldNote>{m['landing.generator.need_consent']()}</FieldNote>
+              )}
               <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
                 <input
                   type="checkbox"
@@ -652,23 +715,6 @@ export function Generator() {
                     ? m['studio.generate.submit_cost']({ credits: cost })
                     : m['landing.generator.start']()}
             </Button>
-
-            {blockedReason && !generateMutation.isPending && (
-              <p className="text-muted-foreground mt-3 text-center text-sm">
-                {blockedReason}
-                {!canAfford && signedIn && (
-                  <>
-                    {' '}
-                    <Link
-                      href="/pricing"
-                      className="text-primary underline-offset-4 hover:underline"
-                    >
-                      {m['landing.generator.top_up']()}
-                    </Link>
-                  </>
-                )}
-              </p>
-            )}
 
             <p className="text-muted-foreground mt-3 text-center text-xs">
               {m['landing.hero.note']()}
