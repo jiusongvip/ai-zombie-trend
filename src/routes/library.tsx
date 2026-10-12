@@ -133,10 +133,8 @@ function TaskCard({
         <div className="flex gap-2 pt-1">
           {videoUrl && (
             <a
-              href={videoUrl}
+              href={`/api/video/download/${task.id}`}
               download
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(
                 buttonVariants({ variant: 'outline', size: 'sm' }),
                 'flex-1 gap-1.5'

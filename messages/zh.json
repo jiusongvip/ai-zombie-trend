@@ -918,6 +918,7 @@
   "studio.stage.regenerate": "再生成一次",
   "studio.stage.load_settings": "载入设置",
   "studio.stage.shot_settings": "本次参数",
+  "studio.stage.audio_on": "含音频",
   "studio.stage.settings_loaded": "设置已载入",
   "studio.stage.stopped_body": "本次没有产出视频。可以重试，或调整描述。",
   "studio.stage.failed_no_charge": "本次未扣除积分。",

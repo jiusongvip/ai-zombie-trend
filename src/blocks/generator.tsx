@@ -372,6 +372,7 @@ export function Generator() {
     regenerate: m['studio.stage.regenerate'](),
     loadSettings: m['studio.stage.load_settings'](),
     shotSettings: m['studio.stage.shot_settings'](),
+    audioOn: m['studio.stage.audio_on'](),
     costTemplate: m['studio.result.cost']({ credits: '{credits}' }),
   };
 

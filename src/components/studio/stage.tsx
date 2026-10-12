@@ -38,6 +38,8 @@ export interface StageLabels {
   loadSettings: string;
   /** Micro-label above the shot's own settings. */
   shotSettings: string;
+  /** Chip label for a shot rendered with a soundtrack. */
+  audioOn: string;
   costTemplate: string;
 }
 
@@ -114,6 +116,15 @@ export function Stage({
   vhBudget?: number;
 }) {
   const video = task?.videos?.[0];
+  const isSuccess = task?.status === 'success' && Boolean(video?.videoUrl);
+  const chips = task
+    ? [
+        task.duration ? `${task.duration}s` : null,
+        task.aspectRatio,
+        task.resolution,
+        task.generateAudio ? labels.audioOn : null,
+      ].filter((chip): chip is string => Boolean(chip))
+    : [];
   const failure =
     task?.status === 'failed'
       ? task.errorMessage || labels.failedFallback
@@ -128,7 +139,7 @@ export function Stage({
     >
       <div
         style={{ aspectRatio: frameAspect }}
-        className="border-border/70 bg-black/40 relative w-full overflow-hidden rounded-2xl border"
+        className="border-border/70 relative w-full overflow-hidden rounded-2xl border bg-black/40"
       >
         {failure ? (
           <div className="flex size-full flex-col items-center justify-center gap-2 px-6 text-center">
@@ -171,7 +182,7 @@ export function Stage({
           />
         ) : task.polling ? (
           <div className="flex size-full flex-col items-center justify-center gap-3 px-6 text-center">
-            <Loader2 className="size-5 animate-spin text-primary" />
+            <Loader2 className="text-primary size-5 animate-spin" />
             <div className="space-y-1">
               <p className="text-sm font-medium">
                 {task.status === 'pending'
@@ -188,7 +199,7 @@ export function Stage({
                 {labels.renderingBody}
               </p>
             </div>
-            <div className="bg-white/10 h-1 w-40 overflow-hidden rounded-full">
+            <div className="h-1 w-40 overflow-hidden rounded-full bg-white/10">
               <div className="bg-primary h-full w-1/3 animate-pulse rounded-full" />
             </div>
           </div>
@@ -205,67 +216,70 @@ export function Stage({
       </div>
 
       {task && (
-        <div className="flex flex-wrap items-center gap-2">
-          {task.status === 'success' && video?.videoUrl && (
-            <a
-              href={video.videoUrl}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: 'sm' }), 'gap-1.5')}
-            >
-              <Download className="size-3.5" />
-              {labels.download}
-            </a>
-          )}
-
-          {task.status !== 'pending' && task.status !== 'processing' && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={onRegenerate}
-              disabled={busy}
-            >
-              <RotateCcw className="size-3.5" />
-              {labels.regenerate}
-            </Button>
-          )}
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5"
-            onClick={onLoadSettings}
-            disabled={busy}
-          >
-            <SlidersHorizontal className="size-3.5" />
-            {labels.loadSettings}
-          </Button>
-
-          <span className="text-muted-foreground ml-auto flex items-center gap-1.5 text-[11px]">
-            <Clapperboard className="size-3" />
-            {task.modelLabel}
-          </span>
-        </div>
-      )}
-
-      {task && (
-        <div className="text-muted-foreground space-y-1.5 border-t pt-3 text-[11px]">
-          <p className="text-muted-foreground/80">{labels.shotSettings}</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1">
-            {task.duration && (
-              <span className="tabular-nums">{task.duration}s</span>
-            )}
-            {task.aspectRatio && <span>{task.aspectRatio}</span>}
-            {task.resolution && <span>{task.resolution}</span>}
-            {task.generateAudio && <span>audio</span>}
-            <span className="tabular-nums">
+        <div className="border-border/60 bg-card/70 space-y-2.5 rounded-2xl border p-3">
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Clapperboard className="size-3" />
+              {task.modelLabel}
+            </span>
+            <span className="bg-primary/12 text-primary ml-auto rounded-full px-2 py-0.5 font-medium tabular-nums">
               {labels.costTemplate.replace(
                 '{credits}',
                 String(task.costCredits)
               )}
             </span>
+          </div>
+
+          {isSuccess && (
+            <a
+              href={`/api/video/download/${task.id}`}
+              download
+              className={cn(buttonVariants(), 'w-full gap-2')}
+            >
+              <Download className="size-4" />
+              {labels.download}
+            </a>
+          )}
+
+          {!task.polling && (
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={onRegenerate}
+                disabled={busy}
+              >
+                <RotateCcw className="size-3.5" />
+                {labels.regenerate}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={onLoadSettings}
+                disabled={busy}
+              >
+                <SlidersHorizontal className="size-3.5" />
+                {labels.loadSettings}
+              </Button>
+            </div>
+          )}
+
+          <div className="space-y-1.5 border-t pt-2.5">
+            <p className="text-muted-foreground/80 text-[11px]">
+              {labels.shotSettings}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="border-border/70 bg-muted/30 text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] tabular-nums"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}

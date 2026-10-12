@@ -918,6 +918,7 @@
   "studio.stage.regenerate": "Render again",
   "studio.stage.load_settings": "Load settings",
   "studio.stage.shot_settings": "Shot settings",
+  "studio.stage.audio_on": "Audio",
   "studio.stage.settings_loaded": "Settings loaded",
   "studio.stage.stopped_body": "This run ended without a clip. Try again, or adjust the brief.",
   "studio.stage.failed_no_charge": "Your balance was not charged.",
