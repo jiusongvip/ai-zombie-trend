@@ -4,13 +4,10 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
-import {
-  articleSchema,
-  breadcrumbSchema,
-  jsonLd,
-} from '@/lib/schema';
+import { articleSchema, breadcrumbSchema, jsonLd } from '@/lib/schema';
+import { localeLinks, localeUrl, twitterMeta } from '@/lib/seo-links';
 import { m } from '@/paraglide/messages.js';
-import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { getLocale, locales } from '@/paraglide/runtime.js';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { MarkdownContent } from '@/components/markdown-content';
@@ -30,32 +27,32 @@ export const Route = createFileRoute('/blog/$slug')({
   head: ({ loaderData }) => {
     if (!loaderData) return {};
     const { locale, post } = loaderData;
-    const canonical = localizeUrl(`${envConfigs.app_url}/blog/${post.slug}`, {
-      locale: locale as any,
-    }).href;
+    const image = post.image
+      ? `${envConfigs.app_url}${post.image}`
+      : `${envConfigs.app_url}/og-image.webp`;
+    const path = `/blog/${post.slug}`;
     return {
       meta: [
         { title: `${post.title} | ${envConfigs.app_name}` },
         { name: 'description', content: post.description },
-        { property: 'og:url', content: canonical },
+        { property: 'og:url', content: localeUrl(path, locale) },
         { property: 'og:type', content: 'article' },
         { property: 'og:title', content: post.title },
         { property: 'og:description', content: post.description },
-        {
-          property: 'og:image',
-          content: post.image
-            ? `${envConfigs.app_url}${post.image}`
-            : `${envConfigs.app_url}/og-image.webp`,
-        },
+        { property: 'og:image', content: image },
         { property: 'article:published_time', content: post.createdAt },
-        { name: 'twitter:card', content: 'summary_large_image' },
+        ...twitterMeta({
+          title: post.title,
+          description: post.description,
+          image,
+        }),
       ],
-      links: [{ rel: 'canonical', href: canonical }],
+      links: localeLinks(path, locale),
       scripts: jsonLd(
         articleSchema({
           title: post.title,
           description: post.description,
-          path: `/blog/${post.slug}`,
+          path,
           locale: locale as (typeof locales)[number],
           datePublished: post.createdAt,
           authorName: post.authorName,

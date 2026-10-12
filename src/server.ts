@@ -1,6 +1,7 @@
 import handler from '@tanstack/react-start/server-entry';
 
 import { getCookieFromHeader } from './lib/cookie';
+import { locales } from './paraglide/runtime.js';
 import { paraglideMiddleware } from './paraglide/server.js';
 
 // On Cloudflare Workers, stash the binding env (D1, ASSETS, …) on globalThis
@@ -29,8 +30,19 @@ function ensureCloudflareEnv(): Promise<void> {
 export default {
   async fetch(req: Request): Promise<Response> {
     await ensureCloudflareEnv();
+    // Guard against doubled locale prefixes (/zh/zh…) which Paraglide's URL
+    // strategy happily strips into the real page, creating indexable URL
+    // variants outside the sitemap. 301 to the single-prefix URL.
+    const url = new URL(req.url);
+    const doubled = new RegExp(`^/(${locales.join('|')})/\\1(?=/|$)`).exec(
+      url.pathname
+    );
+    if (doubled) {
+      url.pathname = url.pathname.slice(doubled[1].length + 1);
+      return Response.redirect(url.toString(), 301);
+    }
     const response = await paraglideMiddleware(req, () => handler.fetch(req));
-    const utmSource = new URL(req.url).searchParams.get('utm_source');
+    const utmSource = url.searchParams.get('utm_source');
     const existing = getCookieFromHeader(
       req.headers.get('cookie'),
       'utm_source'

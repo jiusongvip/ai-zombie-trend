@@ -83,3 +83,4 @@ package-lock.json
 # private build/positioning notes — names third-party sites and competitor
 # pricing; keep it on disk, out of a repository anyone can read.
 /BUILD-FRAMEWORK.md
+.seo-check/

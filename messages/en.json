@@ -769,6 +769,8 @@
   "admin.tickets.created_col": "Created At",
   "blog.title": "Blog",
   "blog.description": "Product updates, guides, and engineering notes from the team.",
+  "blog.seo.title": "AI Zombie Trend Blog — Guides, Explainers & News",
+  "blog.seo.description": "Guides and explainers on the AI zombie trend: how to turn two photos into a zombie love video, style notes, photo privacy, and product updates.",
   "blog.no_posts": "No posts yet — check back soon.",
   "blog.back_to_blog": "Back to blog",
   "blog.read_more": "Read more",

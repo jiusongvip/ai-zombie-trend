@@ -2,13 +2,10 @@ import type { ComponentType } from 'react';
 import { notFound, useLoaderData } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
-import {
-  articleSchema,
-  breadcrumbSchema,
-  jsonLd,
-} from '@/lib/schema';
+import { articleSchema, breadcrumbSchema, jsonLd } from '@/lib/schema';
+import { localeLinks, localeUrl, twitterMeta } from '@/lib/seo-links';
 import { m } from '@/paraglide/messages.js';
-import { baseLocale, getLocale, localizeUrl } from '@/paraglide/runtime.js';
+import { baseLocale, getLocale } from '@/paraglide/runtime.js';
 
 type PageMeta = {
   title: string;
@@ -64,9 +61,7 @@ export function staticPageRouteOptions(
       if (!loaderData) return {};
       const { meta, locale, slug: pageSlug } = loaderData;
       const loc = locale as ReturnType<typeof getLocale>;
-      const canonical = localizeUrl(`${envConfigs.app_url}/${pageSlug}`, {
-        locale: loc,
-      }).href;
+      const ogImage = `${envConfigs.app_url}/og-image.webp`;
       const nodes: unknown[] = [
         breadcrumbSchema(
           [
@@ -91,19 +86,23 @@ export function staticPageRouteOptions(
       }
       return {
         meta: [
-          { title: meta.title },
+          { title: `${meta.title} | ${envConfigs.app_name}` },
           { name: 'description', content: meta.description },
-          { property: 'og:url', content: canonical },
-          { property: 'og:type', content: options.article ? 'article' : 'website' },
+          { property: 'og:url', content: localeUrl(`/${pageSlug}`, loc) },
+          {
+            property: 'og:type',
+            content: options.article ? 'article' : 'website',
+          },
           { property: 'og:title', content: meta.title },
           { property: 'og:description', content: meta.description },
-          {
-            property: 'og:image',
-            content: `${envConfigs.app_url}/og-image.webp`,
-          },
-          { name: 'twitter:card', content: 'summary_large_image' },
+          { property: 'og:image', content: ogImage },
+          ...twitterMeta({
+            title: meta.title,
+            description: meta.description,
+            image: ogImage,
+          }),
         ],
-        links: [{ rel: 'canonical', href: canonical }],
+        links: localeLinks(`/${pageSlug}`, loc),
         scripts: jsonLd(...nodes),
       };
     },

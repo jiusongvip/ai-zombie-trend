@@ -2,17 +2,14 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
 import { showcaseItems } from '@/config/showcase';
-import {
-  breadcrumbSchema,
-  itemListSchema,
-  jsonLd,
-} from '@/lib/schema';
+import { breadcrumbSchema, itemListSchema, jsonLd } from '@/lib/schema';
+import { twitterMeta } from '@/lib/seo-links';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { CtaBand } from '@/blocks/cta-band';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Showcase } from '@/blocks/showcase';
-import { CtaBand } from '@/blocks/cta-band';
 
 type Locale = (typeof locales)[number];
 
@@ -73,7 +70,11 @@ export const Route = createFileRoute('/examples')({
           property: 'og:image',
           content: `${envConfigs.app_url}/og-image.webp`,
         },
-        { name: 'twitter:card', content: 'summary_large_image' },
+        ...twitterMeta({
+          title,
+          description,
+          image: `${envConfigs.app_url}/og-image.webp`,
+        }),
       ],
       links: [
         { rel: 'canonical', href: urlFor(locale) },

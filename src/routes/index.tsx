@@ -1,7 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
-import { pricingCatalog, formatPrice, lowestPricePerFilmInCents } from '@/config/pricing';
+import {
+  formatPrice,
+  lowestPricePerFilmInCents,
+  pricingCatalog,
+} from '@/config/pricing';
 import { showcaseItems } from '@/config/showcase';
 import {
   faqPageSchema,
@@ -9,19 +13,19 @@ import {
   jsonLd,
   webApplicationSchema,
 } from '@/lib/schema';
-import { faqEntries } from '@/blocks/faq';
+import { twitterMeta } from '@/lib/seo-links';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { CtaBand } from '@/blocks/cta-band';
-import { Faq } from '@/blocks/faq';
+import { Faq, faqEntries } from '@/blocks/faq';
 import { Footer } from '@/blocks/footer';
 import { Generator } from '@/blocks/generator';
 import { Header } from '@/blocks/header';
 import { Hero } from '@/blocks/hero';
 import { HowItWorks } from '@/blocks/how-it-works';
 import { Pricing } from '@/blocks/pricing';
-import { Showcase } from '@/blocks/showcase';
 import { ShotList } from '@/blocks/shot-list';
+import { Showcase } from '@/blocks/showcase';
 import { SupportWidget } from '@/blocks/support-widget';
 
 /**
@@ -76,9 +80,15 @@ export const Route = createFileRoute('/')({
         { property: 'og:type', content: 'website' },
         { property: 'og:title', content: loaderData?.title },
         { property: 'og:description', content: description },
-        { property: 'og:image', content: `${envConfigs.app_url}/og-image.webp` },
-        { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:image', content: `${envConfigs.app_url}/og-image.webp` },
+        {
+          property: 'og:image',
+          content: `${envConfigs.app_url}/og-image.webp`,
+        },
+        ...twitterMeta({
+          title: loaderData?.title ?? envConfigs.app_name,
+          description,
+          image: `${envConfigs.app_url}/og-image.webp`,
+        }),
       ],
       links: [
         { rel: 'canonical', href: urlFor(locale) },

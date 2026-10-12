@@ -457,7 +457,9 @@ export function Generator() {
                     >
                       <img
                         src={item.cover}
-                        alt=""
+                        alt={tDynamic(
+                          `landing.usecases.${tag}.title` as 'landing.usecases.couple.title'
+                        )}
                         loading="lazy"
                         className="aspect-[4/3] size-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
                       />

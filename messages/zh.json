@@ -769,6 +769,8 @@
   "admin.tickets.created_col": "创建时间",
   "blog.title": "博客",
   "blog.description": "来自团队的产品动态、使用指南与工程笔记。",
+  "blog.seo.title": "AI 丧尸趋势博客——教程、解读与产品动态",
+  "blog.seo.description": "AI 丧尸趋势博客：两张照片生成丧尸爱情短片的教程、四种剧情玩法解读、照片隐私说明与团队产品动态。",
   "blog.no_posts": "暂无文章,敬请期待。",
   "blog.back_to_blog": "返回博客",
   "blog.read_more": "阅读全文",

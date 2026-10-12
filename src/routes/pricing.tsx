@@ -8,12 +8,13 @@ import {
   priceSpecificationSchema,
   seoUrl,
 } from '@/lib/schema';
+import { twitterMeta } from '@/lib/seo-links';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { CtaBand } from '@/blocks/cta-band';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Pricing } from '@/blocks/pricing';
-import { CtaBand } from '@/blocks/cta-band';
 
 export const Route = createFileRoute('/pricing')({
   loader: () => {
@@ -40,8 +41,15 @@ export const Route = createFileRoute('/pricing')({
         { property: 'og:type', content: 'website' },
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
-        { property: 'og:image', content: `${envConfigs.app_url}/og-image.webp` },
-        { name: 'twitter:card', content: 'summary_large_image' },
+        {
+          property: 'og:image',
+          content: `${envConfigs.app_url}/og-image.webp`,
+        },
+        ...twitterMeta({
+          title,
+          description,
+          image: `${envConfigs.app_url}/og-image.webp`,
+        }),
       ],
       links: [
         { rel: 'canonical', href: urlFor(locale) },

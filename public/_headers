@@ -1,0 +1,11 @@
+# Cloudflare Workers Static Assets cache overrides.
+# Hashed /assets/* files already get immutable automatically; these
+# fingerprint-free paths defaulted to max-age=0 must-revalidate.
+/images/*
+  Cache-Control: public, max-age=604800
+
+/videos/*
+  Cache-Control: public, max-age=604800
+
+/og-image.webp
+  Cache-Control: public, max-age=86400

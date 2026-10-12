@@ -29,9 +29,15 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8
+      '@fontsource-variable/sora':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/libre-baskerville':
         specifier: ^5.2.10
         version: 5.2.10
+      '@fontsource/oswald':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
@@ -1186,8 +1192,14 @@ packages:
   '@fontsource-variable/inter@5.2.8':
     resolution: {integrity: sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ==}
 
+  '@fontsource-variable/sora@5.3.0':
+    resolution: {integrity: sha512-h8kHta4Z8SkfUGeI82TUy1n3rbrKpBRGwuk4t4qCwto5oEHxlbOFD2yGP+Df5fbmTXwKGn+o667vYp0E4K8Whw==}
+
   '@fontsource/libre-baskerville@5.2.10':
     resolution: {integrity: sha512-Y/bGj4cOdWhAxU4+sBPen3MB5Og3t/WvezVL+05CJ7cvhDQUKpQFUuw/hm1IQKRc9u0lWs8VP2MKDOK2uQtloQ==}
+
+  '@fontsource/oswald@5.3.0':
+    resolution: {integrity: sha512-16r2aHActe0pH+9FLdk/74/YxXM7HpGak05kAzx3RvSToiJwGvyhv6GvckPz+YuZmvL1nxWbEop2jAXRcXYPRg==}
 
   '@hono/node-server@1.19.13':
     resolution: {integrity: sha512-TsQLe4i2gvoTtrHje625ngThGBySOgSK3Xo2XRYOdqGN1teR8+I7vchQC46uLJi8OF62YTYA3AhSpumtkhsaKQ==}
@@ -6481,7 +6493,11 @@ snapshots:
 
   '@fontsource-variable/inter@5.2.8': {}
 
+  '@fontsource-variable/sora@5.3.0': {}
+
   '@fontsource/libre-baskerville@5.2.10': {}
+
+  '@fontsource/oswald@5.3.0': {}
 
   '@hono/node-server@1.19.13(hono@4.12.12)':
     dependencies:

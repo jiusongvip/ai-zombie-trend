@@ -15,7 +15,7 @@ import { ThemeProvider } from 'next-themes';
 import { envConfigs } from '@/config';
 import { getQueryClient } from '@/lib/query-client';
 import { jsonLd, organizationSchema, webSiteSchema } from '@/lib/schema';
-import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { getLocale } from '@/paraglide/runtime.js';
 import { Ads } from '@/components/analytics/ads';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Plausible } from '@/components/analytics/plausible';
@@ -26,6 +26,10 @@ import { GoogleOneTap } from '@/components/google-one-tap';
 import { SandboxPreviewBridge } from '@/components/sandbox-preview-bridge';
 import { Toaster } from '@/components/ui/sonner';
 
+import '@fontsource-variable/sora';
+import '@fontsource/oswald/500.css';
+import '@fontsource/oswald/600.css';
+import '@fontsource/oswald/700.css';
 import '@/styles/globals.css';
 
 // Analytics IDs live in the DB config (1h-cached service). Fetched via a
@@ -59,15 +63,6 @@ const getAnalyticsConfigs = createServerFn().handler(async () => {
 export const Route = createRootRoute({
   loader: () => getAnalyticsConfigs(),
   head: () => {
-    // head() runs on the SSR server AND again on the client during hydration.
-    // On the client, app_url falls back to the localhost dev default when
-    // VITE_APP_URL wasn't inlined into the client bundle at build — which would
-    // emit a second, localhost set of hreflang links. Prefer the live origin
-    // on the client so it always matches; the server uses the configured URL.
-    const appUrl =
-      (typeof window !== 'undefined' && window.location?.origin) ||
-      envConfigs.app_url ||
-      '';
     return {
       meta: [
         { charSet: 'utf-8' },
@@ -78,21 +73,6 @@ export const Route = createRootRoute({
       links: [
         { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
         { rel: 'apple-touch-icon', href: '/favicon.svg' },
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        {
-          rel: 'preconnect',
-          href: 'https://fonts.gstatic.com',
-          crossOrigin: 'anonymous',
-        },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Sora:wght@400;600;700&display=swap',
-        },
-        ...locales.map((loc) => ({
-          rel: 'alternate',
-          hrefLang: loc,
-          href: localizeUrl(`${appUrl}/`, { locale: loc }).href,
-        })),
       ],
       scripts: jsonLd(organizationSchema(), webSiteSchema()),
     };
