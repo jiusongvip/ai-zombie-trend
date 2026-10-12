@@ -7,7 +7,11 @@ import { authClient, signIn, signUp, useSession } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { apiPost } from '@/lib/api-client';
-import { resolveAfterAuthUrl, safeInternalPath } from '@/lib/redirect';
+import {
+  parkAnchor,
+  resolveAfterAuthUrl,
+  safeInternalPath,
+} from '@/lib/redirect';
 import { m } from '@/paraglide/messages.js';
 import { localizeHref } from '@/paraglide/runtime.js';
 import { usePublicConfig } from '@/hooks/use-public-config';
@@ -163,13 +167,27 @@ function SignUpPage() {
   });
 
   async function handleSocial(provider: 'google' | 'github') {
-    await signIn.social({ provider, callbackURL: afterLoginUrl });
+    setError('');
+    try {
+      const result: any = await signIn.social({
+        provider,
+        callbackURL: parkAnchor(afterLoginUrl),
+      });
+      if (result?.error) {
+        setError(result.error.message || 'Sign up failed');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Sign up failed');
+    }
   }
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center text-lg font-semibold tracking-tight">
+        <Link
+          href="/"
+          className="self-center text-lg font-semibold tracking-tight"
+        >
           {configs.app_name || envConfigs.app_name}
         </Link>
         <Card>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 
@@ -11,7 +11,7 @@ import {
   currentLocationPath,
   useAuthDialog,
 } from '@/lib/auth-dialog';
-import { resolveAfterAuthUrl } from '@/lib/redirect';
+import { consumeAnchor, parkAnchor, resolveAfterAuthUrl } from '@/lib/redirect';
 import { m } from '@/paraglide/messages.js';
 import { localizeHref } from '@/paraglide/runtime.js';
 import { usePublicConfig } from '@/hooks/use-public-config';
@@ -69,6 +69,12 @@ export function AuthDialog() {
     fallback: currentLocationPath('/'),
   });
 
+  // The landing document after an OAuth round trip has no anchor left — the
+  // provider call stripped it — so put it back once, on arrival.
+  useEffect(() => {
+    consumeAnchor();
+  }, []);
+
   const form = useForm({
     defaultValues: { email: '', password: '' },
     validators: { onSubmit: schema },
@@ -125,7 +131,20 @@ export function AuthDialog() {
   });
 
   async function handleSocial(provider: 'google' | 'github') {
-    await signIn.social({ provider, callbackURL: afterLoginUrl });
+    setError('');
+    try {
+      const result: any = await signIn.social({
+        provider,
+        callbackURL: parkAnchor(afterLoginUrl),
+      });
+      // A rejected provider call used to leave the button looking dead — the
+      // only trace was a 403 in the network tab.
+      if (result?.error) {
+        setError(result.error.message || 'Sign in failed');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Sign in failed');
+    }
   }
 
   if (session?.user) return null;

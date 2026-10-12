@@ -113,3 +113,34 @@ export function currentPathWithQuery(fallback = '/'): string {
   const path = deLocalizeHref(window.location.pathname);
   return `${path}${window.location.search}`;
 }
+
+const ANCHOR_KEY = 'auth-anchor';
+
+/**
+ * better-auth answers `403 INVALID_CALLBACK_URL` to a relative `callbackURL`
+ * carrying a fragment, so an anchor cannot ride an OAuth round trip. Split it
+ * off here and park it for {@link consumeAnchor} to re-apply on landing; the
+ * returned path is what a provider call may be given.
+ */
+export function parkAnchor(url: string): string {
+  const hashAt = url.indexOf('#');
+  if (hashAt === -1) return url;
+  try {
+    sessionStorage.setItem(ANCHOR_KEY, url.slice(hashAt));
+  } catch {
+    /* ignore */
+  }
+  return url.slice(0, hashAt) || '/';
+}
+
+/** Scrolls to the anchor left by {@link parkAnchor}, once. */
+export function consumeAnchor() {
+  try {
+    const hash = sessionStorage.getItem(ANCHOR_KEY);
+    if (!hash) return;
+    sessionStorage.removeItem(ANCHOR_KEY);
+    window.location.hash = hash;
+  } catch {
+    /* ignore */
+  }
+}
