@@ -31,7 +31,7 @@ export function ShotList() {
               >
                 <span
                   aria-hidden="true"
-                  className="font-display text-primary/35 group-hover:text-primary/70 text-4xl font-bold transition-colors"
+                  className="font-display text-primary/85 group-hover:text-primary text-4xl font-bold transition-colors"
                 >
                   {String(n).padStart(2, '0')}
                 </span>
