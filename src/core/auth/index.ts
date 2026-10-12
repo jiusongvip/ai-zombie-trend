@@ -80,6 +80,10 @@ function getSocialProviders(configs: Record<string, string>) {
     providers.google = {
       clientId: configs.google_client_id,
       clientSecret: configs.google_client_secret,
+      // Without this Google skips the chooser whenever its own browser session
+      // is still alive and consents the last-used account straight back to us,
+      // which locks a shared device into one account.
+      prompt: 'select_account',
     };
   }
 
