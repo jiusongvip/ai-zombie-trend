@@ -31,9 +31,11 @@ import '@fontsource/oswald/500.css';
 import '@fontsource/oswald/600.css';
 import '@fontsource/oswald/700.css';
 
+import soraVariableWoff2 from '@fontsource-variable/sora/files/sora-latin-wght-normal.woff2';
 // The hero H1 is the mobile LCP element, and its timestamp is the font-swap
 // repaint. Preloading that exact weight starts the fetch in parallel with the
-// stylesheet instead of after it.
+// stylesheet instead of after it. Same for Sora — the body face; when the LCP
+// lands on the hero sub-paragraph it waits on this swap instead.
 import oswald700Woff2 from '@fontsource/oswald/files/oswald-latin-700-normal.woff2';
 
 import '@/styles/globals.css';
@@ -86,6 +88,14 @@ export const Route = createRootRoute({
         {
           rel: 'preload',
           href: oswald700Woff2,
+          as: 'font',
+          type: 'font/woff2',
+          crossorigin: 'anonymous',
+        },
+        // Sora variable latin — the body face the hero sub-paragraph renders in.
+        {
+          rel: 'preload',
+          href: soraVariableWoff2,
           as: 'font',
           type: 'font/woff2',
           crossorigin: 'anonymous',
