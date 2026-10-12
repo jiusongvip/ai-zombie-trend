@@ -1,7 +1,7 @@
 export const meta = {
-  title: 'About',
+  title: 'About AI Zombie Trend',
   description:
-    'Who builds AI Zombie Trend, how the two-photo pipeline works, and the principles behind photo consent and synthetic-media labeling.',
+    'Who builds AI Zombie Trend, how the two-photo pipeline works end to end, and the consent, moderation and deletion rules the product is built against.',
   updated_at: '2026-10-12',
 };
 
@@ -10,38 +10,104 @@ export const meta = {
 AI Zombie Trend is an online generator for the viral "zombie love story" short —
 a 15-second, scored, four-shot film built from two of your photos. Upload one
 photo of the survivor and one of the turned, pick a story mode (couple, pet,
-friends or family), and the workbench writes the prompts, orders the shots and
-adds the soundtrack. The result is a watermark-free MP4 sized for TikTok,
-Reels and Shorts.
+best friend or family), and the workbench writes the prompts, orders the shots
+and adds the sound design. The result is a watermark-free MP4 sized for TikTok,
+Reels and Shorts, or in 16:9 for YouTube and a wider frame.
 
-## How the video is made
+There is no prompt box here on purpose. The format lives or dies on its
+storyboard, so the storyboard is fixed on our side and the only creative
+decision left to you is which two photographs.
 
-Frames are rendered by third-party text-to-video models integrated through our
-platform. We handle prompt construction, shot continuity, grading and audio so
-you never touch a prompt box. Rendering costs credits — one-time packs with no
-subscription — and a failed render returns your credits automatically.
+## The pipeline, end to end
 
-## Our principles
+### Two photographs in
 
-- **Consent first.** Use only photos of yourself, your own pet, or people who
-  have agreed to appear. The generator asks you to confirm this before every
-  render, and we block content involving minors or public figures.
-- **Nothing is public by default.** Finished films stay in your library unless
-  you tick the opt-in that shares one to the public example wall.
-- **Synthetic media is labeled.** Every shared clip carries an "AI generated"
-  badge on the page — viewers should never have to guess.
-- **Your photos are input, not inventory.** They are sent to the video model
-  to make your film and are not sold or repurposed. Details live in the
-  [Privacy Policy](/privacy-policy).
+Photo one becomes Character A, the survivor; photo two becomes Character B, the
+one who has turned. Both go to the model as character references rather than as
+a single starting frame, which is what lets two identities stay recognisable
+through four shots and two completely different lighting setups. Each upload is
+capped at 10 MB and re-encoded in your browser before it leaves your device.
+
+### One story template
+
+`couple`, `pet`, `friend` and `family` share one template body — the cabin at
+0–4 seconds, the undead close-up at 4–6, the lowered gun and open arms at 6–10,
+the match cut into the wheat field at 10–15. A mode changes the opening
+relationship line and the pronouns, and the pet variant rewrites how Character B
+crosses the room: a sprint and a leap instead of a shamble. Templates are
+composed server-side and never shipped to the browser, so they can be retuned
+without a release.
+
+### The render
+
+Films are rendered by third-party text-to-video models we integrate — the
+current product runs on ByteDance Seedance 2 VIP, at a 480p endpoint for 20
+credits and a 720p endpoint for 40. Resolution is the only thing that costs
+more: same fifteen seconds, same four shots, same grade, same sound design. Most
+jobs finish in 10–15 minutes and keep running when you close the tab.
+
+### Delivery
+
+The finished film lands in your library with a private link and downloads as a
+full-quality MP4. Nothing is charged for a job that does not produce a film —
+credits are reserved at the start and returned automatically when the render
+fails upstream, is blocked in review, or expires.
+
+## Consent, moderation and what gets deleted
+
+This is the part of the product we treat as load-bearing rather than
+housekeeping, so it is worth stating precisely.
+
+- **Consent is a declaration you make, and we keep it.** Before the first frame
+  uploads, you confirm that the faces are your own, your own pet, or adults who
+  agreed to appear. Not children, and not celebrities or public figures. The
+  declaration is stored with the job, which is what makes a report actionable
+  instead of a matter of guessing.
+- **Three checks, in that order.** The story text, then each uploaded photograph,
+  then the finished clip. Cheap checks come first, so a submission that cannot
+  proceed is stopped before any credits are committed.
+- **Photos are input, not inventory.** The images you stage are removed from
+  storage within 24 hours whether the render succeeded, failed, or never ran,
+  and they are never used to train models. EXIF such as GPS coordinates is
+  stripped in your browser, so location data never reaches us at all.
+- **Nothing is public by default.** Finished films stay in your private library.
+  The public example wall only ever shows a clip whose owner ticked the share
+  opt-in at submit time, and every one of those carries an "AI generated" badge
+  — viewers should not have to guess what they are looking at.
+- **Takedown on request.** If a clip used your likeness without permission, or
+  you shared one and changed your mind, email **jiusongvip@gmail.com** and it
+  comes down.
+
+The full mechanics of each of these live in the [Privacy
+Policy](/privacy-policy), the [Terms of Service](/terms-of-service) and the
+[Refund Policy](/refund-policy).
+
+## What it costs, and what we refund
+
+Credit packs are one-time purchases with no subscription and no expiry: $5.99
+for a first film, $39.90 for ten, $126.00 for sixty, which is $2.10 a film.
+Credits spent on a render that never delivered a film come back automatically.
+Cash refunds cover a pack whose credits are entirely unspent, claimed within 7
+days, and any purchase that never reached your balance. [Pricing](/pricing) has
+the per-film math for both tiers.
 
 ## Who is behind it
 
 AI Zombie Trend is an independent developer project, not a media studio. The
-same person builds the tool, writes the guides in the blog, and answers the
-support mail — and yes, renders their own zombie films with it.
+same person builds the generator, tunes the story templates, writes the guides
+in the [blog](/blog), answers the support mail — and renders their own zombie
+films with it. There is no marketing team to route you to and no office address
+to list; the honest description of the company is one developer and one inbox.
+
+The site is a single application: TanStack Start on React, Drizzle over a
+Cloudflare D1 database, better-auth for accounts, and the render workhorse
+behind a set of API routes. It is deployed as one unit, which is why provider
+configuration and template changes reach you without a queue.
 
 ## Talk to us
 
-Questions, takedowns of accidentally shared examples, or partnership ideas:
-**jiusongvip@gmail.com**, or open a ticket from your account under
-[Settings → Tickets](/sign-in?callbackUrl=%2Fsettings%2Ftickets).
+Questions, takedowns of accidentally shared examples, billing problems, or
+partnership ideas: **jiusongvip@gmail.com**, or open a ticket from your account
+under [Settings → Tickets](/sign-in?callbackUrl=%2Fsettings%2Ftickets). A
+support reply and a takedown request land in the same inbox on purpose — there
+is nobody else to forward it to.

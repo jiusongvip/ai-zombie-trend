@@ -1274,5 +1274,15 @@
   "landing.exg.faq.q3": "Why do some cards show a model name?",
   "landing.exg.faq.a3": "The wall spans films made on more than one endpoint, including the 480p and 720p tiers and the earlier single-shot examples. The label tells you which one produced that picture; the story template behind it is the same.",
   "landing.exg.faq.q4": "Can I use an example as my own starting point?",
-  "landing.exg.faq.a4": "Yes — every card links into the workbench with its story mode already selected, so you are starting from the same brief with your own two photographs in the slots."
+  "landing.exg.faq.a4": "Yes — every card links into the workbench with its story mode already selected, so you are starting from the same brief with your own two photographs in the slots.",
+  "blog.h1": "Guides to the AI zombie trend",
+  "blog.intro": "Everything we know about the format, written down: what the trend is and where it came from, how a two-photo zombie film is actually made, and what happens to a face once someone uploads it. These are the pages we point people to before they spend anything — a fifteen-second film is easy to make, but it is worth knowing what you are looking at first.",
+  "blog.start.title": "Read them in this order",
+  "blog.start.intro": "Three guides, one line each about why they come in this sequence.",
+  "blog.written.title": "How these guides are written",
+  "blog.written.body": "By the same person who maintains the generator, from the product as it is actually built: shot timings come from the story template, prices from the billing catalog, upload limits from the frame slots, deletion windows from the privacy policy. When any of those numbers change, the affected guide is updated and the date on it moves with the change. Where a guide borrows a definition rather than writing one, the source is named and linked instead of paraphrased.",
+  "blog.also.title": "Everything else on this site",
+  "blog.step.1": "Start here if the format is new to you — the four shots, and why the reversal works.",
+  "blog.step.2": "Start here when you know what it is and want one made from your own photographs.",
+  "blog.step.3": "Start here before you upload anyone’s face — consent, moderation and retention."
 }
