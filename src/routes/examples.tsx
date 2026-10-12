@@ -2,11 +2,17 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
 import { showcaseItems } from '@/config/showcase';
-import { breadcrumbSchema, itemListSchema, jsonLd } from '@/lib/schema';
+import {
+  breadcrumbSchema,
+  faqPageSchema,
+  itemListSchema,
+  jsonLd,
+} from '@/lib/schema';
 import { twitterMeta } from '@/lib/seo-links';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { CtaBand } from '@/blocks/cta-band';
+import { examplesFaqEntries, ExamplesGuide } from '@/blocks/examples-guide';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Showcase } from '@/blocks/showcase';
@@ -35,6 +41,7 @@ function ExamplesPage() {
           </p>
         </div>
         <Showcase />
+        <ExamplesGuide />
         <CtaBand />
       </main>
       <Footer />
@@ -110,7 +117,9 @@ export const Route = createFileRoute('/examples')({
             { name: title },
           ],
           locale as Locale
-        )
+        ),
+        // Generated from the same accordion the page renders below the wall.
+        faqPageSchema(examplesFaqEntries(locale as Locale), urlFor(locale))
       ),
     };
   },

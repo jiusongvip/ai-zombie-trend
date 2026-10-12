@@ -4,6 +4,7 @@ import { envConfigs } from '@/config';
 import { CREDITS_PER_FILM, pricingCatalog } from '@/config/pricing';
 import {
   breadcrumbSchema,
+  faqPageSchema,
   jsonLd,
   priceSpecificationSchema,
   seoUrl,
@@ -15,6 +16,7 @@ import { CtaBand } from '@/blocks/cta-band';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Pricing } from '@/blocks/pricing';
+import { pricingFaqEntries, PricingGuide } from '@/blocks/pricing-guide';
 
 export const Route = createFileRoute('/pricing')({
   loader: () => {
@@ -74,7 +76,10 @@ export const Route = createFileRoute('/pricing')({
           credits: cheapest.credits,
           priceInCents: cheapest.priceInCents,
           films: Math.floor(cheapest.credits / CREDITS_PER_FILM),
-        })
+        }),
+        // The pricing FAQ is rendered by PricingGuide from these same entries,
+        // so visible text and structured data cannot diverge.
+        faqPageSchema(pricingFaqEntries(locale), urlFor(locale))
       ),
     };
   },
@@ -87,6 +92,7 @@ function PricingPage() {
       <Header />
       <main className="flex-1">
         <Pricing headingAs="h1" />
+        <PricingGuide />
         <CtaBand />
       </main>
       <Footer />
