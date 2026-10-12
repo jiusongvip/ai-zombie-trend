@@ -100,14 +100,13 @@ async function uploadFrame(file: File): Promise<string> {
 }
 
 /**
- * A single source frame, drawn as a film cell at the clip's own aspect ratio.
+ * A single source frame, drawn as a film cell at the shape the caller asks for.
  *
  * The generic `ImageUploader` renders a square tile with its own chrome. A
- * source frame is the first thing the model actually sees, so it gets a slot
- * shaped like the output: the empty state reads as "this is where the frame
- * goes" instead of "upload a file", and you can tell 9:16 from 16:9 before you
- * spend credits. That is also how every serious tool frames it — Flow calls
- * them frames and ingredients, Pika calls the pair Pikaframes.
+ * source frame is the first thing the model actually sees, so it gets a film
+ * cell instead: the empty state reads as "this is where the frame goes" rather
+ * than "upload a file". The generator pins the cell to portrait so toggling the
+ * output ratio never reflows the upload column — the stage shows that shape.
  *
  * Props-only, no i18n reads.
  */

@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/button';
 const STYLES: ShowcaseTag[] = ['couple', 'pet', 'friend', 'family'];
 const MAX_FRAME_MB = 10;
 const FALLBACK_RATIOS = ['9:16', '16:9'];
+/** Source photos are phone-shot portraits; the slots keep this shape whatever the output ratio. */
+const FRAME_ASPECT = '9 / 16';
 /** Shown while the real tier list is in flight — no prices, same two choices. */
 const FALLBACK_TIERS: ZombieTier[] = [
   { resolution: '480p', creditCost: 0 },
@@ -384,7 +386,7 @@ export function Generator() {
                   <FrameSlot
                     value={firstFrame}
                     onChange={setFirstFrame}
-                    aspectRatio={cssAspect(aspectRatio)}
+                    aspectRatio={FRAME_ASPECT}
                     maxHeight="min(38vh, 22rem)"
                     maxSizeMB={MAX_FRAME_MB}
                     labels={frameLabels}
@@ -402,7 +404,7 @@ export function Generator() {
                   <FrameSlot
                     value={lastFrame}
                     onChange={setLastFrame}
-                    aspectRatio={cssAspect(aspectRatio)}
+                    aspectRatio={FRAME_ASPECT}
                     maxHeight="min(38vh, 22rem)"
                     maxSizeMB={MAX_FRAME_MB}
                     labels={frameLabels}
