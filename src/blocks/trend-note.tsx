@@ -37,7 +37,7 @@ export function TrendNote() {
               href={WIKI_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className="text-primary hover:text-primary/80 underline underline-offset-2"
             >
               en.wikipedia.org
             </a>
