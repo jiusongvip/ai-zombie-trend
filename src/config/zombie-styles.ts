@@ -13,6 +13,10 @@
  * therefore really "accepts a second reference photo" — a replacement model
  * must keep it, and keep a 15s tier.
  *
+ * One template body serves all four stories: the only per-style variables are
+ * the opening relationship line and Character B's pronouns, so a beat change
+ * is a single edit rather than four.
+ *
  * Server-only: import from modules and API routes, never from components.
  */
 
@@ -40,38 +44,177 @@ export function getZombieFilmTier(resolution: unknown) {
   );
 }
 
+/**
+ * Character A is always a person, so the survivor keeps they/them throughout —
+ * only Character B's pronouns vary with what the second reference depicts.
+ */
+interface StoryRole {
+  opening: string;
+  bSubject: string;
+  bObject: string;
+  bPossessive: string;
+}
+
+const storyRoles: Record<ShowcaseTag, StoryRole> = {
+  couple: {
+    opening:
+      'Character A is the survivor. Character B is their partner, who has tragically transformed into a zombie.',
+    bSubject: 'they',
+    bObject: 'them',
+    bPossessive: 'their',
+  },
+  pet: {
+    opening:
+      'Character A is the owner. Character B is their beloved pet — a dog or cat matching the second reference — which has tragically transformed into an undead animal.',
+    bSubject: 'it',
+    bObject: 'it',
+    bPossessive: 'its',
+  },
+  friend: {
+    opening:
+      'Character A is the survivor. Character B is their best friend, who has tragically transformed into a zombie.',
+    bSubject: 'they',
+    bObject: 'them',
+    bPossessive: 'their',
+  },
+  family: {
+    opening:
+      'Character A is the younger survivor. Character B is their parent — the elder of the two references — who has tragically transformed into a zombie.',
+    bSubject: 'they',
+    bObject: 'them',
+    bPossessive: 'their',
+  },
+};
+
+function cap(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function storyPrompt(role: StoryRole): string {
+  const isPet = role.bSubject === 'it';
+
+  const identity = isPet
+    ? 'Preserve the exact breed, coat, size and facial identity of the pet, and the owner’s exact face, hairstyle and body proportions, throughout the video. Their genders, appearances, and relationship can vary depending on the supplied references.'
+    : 'Preserve the exact facial identity, recognizable hairstyle, body proportions, and distinctive appearance of both characters throughout the video. Their genders, appearances, and relationship can vary depending on the supplied references.';
+
+  const undeadFace = isPet
+    ? 'Character B has pale grey fur, cloudy white eyes, dark veins and disheveled fur. The expression is frightening and inhuman, yet the animal remains unmistakably recognizable as the same beloved pet.'
+    : 'Character B has pale grey skin, cloudy white eyes, dark veins, hollow facial features and disheveled hair. The expression is frightening and inhuman, yet the character remains unmistakably recognizable as Character B.';
+
+  const survivorShot = isPet
+    ? 'Cut to Character B dragging itself closer from across the wooden cabin, moving with an unnatural, stiff gait, but not attacking.'
+    : 'Cut to Character B slowly walking closer from across the wooden cabin, moving with an unnatural, stiff zombie-like gait, but not attacking.';
+
+  const recognition = isPet
+    ? 'Character B stops moving. For a moment, something familiar flickers in its cloudy eyes.'
+    : 'Character B stops walking. For a moment, something familiar flickers in their cloudy eyes.';
+
+  return `Create a 15-second, emotionally devastating cinematic 3D video using two character references:
+
+CHARACTER A: @image1
+CHARACTER B: @image2
+
+${role.opening}
+
+${identity}
+
+SHOT 1 — THE CABIN (0–4 SECONDS)
+
+Inside a dark, abandoned rustic wooden cabin, Character A stands trembling, holding a handgun lowered at their side.
+
+Begin with a tight cinematic close-up of Character A's tearful face.
+
+Character A is crying intensely, tears visibly streaming down their cheeks. Their eyes are red and filled with heartbreak. Their lips tremble, their breathing is uneven, and their hands shake uncontrollably.
+
+Character A cannot bring themself to raise the weapon.
+
+${survivorShot}
+
+Dim daylight enters through old wooden windows, illuminating floating dust particles. Cold blue-grey lighting and deep shadows create a tragic, oppressive atmosphere.
+
+SHOT 2 — THE UNDEAD FACE (4–6 SECONDS)
+
+Cut sharply to an extreme close-up of Character B's horrifying undead face.
+
+${undeadFace}
+
+Use an intense, nearly motionless close-up with shallow depth of field, capturing subtle facial twitches and unsettling breathing.
+
+No excessive gore or graphic wounds. No biting. No blood.
+
+SHOT 3 — THE CHOICE (6–10 SECONDS)
+
+Cut back to Character A, still crying, the gun lowered.
+
+Character A hesitates one final time, overwhelmed by grief and love.
+
+Instead of firing, Character A deliberately lets the gun fall away from their hands.
+
+Character A then slowly spreads both arms wide, not in aggression, but in silent grief and recognition.
+
+Their tearful expression shows painful acceptance and love.
+
+For a brief instant, Character A remains motionless with both arms open.
+
+${recognition}
+
+${cap(role.bSubject)} does not attack. ${cap(role.bSubject)} stumbles forward and gently rests ${role.bPossessive} head against Character A's shoulder.
+
+Character A closes their eyes and holds ${role.bObject}.
+
+The camera slowly circles the two figures in the cold cabin.
+
+SHOT 4 — THE MEMORY / MATCH CUT (10–15 SECONDS)
+
+At the precise moment Character B rests against Character A, perform an instantaneous cinematic hard cut.
+
+The dark wooden cabin becomes an expansive golden wheat field under a breathtaking sunset.
+
+Both characters are now completely alive and healthy, restored to their normal appearance exactly matching the reference images, wearing clean everyday clothing that fits their original gender and identity.
+
+IMPORTANT: The embrace movement must continue seamlessly across the cut.
+
+The same embrace becomes warm, alive, and joyful.
+
+Character A holds Character B tightly.
+
+Both characters hold each other affectionately, reunited at last.
+
+Their faces express profound relief, tenderness, and bittersweet happiness.
+
+Golden sunlight illuminates their hair and faces. A gentle breeze moves through the surrounding wheat.
+
+The camera slowly pulls back to reveal the vast, peaceful wheat field, ending on the two characters embracing beneath the glowing sunset.
+
+VISUAL AND CAMERA DIRECTION
+
+4K cinematic quality, photorealistic 3D rendering, film-quality animation, highly detailed facial expressions, realistic tears, natural skin textures, detailed hair simulation, physically accurate lighting, volumetric sunlight, atmospheric dust, realistic clothing physics, cinematic depth of field, smooth dynamic tracking shots, and professional film color grading.
+
+First 10 seconds: dark, cold, desaturated, frightening, emotionally tense.
+Final 5 seconds: luminous, warm, golden, peaceful, nostalgic, emotionally healing.
+
+SOUND DESIGN
+
+First scene: eerie wooden cabin ambience, faint wind, shaky breathing, quiet sobbing, approaching footsteps, and rising cinematic tension.
+
+The undead close-up: unsettling breathing and a subtle low-frequency rumble.
+
+The embrace: a soft, emotional swell.`;
+}
+
 export interface ZombieStyle {
   id: ShowcaseTag;
   prompt: string;
   duration: number;
 }
 
-export const zombieStyles: ZombieStyle[] = [
-  {
-    id: 'couple',
-    prompt:
-      'Emotionally devastating cinematic 3D film, 15 seconds, four shots, built from the two supplied character references. Preserve each character’s exact facial identity, hairstyle, body proportions and clothing across the whole video. Shot 1 (0–4s): inside a dark abandoned rustic wooden cabin, the survivor from the first photo stands trembling, aiming a handgun at the zombified partner from the second photo; tight close-up on their tearful face behind the raised gun, red eyes, trembling lips, uneven breathing, hands shaking, unable to pull the trigger; cut to the zombie walking closer with an unnatural gait; dim daylight through old wooden windows, floating dust, cold blue-grey lighting, deep shadows. Shot 2 (4–6s): extreme close-up of the zombie’s face — pale grey skin, cloudy white eyes, dark veins, hollow features, disheveled hair, bared teeth; frightening yet unmistakably the same person; shallow depth of field, subtle facial twitches; no gore, no graphic wounds. Shot 3 (6–10s): back to the survivor, still crying; they hesitate once more, deliberately lower the gun and let it fall away, then slowly spread both arms wide in silent invitation, their expression showing painful acceptance; for a brief instant they hold still, then the zombie breaks into a violent sprint and leaps straight at them, camera tracking the acceleration. Shot 4 (10–15s): at the exact moment the zombie is airborne, an instantaneous hard cut — the dark cabin becomes an expansive golden wheat field under a breathtaking sunset, both characters fully alive and healthy in clean everyday clothes; the airborne movement continues seamlessly across the cut, the violent leap landing as a joyful embrace; the survivor catches them and wraps both arms tightly around them, faces showing relief, tenderness and bittersweet happiness; golden sunlight in their hair, a breeze moving through the wheat, camera slowly pulling back on the two figures embracing beneath the glowing sunset. Photorealistic 3D rendering, 4K film quality, highly detailed facial expressions, realistic tears, volumetric light, cinematic depth of field, professional color grading — first 10 seconds dark, cold and desaturated; final 5 seconds luminous, warm and golden.',
-    duration: 15,
-  },
-  {
-    id: 'pet',
-    prompt:
-      'Emotionally devastating cinematic 3D film, 15 seconds, four shots, built from the two supplied references: the owner and their pet. Preserve the pet’s exact breed, coat, size and facial identity, and the owner’s exact face, hair and proportions, across the whole video. Shot 1 (0–4s): inside a dark abandoned rustic wooden cabin, the owner from the first photo stands trembling, aiming a handgun at the zombified pet from the second photo; tight close-up on their tearful face behind the raised gun, red eyes, shaking hands, unable to fire; cut to the pet dragging itself closer with an unnatural, threatening gait; dim daylight through old wooden windows, floating dust, cold blue-grey light, deep shadows. Shot 2 (4–6s): extreme close-up of the pet’s undead face — pale grey fur, cloudy white eyes, dark veins, bared teeth; frightening yet unmistakably the same beloved animal; shallow depth of field, subtle twitches; no gore, no wounds. Shot 3 (6–10s): the owner hesitates one final time, deliberately lowers the gun and lets it fall, then kneels and spreads both arms wide, silently inviting the pet in; for a brief instant they hold still, then the pet breaks into a violent sprint and leaps toward them, camera tracking the acceleration. Shot 4 (10–15s): at the exact moment the pet is airborne, an instantaneous hard cut — the cabin becomes an expansive golden wheat field at sunset, the pet fully healthy with a clean bright coat, the owner in clean everyday clothes; the airborne movement continues seamlessly, the leap landing as an embrace; the owner catches the pet and holds it tight, face pressed into its fur with relief and bittersweet joy; golden sunlight, a breeze through the wheat, camera slowly pulling back on the two of them beneath the glowing sunset. Photorealistic 3D rendering, 4K film quality, detailed fur and tear simulation, volumetric light, cinematic depth of field, professional color grading — first 10 seconds dark, cold and frightening; final 5 seconds luminous, warm and healing.',
-    duration: 15,
-  },
-  {
-    id: 'friend',
-    prompt:
-      'Emotionally devastating cinematic 3D film, 15 seconds, four shots, built from the two supplied character references: two best friends. Preserve each friend’s exact facial identity, hairstyle, body proportions and clothing across the whole video. Shot 1 (0–4s): inside a dark abandoned rustic wooden cabin, one friend from the first photo stands trembling, aiming a handgun at the other friend, now zombified, from the second photo; tight close-up on the survivor’s tearful face behind the raised gun, red eyes, trembling lips, unsteady hands, unable to pull the trigger; cut to the zombie friend closing the distance with an unnatural gait; dim daylight through old wooden windows, floating dust, cold blue-grey lighting, deep shadows. Shot 2 (4–6s): extreme close-up of the undead face — pale grey skin, cloudy white eyes, dark veins, hollow features, bared teeth; horrifying yet clearly still the same friend; shallow depth of field, subtle facial twitches; no gore, no graphic wounds. Shot 3 (6–10s): the survivor hesitates one last time, deliberately lowers the gun and lets it drop from their hands, then steps forward and spreads both arms wide in painful acceptance; for a brief instant nothing moves, then the zombie friend sprints and leaps straight at them, camera tracking the burst of speed. Shot 4 (10–15s): at the precise moment they are airborne, an instantaneous hard cut — the cabin becomes an expansive golden wheat field under a breathtaking sunset, both friends alive and healthy in clean everyday clothes; the airborne motion continues seamlessly across the cut, the attack landing as a tight embrace; they catch each other and hold on, faces showing relief, tenderness and bittersweet happiness; golden sunlight in their hair, wind moving through the wheat, camera slowly pulling back to reveal the vast peaceful field. Photorealistic 3D rendering, 4K film quality, highly detailed expressions, realistic tears, volumetric light, cinematic depth of field, professional color grading — first 10 seconds dark, cold and tense; final 5 seconds warm, golden and nostalgic.',
-    duration: 15,
-  },
-  {
-    id: 'family',
-    prompt:
-      'Emotionally devastating cinematic 3D film, 15 seconds, four shots, built from the two supplied character references: a parent and their grown child. Preserve each character’s exact facial identity, hairstyle, body proportions, clothing and the age difference between them across the whole video. Shot 1 (0–4s): inside a dark abandoned rustic wooden cabin, the younger survivor from the first photo stands trembling, aiming a handgun at the zombified elder from the second photo; tight close-up on their tearful face behind the raised gun, red eyes, trembling lips, unsteady hands, unable to pull the trigger; cut to the zombie dragging itself closer with an unnatural gait; dim daylight through old wooden windows, floating dust, cold blue-grey lighting, deep shadows. Shot 2 (4–6s): extreme close-up of the undead face — pale grey skin, cloudy white eyes, dark veins, hollow features, greying disheveled hair; frightening yet unmistakably the same parent; shallow depth of field, subtle facial twitches; no gore, no graphic wounds. Shot 3 (6–10s): the survivor hesitates one last time, deliberately lowers the gun and lets it fall from their hands, then steps forward and spreads both arms wide, bending slightly the way a child does coming home; for a brief instant nothing moves, then the zombie breaks into a violent sprint and leaps straight at them, camera tracking the acceleration. Shot 4 (10–15s): at the exact moment they are airborne, an instantaneous hard cut — the dark cabin becomes an expansive golden wheat field under a breathtaking sunset, both characters fully alive and healthy in clean everyday clothes; the airborne movement continues seamlessly across the cut, the violent leap landing as a tight embrace; the survivor catches the elder and holds them, faces pressed together showing relief, tenderness and bittersweet happiness; golden sunlight in their hair, a breeze moving through the wheat, camera slowly pulling back on the two figures embracing beneath the glowing sunset. Photorealistic 3D rendering, 4K film quality, highly detailed facial expressions, realistic tears, volumetric light, cinematic depth of field, professional color grading — first 10 seconds dark, cold and desaturated; final 5 seconds luminous, warm and golden.',
-    duration: 15,
-  },
-];
+export const zombieStyles: ZombieStyle[] = (
+  Object.keys(storyRoles) as ShowcaseTag[]
+).map((id) => ({
+  id,
+  prompt: storyPrompt(storyRoles[id]),
+  duration: 15,
+}));
 
 export function getZombieStyle(id: string): ZombieStyle | undefined {
   return zombieStyles.find((style) => style.id === id);
