@@ -281,7 +281,34 @@ export function Generator() {
     },
   });
 
+  /** Everything still missing, worst first — the CTA stays clickable and reports these. */
+  function blockingReasons(): string[] {
+    const reasons: string[] = [];
+    if (uploading) reasons.push(m['studio.form.upload_uploading']());
+    if (!hasBothPhotos) reasons.push(m['landing.generator.needs_photos']());
+    if (!consented) reasons.push(m['landing.generator.need_consent']());
+    if (!providerReady) reasons.push(m['studio.form.no_provider']());
+    if (!canAfford) reasons.push(m['landing.generator.insufficient']());
+    return reasons;
+  }
+
   function onGenerate() {
+    const reasons = blockingReasons();
+    if (reasons.length) {
+      toast.error(m['landing.generator.blocked_title'](), {
+        description:
+          reasons.length > 1 ? (
+            <ul className="list-disc space-y-1 pl-4">
+              {reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          ) : (
+            reasons[0]
+          ),
+      });
+      return;
+    }
     if (!signedIn) {
       saveDraft(draft());
       // Come back to the form itself, not the top of the page.
@@ -291,17 +318,7 @@ export function Generator() {
     generateMutation.mutate(draft());
   }
 
-  const blockedReason = uploading
-    ? m['studio.form.upload_uploading']()
-    : !hasBothPhotos
-      ? m['landing.generator.needs_photos']()
-      : !consented
-        ? m['landing.generator.need_consent']()
-        : !providerReady
-          ? m['studio.form.no_provider']()
-          : !canAfford
-            ? m['landing.generator.insufficient']()
-            : null;
+  const blockedReason = blockingReasons()[0] ?? null;
 
   const loadSettings = (task: VideoTaskView) => {
     if (task.sourceImageUrl) {
@@ -622,7 +639,7 @@ export function Generator() {
               size="lg"
               className="bg-primary shadow-primary/25 hover:bg-primary/90 w-full rounded-xl text-base font-semibold shadow-lg disabled:opacity-50"
               onClick={onGenerate}
-              disabled={generateMutation.isPending || !!blockedReason}
+              disabled={generateMutation.isPending}
             >
               {generateMutation.isPending ? (
                 <Loader2 className="mr-2 size-5 animate-spin" />

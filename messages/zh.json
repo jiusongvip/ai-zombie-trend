@@ -1054,6 +1054,7 @@
   "landing.generator.consent_body": "我仅使用本人、本人宠物或已同意出镜者的照片，不使用未成年人、名人或公众人物的照片。",
   "landing.generator.consent_terms": "《服务条款》",
   "landing.generator.share_body": "允许把我的成片展示到公开示例墙。默认关闭——未勾选不会公开任何内容。",
+  "landing.generator.blocked_title": "还差这几步",
   "landing.generator.need_consent": "请先勾选照片授权确认再生成。",
   "landing.generator.needs_photos": "上传两张照片后即可生成。",
   "landing.generator.insufficient": "积分不足，无法生成这支影片。",

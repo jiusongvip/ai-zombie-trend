@@ -1054,6 +1054,7 @@
   "landing.generator.consent_body": "I only use photos of myself, my own pet, or people who have agreed to appear. No children, no celebrities or public figures.",
   "landing.generator.consent_terms": "the Terms",
   "landing.generator.share_body": "Feature my finished film on the public example wall. Off by default — nothing is published unless you tick this.",
+  "landing.generator.blocked_title": "Almost there — finish these first",
   "landing.generator.need_consent": "Tick the photo-permission box to render.",
   "landing.generator.needs_photos": "Upload both photos to render.",
   "landing.generator.insufficient": "Not enough credits for this film.",
