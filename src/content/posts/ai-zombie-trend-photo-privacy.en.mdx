@@ -1,50 +1,118 @@
 export const meta = {
   title: 'Is the AI Zombie Trend Safe? What to Check Before You Upload a Face',
   description:
-    'Uploading someone else\'s photo for an AI zombie video deserves four checks: consent, retention terms, how uploads are stored, and how to label the result.',
+    'Is the AI zombie trend safe to use? Four checks before you upload a face: consent, retention terms, how uploads are stored and deleted, and how to label the finished film.',
   created_at: '2026-10-09',
   author_name: 'AI Zombie Trend Team',
   author_image: '/logo.svg',
   image: '/images/showcase/zombie-memory.webp',
 };
 
-The trend asks for two faces, and usually one of them belongs to someone else. That is worth a pause rather than a panic. The effect itself is harmless; the real question is the ordinary one — what happens to a picture of a person you handed to a server. Four checks make it a reasonable trade.
+The trend asks for two faces, and usually one of them belongs to someone else. That is worth a pause rather than a panic. The effect itself is harmless; the real question is the ordinary one — what happens to a picture of a person you handed to a server. Four checks make it a reasonable trade, and this page walks through all four, including exactly what our own product does at each step so you can compare.
 
 ## Ask the person in the photo
 
 This is the whole ethics of the format, and it is easier than it sounds.
 
-- **Your own face** needs no permission from anyone.
-- **A partner is a co-star.** Ask before you render, not after the clip is in your camera roll, because they are the one who will get tagged in it.
-- **Friends are fine with a yes.** A reply that says go ahead is consent; silence is not, and neither is a "whatever" muttered over a phone.
-- **Children stay out of it.** A child's face in a film you publish is a decision they cannot review later, and this is the one case where "everyone does it" is no defence.
-- **Strangers, ex-partners, colleagues, and anyone cropped in from the background** are not yours to transform.
+### Your own face needs no permission
 
-Skip anything built to pass as real. A clip of a public figure, or one framed as though something happened to a named person, is a different category of problem from a couple doing a bit. The joke only works among people who are in on it.
+You are the only person who has to agree to your own face turning into a zombie for fifteen seconds. This is the safest possible input, and it is why a first attempt is usually worth doing on yourself.
+
+### A partner is a co-star
+
+Ask before you render, not after the clip is in your camera roll, because they are the one who will get tagged in it. A film that circulates with both your faces in it is a shared object, not a personal joke.
+
+### Friends are fine with a yes
+
+A reply that says go ahead is consent; silence is not, and neither is a "whatever" muttered over a phone. A screenshot of a text that says "do it" takes four seconds and settles the question permanently.
+
+### Children stay out of it
+
+A child's face in a film you publish is a decision they cannot review later, and this is the one case where "everyone does it" is no defence. Whatever your tolerance for the rest of the format, this line is worth keeping clean.
+
+### Strangers, ex-partners and bystanders are not yours to transform
+
+Colleagues, someone you met once, the person cropped in at the edge of the frame — none of them signed up for this. If a bystander is visible enough to be recognised, pick a different photo.
+
+### Skip anything built to pass as real
+
+A clip of a public figure, or one framed as though something actually happened to a named person, is a different category of problem from a couple doing a bit. The joke only works among people who are in on it.
 
 ## Read the retention policy for three answers
 
-You do not need to understand the document, only find three things in it:
+You do not need to understand the document, only find three things in it.
 
-1. **How long uploads are kept.** Look for a stated window, or an explicit "kept until you ask us to remove them," plus a way to make that request. "As long as necessary" is not an answer.
-2. **Whether your photos train models.** Search the page for the word *train*. A policy worth reading says no in plain terms; a policy that never mentions it is promising nothing.
-3. **Who else touches the file.** Rendering means sending your two photos to a video model provider. A good policy names that step and bounds it to the one request, instead of pretending the picture never leaves.
+### How long uploads are kept
+
+Look for a stated window, or an explicit "kept until you ask us to remove them," plus a way to make that request. "As long as necessary" is not an answer. Ours says 24 hours for staged source photos.
+
+### Whether your photos train models
+
+Search the page for the word _train_. A policy worth reading says no in plain terms; a policy that never mentions it is promising nothing. Then check whether it covers only the service you are uploading to or also the model vendor that does the rendering, because those are two different parties and your photos reach both.
+
+### Who else touches the file
+
+Rendering means sending your two photos to a video model provider. A good policy names that step and bounds it to the one request, instead of pretending the picture never leaves. One that hides it usually means the answer is worse.
 
 If a tool offers no readable policy where you upload, the silence is the answer. Move on. Our own [privacy policy](/privacy-policy) is written to be read in one pass — the least any tool should offer.
+
+## What the pipeline actually does with your photos
+
+Four things happen between picking a file and calling a model. All four are visible in our code, so they are safe claims to make.
+
+### They are re-encoded before they leave your device
+
+Each photo is decoded and redrawn onto a canvas in the browser, capped at 2048 pixels on the longest edge and exported as JPEG. That is a smaller, normalised file — and it is why location data never reaches us. The EXIF a phone camera writes, including GPS coordinates, does not survive a decode-and-redraw, so we cannot receive it.
+
+### They are stored under a name derived from their content
+
+The object key is a hash of the image bytes, not your account, your email, or your camera-roll filename. Two consequences: re-uploading the same photo reuses one object instead of making copies, and a leaked bucket listing would be a wall of digests rather than a list of people.
+
+### They are deleted on a clock
+
+Staged source photos are scheduled out of storage within 24 hours whether the render succeeded, failed, or never ran. The sweep runs on a timer on a long-lived server and opportunistically on every new upload, so retention does not depend on one process staying alive. Nothing about the film you downloaded changes when the inputs are deleted — the MP4 is yours, and the photos were only ever raw material.
+
+### The film stays private unless you tick a box
+
+Finished films live in your library behind a link only you browse. The public [examples wall](/examples) only ever shows a clip whose owner explicitly opted in at submit time, and the share flag is refused unless the consent declaration was accepted in the same request. Every shared clip carries an "AI generated" badge on the page.
 
 ## Why a hash-named object store matters
 
 Uploads keep a name. Yours probably arrived with a camera-roll filename, and in some tools the stored object sits under your account id or email. If that bucket leaks, the file listing alone tells a stranger whose face is whose — no cracking required, just reading.
 
-Content-addressed storage closes that gap. When the stored name comes from a hash of the image itself, it reveals nothing about the person, the uploader, or the original file, and there is no username list to walk. On [AI Zombie Trend](/) uploads are stored exactly that way: the filename derives from the image content, not your account or your original name. The same flow lets you stage both photos and choose a story before creating an account, with files up to 10 MB each, so a trial upload asks for no identity — only rendering does.
+Content-addressed storage closes that gap. When the stored name comes from a hash of the image itself, it reveals nothing about the person, the uploader, or the original file, and there is no username list to walk. On [AI Zombie Trend](/) uploads are stored exactly that way.
 
-Two habits finish the job on your side. Check what the frame reveals before you upload — house numbers, uniforms, school signage, a street through a window — and keep the pair you could explain if it were screenshotted.
+### What it does not protect
+
+A hash is a name, not a lock. Anyone who can read the storage bucket can still open the picture — content addressing removes the mapping between file and identity, not access to the file itself. It is also why the deletion clock matters more than the naming scheme: the strongest guarantee is that the object is scheduled to be gone within a day.
+
+## The consent declaration is a record, not a checkbox
+
+Before the first frame uploads, the generator requires you to state that the faces are your own, your own pet, or adults who agreed to appear — no children, no public figures. That statement is versioned and stored with the job rather than thrown away after the click.
+
+This is not a legal flourish. It is the only mechanism that turns a report ("that's me, I never agreed to this") into something a service can act on: there is a record of who submitted it, when, and what they asserted. A tool that asks nothing at submit time has no way to adjudicate a dispute later, which means the answer to your complaint will be a shrug and a form email.
+
+## What the video model receives
+
+Your two re-encoded photographs, and the assembled story template — that is the whole request. The provider renders frames from them and returns a file. It is a third party, the policy should say so plainly, and the images are sent for that one job rather than kept as a library.
+
+This is the step most people skip when evaluating a tool, because it is the least controllable one. The practical controls are on either side of it: what you choose to upload, and how long the service keeps it afterwards.
+
+## Two habits that finish the job on your side
+
+Check what the frame reveals before you upload — house numbers, uniforms, school signage, a street through a window, a wedding ring on the hand of someone you are about to turn into a zombie. And keep the pair you could explain if it were screenshotted tomorrow by someone with no context.
+
+Nothing else about your behaviour changes the risk much. The photo is the exposure.
 
 ## Label it, then post it
 
 Wherever a feed offers a label for generated video, switch it on, and say plainly in the caption that the film came from two photos. That is not defensive housekeeping — it is the line that keeps the clip a bit rather than a fake, and it answers the first question every viewer asks, which is how you made it. Point them at the [examples wall](/examples) so the answer is one click away.
 
 A finished film is also just a file on your device: nothing has to be public for you to have made it, and you decide what to keep.
+
+## If someone used your face
+
+Write to **jiusongvip@gmail.com** with what you saw and where. An accidentally shared example comes down; a clip submitted against the consent rule is the reason that rule is recorded on the job. The same address handles requests for content you no longer want public — sharing is an option you tick at submit time, so it is not a one-way door, and deleting a film from your own library hides it immediately.
 
 ## The pre-render checklist
 
@@ -53,6 +121,25 @@ A finished film is also just a file on your device: nothing has to be public for
 - The frame itself gives away no address, uniform, or signage.
 - The tool states how long it keeps images, an explicit no on training, and who receives them.
 - Uploads are stored under content-derived names rather than account names.
+- The tool records a consent assertion with each job.
 - The AI label is on and the caption says the video was generated.
 
-If all six hold, the trend is a two-photo game and nothing more. The commercial side is as plain: 20 credits per film, one-time packs with no subscription, credits that never expire, and automatic refunds on a failed render. The only thing you risk on a first attempt is a pair of pictures you are allowed to use — see the [credit packs](/pricing).
+If all seven hold, the trend is a two-photo game and nothing more.
+
+## Questions people ask before their first upload
+
+### Can I try it without an account?
+
+Yes. Staging both photos and choosing a story needs no sign-in, so a trial asks for no identity — only the render does. Files up to 10 MB each are accepted, and uploads are rate-limited rather than open-ended.
+
+### What if the render fails?
+
+The credits come back automatically. A job that produces no film is not a purchase, and you can see this in your own library: the job shows as failed and the balance is restored.
+
+### Do you sell the photos?
+
+No. They are input to one request, deleted inside 24 hours, and never used to train models. The commercial model is credit packs — you pay for renders, not for being data. A film costs 20 credits at 480p or 40 at 720p from one-time packs, and [pricing](/pricing) has the numbers.
+
+## Where to go next
+
+Read [what the trend is and how the four shots work](/blog/what-is-the-ai-zombie-trend), then [how to choose and match your two photographs](/blog/how-to-make-ai-zombie-video). The [privacy policy](/privacy-policy) is short enough to read before rather than after, and the [generator](/) costs nothing until you press render.

@@ -1,7 +1,7 @@
 export const meta = {
   title: 'What Is the AI Zombie Trend?',
   description:
-    'The AI zombie trend turns two photos into a short post-apocalyptic romance. What the format is, why the four-shot hook works, and its variants.',
+    'The AI zombie trend turns two photos into a 15-second post-apocalyptic romance. What the format is, how the four shots are built, why the hook works, and every variant.',
   created_at: '2026-10-09',
   author_name: 'AI Zombie Trend Team',
   author_image: '/logo.svg',
@@ -10,16 +10,29 @@ export const meta = {
 
 The AI zombie trend is a video format where two ordinary photographs become a short post-apocalyptic film. One photo is where the story starts and the other is where it ends, and the film plays the four shots between them: a gun raised and then let fall, arms opened in invitation, a leap that hard-cuts into an embrace. It reads like the trailer for a romance that went wrong, and it runs about as long as a song hook.
 
+What makes it spread rather than merely look good is that the input is the thing everyone already has. No footage to shoot, no character to cast, no storyboard to draw — a pair of photos from a phone decides who the two characters are, and the format supplies everything else.
+
 ## The format, reduced to its parts
 
-Every version that works has the same four ingredients:
+Every version that works has the same four ingredients.
 
-- **Two source photos.** A pair with a relationship in it — a couple, a person and a pet, two friends, or two generations of one family sharing a frame.
-- **A choice instead of a fight.** One character aims, hesitates, and lowers the weapon; the other closes the distance. The turn is emotional before it is physical.
-- **A cinematic grade split in two.** Cold and desaturated while the gun is up, golden and luminous after the cut. The look is horror-romance rather than horror, which is why these clips feel tragic instead of gruesome.
-- **A score.** Audio arrives with the picture instead of being bolted on afterwards, and that is what separates these films from the slideshow morphs they resemble.
+### Two photographs, not one
 
-On [AI Zombie Trend](/) that means two photos in and one 15-second, 720p film out, with generated audio and no watermark.
+A pair with a relationship in it — a couple, a person and a pet, two friends, or two generations of one family sharing a frame. The first photo is cast as the survivor, the second as the one who has turned. Because both are handed to the model as character references rather than as a single starting frame, the same two faces can survive four shots and two completely different lighting setups.
+
+### A choice instead of a fight
+
+One character aims, hesitates, and lowers the weapon; the other closes the distance. The turn is emotional before it is physical, which is the single biggest reason this format plays as tragedy rather than as a monster clip. Violence is available to the genre — it is simply not the point of this one.
+
+### A cinematic grade split in two
+
+Cold and desaturated while the gun is up, golden and luminous after the cut. The look is horror-romance rather than horror, so the clips feel sad instead of gruesome. Two grades in fifteen seconds also gives the edit a reason to exist: the colour change is the payoff, not decoration.
+
+### A score
+
+Audio arrives with the picture instead of being bolted on afterwards, and that is what separates these films from the slideshow morphs they resemble. A reveal that lands on a beat of music reads as direction; the same reveal in silence reads as a filter.
+
+On [AI Zombie Trend](/) that means two photos in and one 15-second film out — 480p or 720p, with generated audio, in 9:16 or 16:9, and no watermark on the file you download.
 
 ## Why the two-photo hook works
 
@@ -35,13 +48,40 @@ The format runs on a promise the viewer reads instantly: you have seen the first
 
 Quiet horror also makes the format portable: a couple on a sofa, an owner and his dog, two friends in a kitchen — photos you would really post, none of which expire after October.
 
+## The four shots, second by second
+
+The template is fixed and the timing is part of the joke. This is the same breakdown the generator uses, so you can read a finished film against it:
+
+| Shots                   | What happens                                                                                                                             | What it has to do                                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 0–4 s · The Cabin       | The survivor aims a trembling handgun in a dark interior, daylight through broken windows, tears visible.                                | Establish two identities and one impossible decision before the viewer can leave.                        |
+| 4–6 s · The Turn        | An extreme close-up of Character B: pale grey skin, cloudy eyes, bared teeth, holding still.                                             | Prove the person is gone without losing the person.                                                      |
+| 6–10 s · The Choice     | The gun lowers, falls, and both arms open. No firing, no running.                                                                        | Make the survivor choose the relationship over survival — this is the beat the whole format is built on. |
+| 10–15 s · The Match Cut | B lunges; mid-air the cabin becomes a golden wheat field at sunset, and the tackle lands as an embrace with both characters human again. | Pay the promise the first frame made, in a single cut.                                                   |
+
+The two halves are graded differently on purpose: the first ten seconds desaturate, the last five flood with warm light. The contrast is what makes the embrace register as relief rather than as a scene change.
+
 ## The story variants
 
 The same pipeline carries several flavours, and the one you want depends on who is in your photos.
 
-**Zombie Couple** is the emotional read: the survivor cannot bring themselves to fire, opens their arms, and takes the leap as an embrace. **Zombie Pet** swaps the partner for an animal that stays close to its owner, and the tenderness is the hook. **Zombie Friends** plays the same refusal between two friends, which lands funnier precisely because nobody expects it. **Zombie Family** moves the gun to the oldest bond of all — a grown child aiming at the parent who raised them — so the hesitation reads as disobeying every instinct to survive, and the embrace that closes it reads as coming home.
+### Zombie Couple
 
-Each variant ships with its own pacing and colour grade, so your pair of photos decides the mood more than any control panel. The [examples wall](/examples) collects frames from all four.
+The emotional read and the original: the survivor cannot bring themselves to fire, opens their arms, and takes the leap as an embrace. It is the variant people recognise the trend by.
+
+### Zombie Pet
+
+Swaps the partner for an animal that stays close to its owner, and the tenderness is the hook. It also changes the physics of the last shot — a dog crosses the room in a sprint and a leap rather than a shamble, so the match cut lands harder.
+
+### Zombie Friends
+
+The same refusal between two friends, which lands funnier precisely because nobody expects it. Nobody has to explain why these two are in a photo together.
+
+### Zombie Family
+
+Moves the gun to the oldest bond of all — a grown child aiming at the parent who raised them — so the hesitation reads as disobeying every instinct to survive, and the embrace that closes it reads as coming home.
+
+Each variant ships with its own pacing and colour grade, so your pair of photos decides the mood more than any control panel. The [examples wall](/examples) collects films and frames from all four.
 
 ### Choosing a variant that fits
 
@@ -49,8 +89,54 @@ Match the emotion, not the headcount: a couple photo in pet mode loses the point
 
 ## What made this possible
 
-Two capabilities turned a niche effect into a repeatable format. The first is **first-and-last-frame input**: a model accepts a starting image and an ending image and generates the travel between them. That is a two-photo trend waiting to happen, and it is why the format needs no prompt — the pictures do the casting and the set design. [ByteDance's Seedance page](https://seed.bytedance.com/en/seedance) documents a selectable 4 to 15 second range, native audio, and exactly that input mode. [Google's Veo documentation](https://deepmind.google/models/veo/) describes clips of around eight seconds at 720p, 1080p, or 4K with native audio, first and last frame input, and both 16:9 and 9:16.
+Two capabilities turned a niche effect into a repeatable format.
 
-The second is **audio generated with the video**, so a film arrives with its atmosphere already scored and nothing assembled by hand afterwards. That is why the trend looks like cinema instead of a filter.
+### First-and-last-frame input
 
-Making one is choosing two photos that line up and picking a story. The [generator](/) takes both images without an account — only rendering needs one — and a film costs 20 credits from one-time packs priced as low as $2.10 per film. See the [pricing](/pricing) before deciding how many versions to try.
+A model accepts a starting image and an ending image and generates the travel between them. That is a two-photo trend waiting to happen, and it is why the format needs no prompt — the pictures do the casting and the set design. [ByteDance's Seedance page](https://seed.bytedance.com/en/seedance) documents a selectable 4 to 15 second range, native audio, and exactly that input mode. [Google's Veo documentation](https://deepmind.google/models/veo/) describes clips of around eight seconds at 720p, 1080p, or 4K with native audio, first and last frame input, and both 16:9 and 9:16.
+
+### Audio generated with the video
+
+So a film arrives with its atmosphere already scored and nothing assembled by hand afterwards. That is why the trend looks like cinema instead of a filter — and why a version with a trending track layered over it later still tends to keep the original timing.
+
+The rest is orchestration: prompt construction, shot order, colour and sound are handled by the generator, which is why the whole thing fits in two uploads and one choice of story.
+
+## How it differs from what it resembles
+
+**Photo morphs** interpolate between two images. There is no scene, no second character acting, no sound, and the result is a dissolve rather than a story. The zombie trend keeps both faces as separate people and gives them a decision.
+
+**Green-screen and AR filters** composite your face into someone else's footage. Everyone in the frame shares a template face, which is exactly why those clips read as jokes. Here both characters are actually you and your co-star, so the tragic read is available.
+
+**AI video "showreels"** are made by people writing prompts, and the results are unrepeatable. This format is repeatable because the storyboard is fixed: two inputs in, one known structure out, which is what lets a trend this specific travel across a billion accounts without everyone making something different.
+
+## What it costs, and whether you need an account
+
+Making one is choosing two photos that line up and picking a story. The [generator](/) takes both images without an account — only rendering needs one — and files up to 10 MB are accepted.
+
+A film costs 20 credits at 480p or 40 at 720p; resolution is the only thing that changes the price. Credits come from one-time packs, so there is no subscription to cancel and nothing expires: a single film is $5.99 and sixty films work out at $2.10 each. A render that fails, is blocked in review, or times out returns its credits automatically — see the [pricing page](/pricing) for the per-film math on both tiers.
+
+## Common questions about the format
+
+### Is the AI zombie trend AI-generated?
+
+Yes, every frame of it. The honest answer to "how was this made" is a text-to-video model rendering a fixed four-shot template from two photographs, and the films on our [examples wall](/examples) are labeled as generated for exactly that reason.
+
+### Is it safe to use my face?
+
+The effect is harmless; the question worth asking is what a service does with the two pictures you handed it. Consent, retention and storage are the three things to check, and [this guide](/blog/ai-zombie-trend-photo-privacy) walks through all three — including what our own policy says.
+
+### Do I need editing skills?
+
+No. The structure, the grade and the sound are decided by the template, and the file you download is finished. The only craft available to you is choosing the pair — which is why [the tutorial](/blog/how-to-make-ai-zombie-video) spends most of its length on matching two photographs.
+
+### Why does my version look different from the example?
+
+Because the model is solving a hard problem: holding two identities through a dark interior, an extreme close-up and a bright exterior. Lighting and framing agreement between your two photos is the biggest lever you control, and mismatched light is the most common reason faces warp mid-shot.
+
+### Can I make it with my dog?
+
+That is the pet variant, and it is the one people tend to loop the most. The only change is who occupies the second frame.
+
+## Where to go next
+
+See what the four variants produce on the [examples wall](/examples), read [how to choose and match your two photographs](/blog/how-to-make-ai-zombie-video), check [what happens to the faces you upload](/blog/ai-zombie-trend-photo-privacy), then open the [generator](/) — staging two photos and picking a story costs nothing and needs no account.

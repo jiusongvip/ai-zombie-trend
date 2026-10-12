@@ -1,48 +1,106 @@
 export const meta = {
   title: 'How to Make an AI Zombie Video from Two Photos',
   description:
-    'How to make an AI zombie video from two photos: choosing the pair, making the four-shot structure read as cinematic, and post-processing for TikTok or Reels.',
+    'How to make an AI zombie video from two photos: matching the pair, what the pipeline does with each upload, the four-shot structure, and post-processing for TikTok or Reels.',
   created_at: '2026-10-09',
   author_name: 'AI Zombie Trend Team',
   author_image: '/logo.svg',
   image: '/images/showcase/zombie-reunion.webp',
 };
 
-An AI zombie video is a short film built from two photographs and a fixed four-shot structure: the first photo supplies the survivor, the second supplies the one who has turned. The scene template decides what happens to them, so the pair you choose shapes the result more than any setting you will touch.
+An AI zombie video is a short film built from two photographs and a fixed four-shot structure: the first photo supplies the survivor, the second supplies the one who has turned. The scene template decides what happens to them, so the pair you choose shapes the result far more than any setting you will touch.
+
+This is the whole tutorial in one line: there is no prompt to write and no timeline to cut, so the craft goes into picking two photographs the model can reconcile. Everything below is about that decision, what happens to your files after you make it, and how to finish the file for a feed.
 
 ## Choose the pair before you choose anything else
 
-Photo one becomes the survivor and photo two the one who has turned: the model is handed both as references and has to keep those two identities recognisable through all four shots. Match the two pictures on five points:
+Photo one becomes the survivor and photo two the one who has turned: the model is handed both as references and has to keep those two identities recognisable through all four shots, across a dark interior, an extreme close-up, and a bright exterior. Match the two pictures on five points.
 
-- **Same framing.** Same distance, same height in both shots. When the faces are roughly the same size in frame, the film stays on the same two people instead of cutting between two compositions.
-- **Same light.** Two photos from the same hour of the same day beat one sunny photo and one dim indoor photo. A mismatch makes the model relight the scene mid-shot, and that is where faces warp.
-- **Faces clearly visible.** Front-facing, unobstructed, in focus, eyes open. Sunglasses, hands over the face, and motion blur all leave the model less to work with.
-- **A quiet background.** Cluttered rooms and crowds compete with the subjects, and detail that cannot be tracked turns into warping.
-- **Comparable resolution and shape.** Two sharp photos in a similar crop give the cleanest result, so shoot vertical if the film is going to a vertical feed.
+### Same framing
 
-Order matters as much as matching: photo one is cast as the survivor, photo two as the one who has turned. Swap them and the gun ends up in the wrong hands, so give the first slot the clearest, most composed face — it is the one behind the raised handgun, crying — and give the second slot the picture that can carry a colder read, because the extreme close-up is built on it.
+Same distance, same height in both shots. When the faces are roughly the same size in frame, the film stays on the same two people instead of cutting between two compositions. A chest-up portrait paired with a full-body shot at the beach is the most common losing combination.
+
+### Same light
+
+Two photos from the same hour of the same day beat one sunny photo and one dim indoor photo. A mismatch makes the model relight the scene mid-shot, and that is where faces warp: it has to invent a new head in a new lighting condition, and it invents it slightly differently every frame.
+
+### Faces clearly visible
+
+Front-facing, unobstructed, in focus, eyes open. Sunglasses, hands over the face, turned profiles and motion blur all leave the model less to work with — and the close-up at 4–6 seconds is built entirely on the second photo's face.
+
+### A quiet background
+
+Cluttered rooms and crowds compete with the subjects, and detail that cannot be tracked turns into warping. The template already supplies a background for the final shots, so the one you upload is mostly a liability.
+
+### Comparable resolution and shape
+
+Two sharp photos in a similar crop give the cleanest result, so shoot vertical if the film is going to a vertical feed. A 12 MP photo paired with a small cropped screenshot also tells the model that the two subjects belong to different worlds.
+
+### Order matters as much as matching
+
+Photo one is cast as the survivor, photo two as the one who has turned. Swap them and the gun ends up in the wrong hands. Give the first slot the clearest, most composed face — it is the one behind the raised handgun, crying — and give the second slot the picture that can carry a colder read, because the extreme close-up is built on it.
 
 ### When your two photos disagree
 
-Perfect pairs are rare. Crop both to a tighter framing, chest up, and favour the closest head size and lighting over the two most dramatic shots.
+Perfect pairs are rare. Crop both to a tighter framing, chest up, and favour the closest head size and lighting over the two most dramatic shots. If one photo has a group in it, choose a different photo rather than hoping the model ignores the bystanders — it does not.
+
+## What happens after you pick
+
+The generator does four things to your two photos, in this order, before any model is called.
+
+### It re-encodes them in your browser
+
+Before an upload leaves your device, each photo is decoded and redrawn onto a canvas, capped at 2048 pixels on its longest edge and re-exported as JPEG. That normalises orientation and colour profile, shrinks the transfer, and it is why location data never reaches us: the EXIF block a phone camera writes — GPS coordinates, device, timestamp — does not survive a decode-and-redraw.
+
+### It stores them under a name that isn't yours
+
+The object name comes from a hash of the image bytes, not from your account, your email, or your original filename. Re-uploading the same photo returns the same object instead of copying it, and a leaked bucket listing would show a wall of undecodable digests rather than a list of people.
+
+### It checks the story, the photos, and the finished film
+
+Text first, then each photograph, then the clip that comes back — cheapest checks earliest, so a submission that cannot proceed is stopped before credits are committed. An upload that fails review stops the job and costs you nothing. The consent declaration you tick at submit time is stored on the job record, which is what makes a later report something we can actually act on.
+
+### It deletes the staged photos within 24 hours
+
+Whether the render succeeded, failed, or never ran. They are inputs to one request, not a library, and they are never used to train a model.
 
 ## Pick a story mode, not a prompt
 
 There is no prompt box, and that is deliberate. [AI Zombie Trend](/) applies a scene template on the server for each of the four story modes, so the video model receives tuned cinematic direction rather than whatever you happened to type. The modes are **Zombie Couple**, **Zombie Pet**, **Zombie Friends**, and **Zombie Family**, and all four ride the same shot grammar: the survivor cannot fire, opens their arms, and the leap match-cuts into an embrace. Each carries its own pacing, colour grade, and score.
 
-Every film comes out at 15 seconds, 480p, with audio generated alongside the picture and no watermark on the file you download. One film costs 20 credits; packs are one-time purchases with no subscription, and credits do not expire. Browse the [examples wall](/examples) first — seeing which variant matches your pair beats reasoning about it.
+Because the template is server-side, it can be retuned without shipping a new build — which is also why the four modes read as one family rather than four unrelated effects.
 
 ## What makes the four-shot structure read as cinematic
 
-The difference between a meme and a film is restraint.
+The difference between a meme and a film is restraint. Five rules the template follows:
 
-1. **One decision, not a fight.** The gun lowering and falling away is the turn of the story. Two characters grappling reads as a glitch; one character choosing reads as direction.
-2. **One environmental swap.** The dark cabin cutting to an open wheat field at sunset — a single, unmistakable signal that the world has changed.
-3. **One physical tell.** Pale grey skin, cloudy eyes, bared teeth in the close-up. The less gore you ask for, the more the audience believes it is still the person they recognised.
-4. **A grade per half, not one filter.** Cold and desaturated for the first ten seconds, golden and luminous for the last five — the contrast is what makes the embrace land.
-5. **Sound used, not covered.** The score arrives with the picture and the reveal is timed to it.
+### One decision, not a fight
 
-Models in this space handle audio and endpoints natively. [ByteDance's Seedance page](https://seed.bytedance.com/en/seedance) documents a selectable 4 to 15 second range, native audio, and a first/last-frame input mode. [Google's Veo documentation](https://deepmind.google/models/veo/) describes clips of around eight seconds with native audio at 720p, 1080p, or 4K, first and last frame input, and both 16:9 and 9:16.
+The gun lowering and falling away is the turn of the story. Two characters grappling reads as a glitch; one character choosing reads as direction.
+
+### One environmental swap
+
+The dark cabin cutting to an open wheat field at sunset — a single, unmistakable signal that the world has changed. Two location changes in fifteen seconds would leave the viewer unable to say what the cut meant.
+
+### One physical tell
+
+Pale grey skin, cloudy eyes, bared teeth in the close-up. The less gore you ask for, the more the audience believes it is still the person they recognised.
+
+### A grade per half, not one filter
+
+Cold and desaturated for the first ten seconds, golden and luminous for the last five. The contrast is what makes the embrace land.
+
+### Sound used, not covered
+
+The score arrives with the picture and the reveal is timed to it — the 10–15 second match cut is where the music is allowed to resolve.
+
+Models in this space handle audio and multi-image input natively. [ByteDance's Seedance page](https://seed.bytedance.com/en/seedance) documents a selectable 4 to 15 second range, native audio, and a first/last-frame input mode. [Google's Veo documentation](https://deepmind.google/models/veo/) describes clips of around eight seconds with native audio at 720p, 1080p, or 4K, first and last frame input, and both 16:9 and 9:16.
+
+## The three choices you actually get
+
+**Length is fixed at 15 seconds.** Four shots need that much room and a feed does not reward more. **Aspect is 9:16 or 16:9** — vertical for TikTok, Reels and Shorts, horizontal for YouTube and anything embedded in a page. **Resolution is 480p or 720p**, at 20 credits and 40 credits respectively: same length, same four shots, same grade and sound, more pixels.
+
+That is the entire control surface. Everything else is decided by your two photographs and your choice of mode, which is why the pair matters more than the settings.
 
 ## Render, then post-process for the feed
 
@@ -52,6 +110,27 @@ A film usually takes 10–15 minutes. You can close the tab — the render finis
 - **End on a face.** The last five seconds are the embrace in the wheat field, and that is what a replay keeps showing — so pick a pair whose faces you can stand looking at twice.
 - **Test the audio both ways.** A trending track layered over the clip often lifts a post, but start from the generated score.
 - **Keep text clear of the interface.** Captions belong in the middle band, away from each feed's buttons and description.
-- **Do not upscale.** Re-encoding 480p to a bigger number adds bytes, not detail.
+- **Do not upscale.** Re-encoding to a bigger number adds bytes, not detail. If you want a cleaner file, render 720p instead.
+- **Label it.** Wherever the feed offers a label for generated video, switch it on, and say in the caption that it came from two photos.
 
-Start at the [generator](/): uploading both photos and picking a story needs no account, only rendering does, and files up to 10 MB are accepted. For more than one film, the [credit packs](/pricing) go from a single film up to sixty, and the per-film price falls to as low as $2.10 at the top. The three-film pack alone is enough to run a mode twice and keep the better take.
+## A first attempt, step by step
+
+1. Open the [generator](/) and stage both photos — no account needed to upload, and files up to 10 MB are accepted.
+2. Put the survivor in slot one and the turned character in slot two.
+3. Pick the mode that matches the relationship in your pair, not the one that looks coolest.
+4. Choose 9:16 unless you are posting somewhere horizontal.
+5. Sign in only when you press render, and pick 480p for a first take.
+6. Wait for the notification in your library rather than watching the progress bar.
+7. Download the MP4, trim the head, and post it with the AI label on.
+
+If the result disappoints, change the photographs before you change anything else — in this format, that is the only dial with real range.
+
+## What goes wrong, and why
+
+**Faces warp mid-shot.** Almost always a lighting mismatch between the two uploads, so the model has to relight a head it is also animating. **The characters swap.** The slots were filled in the wrong order; the template gives the gun to photo one. **The turn reads as a jump cut.** The 10–15 second cut depends on the close-up and the wheat field sharing a body position, so a second photo where the subject is turned away costs you the match. **Nothing arrives.** The job failed upstream or was blocked in review, and your credits are already back — a failed render is not a charge.
+
+## What it costs
+
+One film costs 20 credits at 480p or 40 at 720p. Packs are one-time purchases with no subscription and credits that never expire, from $5.99 for a single film to $126.00 for sixty, which is $2.10 a film. The three-film pack is enough to run one mode twice and keep the better take — see [pricing](/pricing) for the full per-film math.
+
+Browse the [examples wall](/examples) before you spend anything: seeing which variant matches your pair beats reasoning about it, and [what happens to the faces you upload](/blog/ai-zombie-trend-photo-privacy) is worth four minutes before your first render.
