@@ -213,6 +213,17 @@ function ShowcaseCard({
     ) {
       return;
     }
+    // Desktop-only preview pull. These R2 clips are not fast-start (moov at
+    // the end of the file), so a `preload="metadata"` range request streams
+    // the whole ~7 MB video on mobile Chrome at parse time — before any JS
+    // gate can run. The SSR attribute stays "none"; fine-pointer clients
+    // upgrade it here, after hydration — and only for coverless cards, whose
+    // first video frame IS the poster. In-view playback is still observer-led.
+    if (!item.cover) {
+      video.preload = 'metadata';
+      video.load();
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // No ratio threshold: a 9:16 card is often TALLER than the viewport,
@@ -243,7 +254,7 @@ function ShowcaseCard({
           muted
           loop
           playsInline
-          preload={item.cover ? 'none' : 'metadata'}
+          preload="none"
           onClick={(e) => {
             e.stopPropagation();
             void videoRef.current?.play().catch(() => {});
