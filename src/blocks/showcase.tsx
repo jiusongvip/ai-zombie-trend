@@ -5,8 +5,12 @@ import { Play, WandSparkles } from 'lucide-react';
 
 import { tDynamic } from '@/core/i18n/dynamic';
 import { useRouter } from '@/core/i18n/navigation';
-import { showcaseItems, type ShowcaseItem, type ShowcaseTag } from '@/config/showcase';
 import { envConfigs } from '@/config';
+import {
+  showcaseItems,
+  type ShowcaseItem,
+  type ShowcaseTag,
+} from '@/config/showcase';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
@@ -128,7 +132,9 @@ export function Showcase({
 
           {!tagFilter && (
             <nav
-              aria-label={m['landing.explore.title']({ appName: envConfigs.app_name })}
+              aria-label={m['landing.explore.title']({
+                appName: envConfigs.app_name,
+              })}
               className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
             >
               {(['all', ...TAGS] as const).map((key) => (
@@ -154,7 +160,12 @@ export function Showcase({
 
         <div className="columns-2 gap-3 sm:columns-3 md:columns-4 lg:columns-6 [&>*]:mb-3">
           {items.map((item) => (
-            <ShowcaseCard key={item.id} item={item} locale={locale} onTry={tryItem} />
+            <ShowcaseCard
+              key={item.id}
+              item={item}
+              locale={locale}
+              onTry={tryItem}
+            />
           ))}
         </div>
 
@@ -192,6 +203,16 @@ function ShowcaseCard({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    // Touch devices (and Save-Data clients) keep poster-only cards: one
+    // autoplayed 7 MB clip pulled mobile LCP to ~5 s and inflated the page
+    // to 8 MB. The card's tap handler starts the clip instead.
+    if (
+      window.matchMedia('(pointer: coarse)').matches ||
+      (navigator as unknown as { connection?: { saveData?: boolean } })
+        .connection?.saveData
+    ) {
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         // No ratio threshold: a 9:16 card is often TALLER than the viewport,
@@ -223,6 +244,10 @@ function ShowcaseCard({
           loop
           playsInline
           preload={item.cover ? 'none' : 'metadata'}
+          onClick={(e) => {
+            e.stopPropagation();
+            void videoRef.current?.play().catch(() => {});
+          }}
           className="absolute inset-0 size-full object-cover"
         />
       ) : (
@@ -246,7 +271,7 @@ function ShowcaseCard({
       </span>
 
       {/* Prompt overlay — hover on desktop, always visible on mobile. */}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3.5 pt-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100">
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3.5 pt-10 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">
         <p className="line-clamp-2 text-[13px] leading-snug text-white/90">
           {item.prompt[locale as 'en' | 'zh'] ?? item.prompt.en}
         </p>
