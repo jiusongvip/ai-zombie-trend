@@ -30,6 +30,12 @@ import '@fontsource-variable/sora';
 import '@fontsource/oswald/500.css';
 import '@fontsource/oswald/600.css';
 import '@fontsource/oswald/700.css';
+
+// The hero H1 is the mobile LCP element, and its timestamp is the font-swap
+// repaint. Preloading that exact weight starts the fetch in parallel with the
+// stylesheet instead of after it.
+import oswald700Woff2 from '@fontsource/oswald/files/oswald-latin-700-normal.woff2';
+
 import '@/styles/globals.css';
 
 // Analytics IDs live in the DB config (1h-cached service). Fetched via a
@@ -76,6 +82,14 @@ export const Route = createRootRoute({
       links: [
         { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
         { rel: 'apple-touch-icon', href: '/favicon.svg' },
+        // Oswald 700 latin — the hero H1's face (see import above).
+        {
+          rel: 'preload',
+          href: oswald700Woff2,
+          as: 'font',
+          type: 'font/woff2',
+          crossorigin: 'anonymous',
+        },
       ],
       scripts: jsonLd(organizationSchema(), webSiteSchema()),
     };
