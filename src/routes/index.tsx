@@ -23,9 +23,19 @@ import { Generator } from '@/blocks/generator';
 import { Header } from '@/blocks/header';
 import { Hero } from '@/blocks/hero';
 import { HowItWorks } from '@/blocks/how-it-works';
+import { MatchCut } from '@/blocks/match-cut';
 import { Pricing } from '@/blocks/pricing';
+import {
+  DeliveryNotes,
+  FormatGuide,
+  PhotoGuide,
+  StoryModes,
+  TierGuide,
+} from '@/blocks/prose-guides';
 import { ShotList } from '@/blocks/shot-list';
 import { Showcase } from '@/blocks/showcase';
+import { SiteDirectory } from '@/blocks/site-directory';
+import { SpecCards } from '@/blocks/spec-cards';
 import { SupportWidget } from '@/blocks/support-widget';
 import { TrendNote } from '@/blocks/trend-note';
 
@@ -43,12 +53,20 @@ function HomePage() {
       <main>
         <Hero />
         <Generator />
+        <SpecCards />
         <ShotList />
+        <StoryModes />
         <Showcase />
         <HowItWorks />
+        <PhotoGuide />
+        <FormatGuide />
+        <TierGuide />
         <TrendNote />
+        <MatchCut />
+        <DeliveryNotes />
         <Pricing />
         <Faq />
+        <SiteDirectory />
         <CtaBand />
       </main>
       <Footer />
