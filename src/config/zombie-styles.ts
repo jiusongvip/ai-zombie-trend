@@ -314,7 +314,7 @@ export const zombieSubjects: readonly ZombieSubject[] = [
     advance: 'It does not attack. It suddenly runs forward',
     contact:
       "straight into Character A's arms, and presses its head and body against their chest.",
-    embrace: "Character B leaps into Character A's arms",
+    embrace: "Character B presses its body into Character A's arms",
     restored:
       'Both are now completely alive and healthy — Character A restored to their normal human appearance, and Character B to its living coat, bright eyes, and size, both exactly matching the reference images. Character A wears clean everyday clothing.',
     texture: 'natural fur and coat texture, detailed hair simulation',
@@ -384,6 +384,7 @@ function storyPrompt(world: ZombieWorld, role: ZombieSubject): string {
     'VISUAL AND CAMERA DIRECTION',
     `4K cinematic quality, photorealistic 3D rendering, film-quality animation, highly detailed facial expressions, realistic tears, ${role.texture}, physically accurate lighting, ${world.volumetric}, ${world.atmospheric}, realistic clothing physics, cinematic depth of field, smooth dynamic tracking shots, and professional film color grading.`,
     'First 10 seconds: dark, cold, desaturated, frightening, emotionally tense.\nFinal 5 seconds: luminous, warm, golden, peaceful, nostalgic, emotionally healing.',
+    "IMPORTANT — THIS RULE COVERS ALL FOUR SCENES: No excessive gore or graphic wounds. No biting. No blood. Character B never attacks, bites, scratches, chases, or physically harms Character A in any shot. The only physical contact in the entire video is Character B running into Character A's arms and the two embracing.",
 
     'SOUND DESIGN',
     world.soundFirst,
