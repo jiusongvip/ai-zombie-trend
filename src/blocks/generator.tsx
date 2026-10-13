@@ -768,6 +768,7 @@ export function Generator() {
                   <button
                     key={mode}
                     type="button"
+                    aria-pressed={mode === previewMode}
                     onClick={() => setPreviewMode(mode)}
                     className={cn(
                       'flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
