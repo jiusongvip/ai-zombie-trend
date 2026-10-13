@@ -1,6 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -13,7 +14,7 @@ import {
 import { Link } from '@/core/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
-import { TextField } from '@/components/form-field';
+import { PasswordField } from '@/components/form-field';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
@@ -24,6 +25,7 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const passwordSchema = z
   .object({
@@ -98,41 +100,44 @@ function ChangePasswordCard() {
         <CardContent className="space-y-6 pb-2">
           <form.Field name="currentPassword">
             {(field) => (
-              <TextField
+              <PasswordField
                 field={field}
                 label={m['settings.security.current_password_title']()}
-                type="password"
                 required
                 autoComplete="current-password"
                 placeholder={m[
                   'settings.security.current_password_placeholder'
                 ]()}
+                revealLabel={m['common.sign.show_password']()}
+                hideLabel={m['common.sign.hide_password']()}
               />
             )}
           </form.Field>
           <form.Field name="newPassword">
             {(field) => (
-              <TextField
+              <PasswordField
                 field={field}
                 label={m['common.sign.new_password_title']()}
-                type="password"
                 required
                 autoComplete="new-password"
                 placeholder={m['common.sign.new_password_placeholder']()}
+                revealLabel={m['common.sign.show_password']()}
+                hideLabel={m['common.sign.hide_password']()}
               />
             )}
           </form.Field>
           <form.Field name="confirmPassword">
             {(field) => (
-              <TextField
+              <PasswordField
                 field={field}
                 label={m['common.sign.confirm_password_title']()}
-                type="password"
                 required
                 autoComplete="new-password"
                 placeholder={m[
                   'common.sign.confirm_new_password_placeholder'
                 ]()}
+                revealLabel={m['common.sign.show_password']()}
+                hideLabel={m['common.sign.hide_password']()}
               />
             )}
           </form.Field>
@@ -162,6 +167,9 @@ function ChangePasswordCard() {
           <form.Subscribe selector={(s) => s.isSubmitting}>
             {(isSubmitting) => (
               <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                )}
                 {isSubmitting
                   ? m['settings.security.saving']()
                   : m['settings.security.submit']()}
@@ -191,7 +199,11 @@ function SetPasswordCard({
           {m['settings.security.no_password_description']({ provider, email })}
         </p>
         <Link
-          href="/forgot-password"
+          href={
+            email
+              ? `/forgot-password?email=${encodeURIComponent(email)}`
+              : '/forgot-password'
+          }
           className={cn(buttonVariants({ variant: 'outline' }), 'w-fit')}
         >
           {m['settings.security.set_password']()}
@@ -230,15 +242,32 @@ function SecurityPage() {
 
       {accountsQuery.isPending ? (
         <Card>
-          <CardContent className="text-muted-foreground py-8 text-sm">
-            {m['settings.security.loading']()}
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
           </CardContent>
         </Card>
       ) : accountsQuery.isError ? (
         <Card>
-          <CardContent className="text-muted-foreground py-8 text-sm">
+          <CardHeader>
+            <CardTitle>{m['settings.security.password_card']()}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-destructive pb-2 text-sm">
             {m['settings.security.load_failed']()}
           </CardContent>
+          <CardFooter>
+            <Button
+              variant="outline"
+              onClick={() => accountsQuery.refetch()}
+              disabled={accountsQuery.isFetching}
+            >
+              <RefreshCw className="mr-2 size-4" />
+              {m['common.error.retry']()}
+            </Button>
+          </CardFooter>
         </Card>
       ) : hasPassword ? (
         <ChangePasswordCard />

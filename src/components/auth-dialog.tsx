@@ -58,7 +58,6 @@ export function AuthDialog() {
   const emailEnabled = configs.email_auth_enabled !== 'false';
   const googleEnabled = configs.google_auth_enabled === 'true';
   const githubEnabled = configs.github_auth_enabled === 'true';
-  const passwordResetEnabled = configs.password_reset_enabled === 'true';
   const hasSocial = googleEnabled || githubEnabled;
   const hasAnyMethod = emailEnabled || hasSocial;
 
@@ -272,15 +271,25 @@ export function AuthDialog() {
                             <FieldLabel htmlFor={field.name}>
                               {m['common.sign.password_title']()}
                             </FieldLabel>
-                            {passwordResetEnabled && (
-                              <Link
-                                href="/forgot-password"
-                                onClick={closeAuthDialog}
-                                className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
-                              >
-                                {m['common.sign.forgot_password']()}
-                              </Link>
-                            )}
+                            <form.Subscribe
+                              selector={(s) =>
+                                (s.values.email as string)?.trim() ?? ''
+                              }
+                            >
+                              {(email) => (
+                                <Link
+                                  href={
+                                    email
+                                      ? `/forgot-password?email=${encodeURIComponent(email)}`
+                                      : '/forgot-password'
+                                  }
+                                  onClick={closeAuthDialog}
+                                  className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
+                                >
+                                  {m['common.sign.forgot_password']()}
+                                </Link>
+                              )}
+                            </form.Subscribe>
                           </div>
                           <Input
                             id={field.name}

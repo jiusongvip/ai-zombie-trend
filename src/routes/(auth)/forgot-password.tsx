@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
+import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 
 import { requestPasswordReset } from '@/core/auth/client';
@@ -19,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const forgotSchema = z.object({
   email: z.string().email(m['common.sign.email_placeholder']()),
@@ -32,7 +34,7 @@ function ForgotPasswordPage() {
   const configQuery = usePublicConfig();
   const configs = configQuery.data ?? {};
 
-  const configsLoaded = configQuery.isSuccess;
+  const configsKnown = configQuery.isSuccess || configQuery.isError;
   const passwordResetEnabled = configs.password_reset_enabled === 'true';
 
   const form = useForm({
@@ -59,10 +61,19 @@ function ForgotPasswordPage() {
     },
   });
 
+  // Carry the address over from the sign-in form or from Settings → Security.
+  useEffect(() => {
+    const email = new URLSearchParams(window.location.search).get('email');
+    if (email) form.setFieldValue('email', email);
+  }, [form]);
+
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center text-lg font-semibold tracking-tight">
+        <Link
+          href="/"
+          className="self-center text-lg font-semibold tracking-tight"
+        >
           {configs.app_name || envConfigs.app_name}
         </Link>
         <Card>
@@ -72,14 +83,20 @@ function ForgotPasswordPage() {
                 ? m['common.sign.reset_link_sent_title']()
                 : m['common.sign.forgot_password_title']()}
             </CardTitle>
-            {!sent && (
+            {!sent && configsKnown && passwordResetEnabled && (
               <CardDescription>
                 {m['common.sign.forgot_password_description']()}
               </CardDescription>
             )}
           </CardHeader>
           <CardContent>
-            {configsLoaded && !passwordResetEnabled ? (
+            {!configsKnown ? (
+              <div className="space-y-4">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : !passwordResetEnabled ? (
               <FieldGroup>
                 <div className="rounded-lg border border-dashed p-6 text-center">
                   <p className="text-sm font-medium">
@@ -141,10 +158,15 @@ function ForgotPasswordPage() {
                   <Field>
                     <form.Subscribe selector={(s) => s.isSubmitting}>
                       {(isSubmitting) => (
-                        <Button type="submit" disabled={isSubmitting}>
-                          {isSubmitting
-                            ? '...'
-                            : m['common.sign.send_reset_link']()}
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="flex w-full items-center justify-center gap-2"
+                        >
+                          {isSubmitting && (
+                            <Loader2 className="size-4 animate-spin" />
+                          )}
+                          {m['common.sign.send_reset_link']()}
                         </Button>
                       )}
                     </form.Subscribe>

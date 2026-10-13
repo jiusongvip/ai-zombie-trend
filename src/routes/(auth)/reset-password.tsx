@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
+import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 
 import { MIN_PASSWORD_LENGTH, resetPassword } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { m } from '@/paraglide/messages.js';
-import { TextField } from '@/components/form-field';
+import { PasswordField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -137,37 +138,46 @@ function ResetPasswordPage() {
                   )}
                   <form.Field name="password">
                     {(field) => (
-                      <TextField
+                      <PasswordField
                         field={field}
                         label={m['common.sign.new_password_title']()}
-                        type="password"
                         required
+                        autoComplete="new-password"
                         placeholder={m[
                           'common.sign.new_password_placeholder'
                         ]()}
+                        revealLabel={m['common.sign.show_password']()}
+                        hideLabel={m['common.sign.hide_password']()}
                       />
                     )}
                   </form.Field>
                   <form.Field name="confirmPassword">
                     {(field) => (
-                      <TextField
+                      <PasswordField
                         field={field}
                         label={m['common.sign.confirm_password_title']()}
-                        type="password"
                         required
+                        autoComplete="new-password"
                         placeholder={m[
                           'common.sign.confirm_new_password_placeholder'
                         ]()}
+                        revealLabel={m['common.sign.show_password']()}
+                        hideLabel={m['common.sign.hide_password']()}
                       />
                     )}
                   </form.Field>
                   <Field>
                     <form.Subscribe selector={(s) => s.isSubmitting}>
                       {(isSubmitting) => (
-                        <Button type="submit" disabled={isSubmitting}>
-                          {isSubmitting
-                            ? '...'
-                            : m['common.sign.reset_password_submit']()}
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="flex w-full items-center justify-center gap-2"
+                        >
+                          {isSubmitting && (
+                            <Loader2 className="size-4 animate-spin" />
+                          )}
+                          {m['common.sign.reset_password_submit']()}
                         </Button>
                       )}
                     </form.Subscribe>
