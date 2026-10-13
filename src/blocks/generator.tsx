@@ -7,30 +7,25 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {
-  CheckCircle2,
-  CloudRain,
-  Home,
-  Loader2,
-  Lock,
-  Snowflake,
-  TriangleAlert,
-  Waves,
-  type LucideIcon,
-} from 'lucide-react';
+import { CheckCircle2, Loader2, Lock, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
 import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
 import { showcaseItems } from '@/config/showcase';
+import { worldScenes } from '@/config/story-scenes';
 import { apiGet, apiPost, type PageResult } from '@/lib/api-client';
 import { currentLocationPath, openAuthDialog } from '@/lib/auth-dialog';
 import { cn } from '@/lib/utils';
 import type { VideoTaskView } from '@/lib/video-types';
 import { m } from '@/paraglide/messages.js';
 import { Filmstrip } from '@/components/studio/filmstrip';
-import { FrameSlot, type FrameSlotValue } from '@/components/studio/frame-slot';
+import {
+  FrameSlot,
+  type FrameSlotLabels,
+  type FrameSlotValue,
+} from '@/components/studio/frame-slot';
 import { Stage } from '@/components/studio/stage';
 import { Button } from '@/components/ui/button';
 
@@ -41,12 +36,7 @@ import { Button } from '@/components/ui/button';
  */
 const WORLDS = ['cabin', 'shore', 'street', 'doorstep'] as const;
 const SUBJECTS = ['person', 'pet'] as const;
-const WORLD_ICONS: Record<string, LucideIcon> = {
-  cabin: Home,
-  shore: Waves,
-  street: CloudRain,
-  doorstep: Snowflake,
-};
+const PREVIEW_MODES = ['film', 'scene'] as const;
 type ZombieWorld = (typeof WORLDS)[number];
 type ZombieSubject = (typeof SUBJECTS)[number];
 const MAX_FRAME_MB = 10;
@@ -101,6 +91,66 @@ const SUBJECT_TAGS: readonly string[] = SUBJECTS;
 const SAMPLE_FILM = showcaseItems.find(
   (item) => item.id === 'zombie-couple-film'
 );
+
+/**
+ * One photograph, as a numbered row: the number and the role on the left, the
+ * drop zone on the right.
+ *
+ * Stacked rather than side by side because the two slots are not
+ * interchangeable — `@image1` is the survivor and `@image2` is the one who
+ * turned — and swapping them is the one input mistake that wrecks the film
+ * without ever raising an error. A number in front of each role makes the
+ * order part of the layout instead of part of a caption you have to remember
+ * to read.
+ */
+function PhotoRow({
+  index,
+  title,
+  hint,
+  value,
+  onChange,
+  invalid,
+  labels,
+}: {
+  index: number;
+  title: string;
+  hint: string;
+  value: FrameSlotValue;
+  onChange: (value: FrameSlotValue) => void;
+  invalid: boolean;
+  labels: FrameSlotLabels;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        aria-hidden
+        className={cn(
+          'flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums',
+          invalid
+            ? 'border-destructive text-destructive'
+            : 'border-border/70 bg-muted/40 text-muted-foreground'
+        )}
+      >
+        {index}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-foreground text-sm font-medium">{title}</p>
+        <p className="text-muted-foreground text-xs leading-snug">{hint}</p>
+      </div>
+      <div className="w-[104px] shrink-0 sm:w-[118px]">
+        <FrameSlot
+          value={value}
+          onChange={onChange}
+          aspectRatio={FRAME_ASPECT}
+          maxHeight="min(26vh, 15rem)"
+          maxSizeMB={MAX_FRAME_MB}
+          invalid={invalid}
+          labels={labels}
+        />
+      </div>
+    </div>
+  );
+}
 
 function saveDraft(draft: FilmDraft) {
   try {
@@ -172,10 +222,12 @@ function FieldNote({ children }: { children: ReactNode }) {
 }
 
 /**
- * Redesigned generator — a three-column workbench on large screens so the
- * whole flow (upload → story → submit) lives in the first screen: photo
- * slots left, story + settings + CTA in the wide middle column that used to
- * be dead margin, preview stage right. No numbered steps. Stacks on mobile.
+ * The homepage workbench — two columns on large screens. The left column holds
+ * every decision in the order you make it (who turned → the two photos → the
+ * world → length, shape, quality); the right column holds the preview, the
+ * price, and the button that spends it. Stacking the cost and the consent
+ * under the picture means the last thing you read is the thing you click.
+ * Stacks to one column on mobile. No numbered steps.
  */
 export function Generator() {
   const queryClient = useQueryClient();
@@ -197,6 +249,13 @@ export function Generator() {
   // Gate messages stay hidden until the first click, then track live — each one
   // disappears the moment its own condition is met.
   const [attempted, setAttempted] = useState(false);
+  /**
+   * What the empty stage proves. `film` is the honest answer — a real render —
+   * and stays the default; `scene` trades that proof for the setting of the
+   * world you just picked, which is the faster way to choose between four.
+   */
+  const [previewMode, setPreviewMode] =
+    useState<(typeof PREVIEW_MODES)[number]>('film');
 
   // Restore draft after sign-up
   useEffect(() => {
@@ -448,6 +507,20 @@ export function Generator() {
   /** Empty slots only turn red once a click has asked for them. */
   const photosInvalid = attempted && !uploading;
 
+  /** The chosen world's concept frame, for the `scene` preview mode. */
+  const activeScene = worldScenes[activeWorld];
+  const stageScene =
+    previewMode === 'scene' && activeScene
+      ? {
+          image: activeScene.full,
+          badge: m['landing.generator.scene.badge'](),
+          alt: [
+            tDynamic(`landing.worlds.${activeWorld}.title`),
+            m['landing.generator.preview.scene'](),
+          ].join(' — '),
+        }
+      : undefined;
+
   return (
     <section
       id="generator"
@@ -474,81 +547,13 @@ export function Generator() {
           </div>
         )}
 
-        {/* Main layout: photo card + story/settings card + stage */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)_minmax(0,20rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)_minmax(0,26rem)] xl:gap-6 2xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)_minmax(0,30rem)]">
-          {/* ── Left: Photo Upload Card ──────────────────────────────── */}
-          <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* Photo Upload Section */}
-            <div ref={photosRef}>
-              {/* Form-group label, not a content heading — keeps every h3 on the page inside an h2 section. */}
-              <p className="text-foreground mb-3 text-sm font-semibold">
-                {m['landing.generator.step_photos']()}
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {/* Photo 1 */}
-                <div>
-                  <FrameSlot
-                    value={firstFrame}
-                    onChange={setFirstFrame}
-                    aspectRatio={FRAME_ASPECT}
-                    maxHeight="min(38vh, 22rem)"
-                    maxSizeMB={MAX_FRAME_MB}
-                    invalid={photosInvalid && !firstFrame.url}
-                    labels={frameLabels}
-                  />
-                  <p className="text-foreground mt-2 text-sm font-medium">
-                    {m['landing.generator.frame_a']()}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {m['landing.generator.frame_a_hint']()}
-                  </p>
-                </div>
-
-                {/* Photo 2 */}
-                <div>
-                  <FrameSlot
-                    value={lastFrame}
-                    onChange={setLastFrame}
-                    aspectRatio={FRAME_ASPECT}
-                    maxHeight="min(38vh, 22rem)"
-                    maxSizeMB={MAX_FRAME_MB}
-                    invalid={photosInvalid && !lastFrame.url}
-                    labels={frameLabels}
-                  />
-                  <p className="text-foreground mt-2 text-sm font-medium">
-                    {m['landing.generator.frame_b']()}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {m['landing.generator.frame_b_hint']()}
-                  </p>
-                </div>
-              </div>
-
-              {attempted && uploading && (
-                <FieldNote>{m['studio.form.upload_uploading']()}</FieldNote>
-              )}
-              {attempted && !uploading && !hasBothPhotos && (
-                <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
-              )}
-
-              {/* Photo-permission rule, next to the upload slots */}
-              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
-                <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
-                {m['landing.generator.photo_rules']()}
-              </p>
-
-              {/* Privacy note */}
-              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
-                <Lock className="mt-0.5 size-3.5 shrink-0" />
-                {m['landing.generator.privacy_note']()}
-              </p>
-            </div>
-          </div>
-
-          {/* ── Middle: Story & Settings Card ────────────────────────── */}
-          <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* Who turns, then where it happens — the two halves of the story. */}
-            <div className="mb-4">
+        {/* Main layout: the decisions on the left, the result and the action on
+            the right — so the button sits directly under the picture it makes. */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-6">
+          {/* ── Left: everything you decide, in the order you decide it ── */}
+          <div className="border-border/60 bg-card/90 space-y-5 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
+            {/* Who turns comes first: it decides what the second photo is of. */}
+            <div>
               <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
                 {m['landing.generator.subject']()}
               </p>
@@ -577,45 +582,93 @@ export function Generator() {
               </p>
             </div>
 
+            <div ref={photosRef}>
+              {/* Form-group label, not a content heading — keeps every h3 on the page inside an h2 section. */}
+              <p className="text-foreground mb-3 text-sm font-semibold">
+                {m['landing.generator.step_photos']()}
+              </p>
+              <div className="relative space-y-3">
+                <span
+                  aria-hidden
+                  className="border-border/60 absolute top-10 bottom-10 left-[13px] border-l border-dashed"
+                />
+                <PhotoRow
+                  index={1}
+                  title={m['landing.generator.frame_a']()}
+                  hint={m['landing.generator.frame_a_hint']()}
+                  value={firstFrame}
+                  onChange={setFirstFrame}
+                  invalid={photosInvalid && !firstFrame.url}
+                  labels={frameLabels}
+                />
+                <PhotoRow
+                  index={2}
+                  title={m['landing.generator.frame_b']()}
+                  hint={m['landing.generator.frame_b_hint']()}
+                  value={lastFrame}
+                  onChange={setLastFrame}
+                  invalid={photosInvalid && !lastFrame.url}
+                  labels={frameLabels}
+                />
+              </div>
+
+              {attempted && uploading && (
+                <FieldNote>{m['studio.form.upload_uploading']()}</FieldNote>
+              )}
+              {attempted && !uploading && !hasBothPhotos && (
+                <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
+              )}
+
+              {/* Photo-permission rule, next to the upload slots */}
+              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
+                <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
+                {m['landing.generator.photo_rules']()}
+              </p>
+            </div>
+
             {/* World cards — the setting and the match cut, not the relationship. */}
-            <div className="mb-4">
+            <div>
               <p className="text-foreground mb-3 text-sm font-semibold">
                 {m['landing.generator.pick']()}
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                 {WORLDS.map((id) => {
-                  const Icon = WORLD_ICONS[id];
                   const active = id === activeWorld;
+                  const scene = worldScenes[id];
                   return (
                     <button
                       key={id}
                       type="button"
                       onClick={() => setWorld(id)}
                       className={cn(
-                        'relative rounded-xl border p-3 text-left transition-all',
+                        'relative overflow-hidden rounded-xl border text-left transition-all',
                         active
-                          ? 'border-primary bg-primary/10 ring-primary/30 ring-2'
+                          ? 'border-primary ring-primary/30 ring-2'
                           : 'border-border/60 bg-muted/20 hover:border-primary/50'
                       )}
                     >
-                      <span
-                        className={cn(
-                          'mb-2 flex size-8 items-center justify-center rounded-lg',
-                          active
-                            ? 'bg-primary/15 text-primary'
-                            : 'bg-muted text-muted-foreground'
-                        )}
-                      >
-                        <Icon className="size-4" />
-                      </span>
-                      <span className="block text-sm leading-tight font-semibold">
-                        {tDynamic(`landing.worlds.${id}.title`)}
-                      </span>
-                      <span className="text-muted-foreground mt-1 block text-[11px] leading-snug">
-                        {tDynamic(`landing.worlds.${id}.desc`)}
+                      {scene ? (
+                        <img
+                          src={scene.thumb}
+                          alt=""
+                          aria-hidden
+                          loading="lazy"
+                          decoding="async"
+                          className="h-14 w-full object-cover"
+                        />
+                      ) : (
+                        <span className="bg-muted/40 block h-14 w-full" />
+                      )}
+                      <span className="block p-2.5">
+                        <span className="block text-sm leading-tight font-semibold">
+                          {tDynamic(`landing.worlds.${id}.title`)}
+                        </span>
+                        <span className="text-muted-foreground mt-1 block text-[11px] leading-snug">
+                          {tDynamic(`landing.worlds.${id}.desc`)}
+                        </span>
                       </span>
                       {active && (
-                        <CheckCircle2 className="text-primary absolute top-2.5 right-2.5 size-4" />
+                        <CheckCircle2 className="text-primary absolute top-2 right-2 size-4" />
                       )}
                     </button>
                   );
@@ -701,126 +754,34 @@ export function Generator() {
                 </div>
               </div>
             </div>
-
-            {/* Credit info */}
-            <div
-              ref={creditsRef}
-              className="border-border/60 mb-4 border-t pt-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <p className="text-muted-foreground text-xs">
-                    {m['studio.form.balance_label']()}
-                  </p>
-                  <p className="text-foreground text-sm font-medium tabular-nums">
-                    {signedIn
-                      ? balance !== undefined
-                        ? m['studio.form.balance_value']({ balance })
-                        : '…'
-                      : '—'}
-                  </p>
-                </div>
-                <div className="space-y-0.5 text-right">
-                  <p className="text-muted-foreground text-xs">
-                    {m['studio.form.after_label']()}
-                  </p>
-                  <p className="text-foreground text-sm font-medium tabular-nums">
-                    {signedIn && balance !== undefined
-                      ? m['studio.form.after_value']({
-                          left: Math.max(0, balance - cost),
-                        })
-                      : m['studio.result.cost']({ credits: cost })}
-                  </p>
-                </div>
-              </div>
-
-              {attempted && !providerReady && (
-                <FieldNote>{m['studio.form.no_provider']()}</FieldNote>
-              )}
-              {attempted && !canAfford && (
-                <FieldNote>
-                  {m['landing.generator.insufficient']()}{' '}
-                  <Link
-                    href="/pricing"
-                    className="underline underline-offset-4"
-                  >
-                    {m['landing.generator.top_up']()}
-                  </Link>
-                </FieldNote>
-              )}
-            </div>
-
-            {/* Likeness consent — the server refuses the render without it */}
-            <div ref={consentRef} className="mt-4 space-y-2.5">
-              <label
-                className={cn(
-                  'hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors',
-                  attempted && !consented
-                    ? 'text-destructive'
-                    : 'text-muted-foreground'
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={consented}
-                  onChange={(event) => setConsented(event.target.checked)}
-                  className="accent-primary mt-0.5 size-4 shrink-0"
-                />
-                <span>
-                  {m['landing.generator.consent_body']()}{' '}
-                  <Link
-                    href="/terms-of-service"
-                    className={cn(
-                      'underline',
-                      attempted && !consented
-                        ? 'text-destructive'
-                        : 'text-foreground'
-                    )}
-                  >
-                    {m['landing.generator.consent_terms']()}
-                  </Link>
-                </span>
-              </label>
-              {attempted && !consented && (
-                <FieldNote>{m['landing.generator.need_consent']()}</FieldNote>
-              )}
-              <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
-                <input
-                  type="checkbox"
-                  checked={shareToWall}
-                  onChange={(event) => setShareToWall(event.target.checked)}
-                  className="accent-primary mt-0.5 size-4 shrink-0"
-                />
-                <span>{m['landing.generator.share_body']()}</span>
-              </label>
-            </div>
-
-            {/* CTA Button */}
-            <Button
-              size="lg"
-              className="bg-primary shadow-primary/25 hover:bg-primary/90 w-full rounded-xl text-base font-semibold shadow-lg disabled:opacity-50"
-              onClick={onGenerate}
-              disabled={generateMutation.isPending}
-            >
-              {generateMutation.isPending ? (
-                <Loader2 className="mr-2 size-5 animate-spin" />
-              ) : null}
-              {generateMutation.isPending
-                ? m['studio.generate.submitting']()
-                : !signedIn && cost > 0
-                  ? m['landing.generator.cta_guest']({ credits: cost })
-                  : cost > 0
-                    ? m['studio.generate.submit_cost']({ credits: cost })
-                    : m['landing.generator.start']()}
-            </Button>
-
-            <p className="text-muted-foreground mt-3 text-center text-xs">
-              {m['landing.hero.note']()}
-            </p>
           </div>
 
-          {/* ── Right: Preview Stage ─────────────────────────────────── */}
+          {/* ── Right: what the picture looks like, then the price and the
+                 action — the button sits directly under the result it makes. ── */}
           <div className="space-y-4">
+            {/* What the empty frame proves. The real clip is the honest default;
+                the concept frame is the faster way to compare the four worlds.
+                Gone once a task exists — the stage then has real content. */}
+            {!activeTask ? (
+              <div className="bg-muted/50 flex gap-1 rounded-lg p-1">
+                {PREVIEW_MODES.map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setPreviewMode(mode)}
+                    className={cn(
+                      'flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
+                      mode === previewMode
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {tDynamic(`landing.generator.preview.${mode}`)}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
             <div ref={stageRef}>
               <Stage
                 task={activeTask}
@@ -841,9 +802,145 @@ export function Generator() {
                       }
                     : undefined
                 }
+                scene={stageScene}
                 onRegenerate={() => generateMutation.mutate(draft())}
                 onLoadSettings={() => activeTask && loadSettings(activeTask)}
               />
+            </div>
+
+            {/* The four beats, in order, under the preview they describe. The
+                names are the same keys the shot-list section uses, so the
+                caption on the workbench can never drift from the explanation
+                further down the page. */}
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              {[
+                m['landing.shot.s1.title'](),
+                m['landing.shot.s2.title'](),
+                m['landing.shot.s3.title'](),
+                m['landing.shot.s4.title'](),
+              ].join(' → ')}
+            </p>
+
+            {/* Cost, consent, action — stacked under the result so the last
+                thing you read is the button. */}
+            <div className="border-border/60 bg-card/90 space-y-4 rounded-2xl border p-4 backdrop-blur-sm">
+              <div ref={creditsRef} className="space-y-2">
+                {/* Only a signed-in reader has a balance to show. For a guest a
+                    "after this run" row would be an invented number, and the
+                    button already carries the price. */}
+                {signedIn ? (
+                  <>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {m['studio.form.balance_label']()}
+                      </span>
+                      <span className="text-foreground font-medium tabular-nums">
+                        {balance !== undefined
+                          ? m['studio.form.balance_value']({ balance })
+                          : '…'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {m['studio.form.after_label']()}
+                      </span>
+                      <span className="text-foreground font-medium tabular-nums">
+                        {balance !== undefined
+                          ? m['studio.form.after_value']({
+                              left: Math.max(0, balance - cost),
+                            })
+                          : m['studio.result.cost']({ credits: cost })}
+                      </span>
+                    </div>
+                  </>
+                ) : null}
+
+                {attempted && !providerReady && (
+                  <FieldNote>{m['studio.form.no_provider']()}</FieldNote>
+                )}
+                {attempted && !canAfford && (
+                  <FieldNote>
+                    {m['landing.generator.insufficient']()}{' '}
+                    <Link
+                      href="/pricing"
+                      className="underline underline-offset-4"
+                    >
+                      {m['landing.generator.top_up']()}
+                    </Link>
+                  </FieldNote>
+                )}
+              </div>
+
+              {/* Likeness consent — the server refuses the render without it */}
+              <div ref={consentRef} className="space-y-2.5 border-t pt-3">
+                <label
+                  className={cn(
+                    'hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors',
+                    attempted && !consented
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={consented}
+                    onChange={(event) => setConsented(event.target.checked)}
+                    className="accent-primary mt-0.5 size-4 shrink-0"
+                  />
+                  <span>
+                    {m['landing.generator.consent_body']()}{' '}
+                    <Link
+                      href="/terms-of-service"
+                      className={cn(
+                        'underline',
+                        attempted && !consented
+                          ? 'text-destructive'
+                          : 'text-foreground'
+                      )}
+                    >
+                      {m['landing.generator.consent_terms']()}
+                    </Link>
+                  </span>
+                </label>
+                {attempted && !consented && (
+                  <FieldNote>{m['landing.generator.need_consent']()}</FieldNote>
+                )}
+                <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={shareToWall}
+                    onChange={(event) => setShareToWall(event.target.checked)}
+                    className="accent-primary mt-0.5 size-4 shrink-0"
+                  />
+                  <span>{m['landing.generator.share_body']()}</span>
+                </label>
+              </div>
+
+              <Button
+                size="lg"
+                className="bg-primary shadow-primary/25 hover:bg-primary/90 w-full rounded-xl text-base font-semibold shadow-lg disabled:opacity-50"
+                onClick={onGenerate}
+                disabled={generateMutation.isPending}
+              >
+                {generateMutation.isPending ? (
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                ) : null}
+                {generateMutation.isPending
+                  ? m['studio.generate.submitting']()
+                  : !signedIn && cost > 0
+                    ? m['landing.generator.cta_guest']({ credits: cost })
+                    : cost > 0
+                      ? m['studio.generate.submit_cost']({ credits: cost })
+                      : m['landing.generator.start']()}
+              </Button>
+
+              <p className="text-muted-foreground flex items-start gap-2 text-[11px] leading-snug">
+                <Lock className="mt-0.5 size-3.5 shrink-0" />
+                {m['landing.generator.privacy_note']()}
+              </p>
+              <p className="text-muted-foreground text-center text-xs">
+                {m['landing.hero.note']()}
+              </p>
             </div>
 
             {signedIn && recent.length > 0 && (

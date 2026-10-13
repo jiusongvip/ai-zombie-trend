@@ -63,6 +63,19 @@ export interface StageSample {
 }
 
 /**
+ * A concept frame for the story world the form currently has selected.
+ *
+ * Swapping this in when the world changes is what makes the picker feel like a
+ * choice rather than a label, but it is illustration and not output — the badge
+ * has to say so, or the stage would be claiming a render it did not make.
+ */
+export interface StageScene {
+  image: string;
+  badge: string;
+  alt: string;
+}
+
+/**
  * Caps the frame's width so its height can never exceed `vhBudget`.
  *
  * Without this, a 16:9 stage on a 1920px screen is ~845px tall and pushes the
@@ -109,6 +122,7 @@ export function Stage({
   onLoadSettings,
   busy = false,
   sample,
+  scene,
   vhBudget = 58,
 }: {
   task: VideoTaskView | null;
@@ -130,6 +144,8 @@ export function Stage({
   busy?: boolean;
   /** Example clip for the empty frame; omit to get the plain placeholder. */
   sample?: StageSample;
+  /** Concept frame for the selected world. Wins over `sample` when present. */
+  scene?: StageScene;
   /**
    * Share of the viewport height (in vh) the frame may occupy. Landing pages
    * that must keep the submit button above the fold pass a smaller budget
@@ -188,7 +204,20 @@ export function Stage({
             )}
           </div>
         ) : !task ? (
-          sample && !samplePlaying ? (
+          scene ? (
+            <div className="size-full">
+              <img
+                src={scene.image}
+                alt={scene.alt}
+                className="size-full object-cover"
+                decoding="async"
+              />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+              <span className="text-foreground/90 absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
+                {scene.badge}
+              </span>
+            </div>
+          ) : sample && !samplePlaying ? (
             <button
               type="button"
               onClick={() => setSamplePlaying(true)}
