@@ -8,6 +8,10 @@ export function Footer() {
       links: [
         { label: m['landing.footer.generator'](), href: '/#generator' },
         { label: m['landing.footer.examples'](), href: '/examples' },
+        {
+          label: m['landing.footer.pet_video'](),
+          href: '/ai-zombie-pet-video',
+        },
         { label: m['landing.footer.library'](), href: '/library' },
         { label: m['landing.footer.pricing'](), href: '/pricing' },
       ],

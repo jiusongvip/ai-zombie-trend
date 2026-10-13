@@ -11,13 +11,14 @@ const STATIC_PATHS = [
   '/blog',
   '/about',
   '/ai-zombie-trend-prompts',
+  '/ai-zombie-pet-video',
   '/privacy-policy',
   '/terms-of-service',
   '/refund-policy',
 ];
 
 // Site content baseline date for pages without an explicit last-modified stamp.
-const STATIC_LASTMOD = '2026-10-12';
+const STATIC_LASTMOD = '2026-10-13';
 
 type Entry = {
   path: string;

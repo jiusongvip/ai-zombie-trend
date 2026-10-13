@@ -1,0 +1,155 @@
+export const meta = {
+  title: 'AI Zombie Pet Video',
+  description:
+    'An AI zombie pet video from two photos: the four shots, what holds a dog or cat’s identity, the reference pair that works, and why the animal walks closer instead of attacking.',
+  updated_at: '2026-10-13',
+};
+
+A dog crosses a dark cabin on a stiff, unnatural gait toward its owner. The owner has
+let the gun fall out of their hand and opens both arms. The animal rests its head on
+their shoulder, and the cut puts them both in a sunlit wheat field with the dog healthy
+again. Fifteen seconds, vertical, scored.
+
+That is the pet version of the AI zombie trend, and it is harder to render than the
+human version. Video models are trained on far more human faces than dog faces, so the
+thing that usually breaks is not the emotion — it is the **breed**. The animal that
+walks in is a recognizable version of your pet; the one standing in the wheat field at
+the end is a generic brown something.
+
+<video
+  width="270"
+  controls
+  preload="none"
+  playsInline
+  poster="/images/showcase/zombie-pet-film.webp"
+>
+  <source src="/videos/showcase/zombie-pet-film.mp4" type="video/mp4" />
+</video>
+
+_One early pet render from the [examples page](/examples) — here the dog runs and leaps.
+The story our generator pins today brings the animal closer slowly and stiffly, and never
+attacking; the beat map below is that version._
+
+## The four shots, in order
+
+The pet story keeps the same skeleton as the couple, friends and family versions —
+same locations, same seconds, same match cut. Only the animal-specific lines change.
+
+| Shot                | Seconds | What happens                                                                                                                                                                        |
+| ------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 — The cabin       | 0–4     | The owner stands trembling, gun lowered at their side, unable to raise it. Cut wide: the pet drags itself across the room closer — closer, not attacking.                           |
+| 2 — The undead face | 4–6     | Extreme close-up. Pale grey fur, cloudy white eyes, dark veins, disheveled coat. Frightening, and still unmistakably your animal.                                                   |
+| 3 — The choice      | 6–10    | The owner lets the gun fall and opens both arms. The pet stops; something familiar flickers in those cloudy eyes. It comes the last few steps and rests its head on their shoulder. |
+| 4 — The match cut   | 10–15   | Mid-embrace, hard cut: the cabin becomes a golden wheat field at sunset. Both are alive and healthy, the pet’s breed, coat and size restored exactly as in the reference.           |
+
+Cold blue-grey light for the first ten seconds, warm gold for the last five. The colour
+change does most of the emotional work; the performance only has to stay still enough
+for the cut to read as one hug.
+
+## What actually holds a dog or cat’s identity
+
+Four shots, two lighting setups and a hard cut is a lot of chances for an animal’s face
+to drift. The identity sentence has to name the things a model can latch onto:
+
+- **Breed, coat, size** — stated once, early, and repeated inside the final shot, which
+  is where drift shows up.
+- **Facial identity** — muzzle shape, ear set, eye placement. “The same dog” is not an
+  instruction; “the exact breed, coat, size and facial identity of the pet” is.
+- **The undead look is painted on top, not substituted.** Grey fur and cloudy eyes are
+  layered onto _that_ animal, so shot 2 is still recognisable.
+- **The owner is locked too.** Their face, hairstyle and body proportions hold against
+  the first reference. A film where the dog is right and the human is wrong still looks
+  broken.
+
+If you write prompts yourself, [the free prompt page](/ai-zombie-trend-prompts) walks
+through the same beat map line by line.
+
+## The two photographs that work
+
+Everything downstream depends on these two files.
+
+**Reference one — you.** Shoulders-up, face toward the camera, daylight or an even room
+light. No heavy filter, no sunglasses, no hat. The model has to re-render this face in
+four shots, so a clear front view does more than a flattering one.
+
+**Reference two — the dog or cat.** A full-body photo taken at the animal's eye level
+works best, because one frame has to carry both halves of the identity: the face (muzzle
+shape, ear set, eye placement) and the body (breed, coat, size). One animal in the frame,
+and nothing covering the face — a bandana, a costume, a toy held in the mouth, or a paw
+over the nose all remove features the model has to keep. Standing over the pet and
+shooting down loses both the face and the proportions.
+
+Two things help more than people expect: similar brightness in both photos, and a
+recent photo of the pet rather than a blurry one from years ago.
+
+## Where pet renders fail, and the line that fixes each one
+
+| What you get                                          | The fix                                                                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| A different breed in the wheat field                  | Restate breed, coat and size **inside the last shot**, not only at the top                                 |
+| The pet rises onto two legs or shuffles like a person | Add “moves on all fours” to the approach line                                                              |
+| The pet lunges, or the scene reads as an attack       | Keep both guards: “but not attacking” on the approach, “does not attack” before the embrace                |
+| The owner’s face drifts                               | The owner needs their own lock — face, hairstyle, body proportions against the first reference             |
+| A second animal wanders into frame                    | Put exactly one animal in the reference photo and state “no other animals”                                 |
+| The ending looks like two unrelated clips             | Put the continuity instruction on the embrace itself: same arms, same distance, same direction of movement |
+
+## Why the undead pet comes closer instead of attacking
+
+Two reasons, and the second is practical.
+
+The story is grief and recognition, not threat. An animal that charges turns the third
+shot into a chase, and then opening both arms means self-defence rather than a choice.
+The approach is what the hug is answering.
+
+The other reason is that a film with no gore, no biting and no blood is what most video
+models and payment networks will actually process. The restraint is not timidity — it
+is what keeps the format publishable, and it is why the trend reads as a love story
+dressed as a horror clip rather than the reverse.
+
+## Questions people ask about AI zombie pet videos
+
+### Can the pet be a cat?
+
+Yes. The pet story is written for a dog **or** a cat matching the second reference —
+the identity line names breed, coat, size and facial identity, which are the same four
+things whether the animal has ears forward or a shorter muzzle. Use a photo where the
+face is as clear as the body.
+
+### Can I use a photo of a pet that has died?
+
+A single photograph is all the render needs, and plenty of people make this film about a
+pet they lost. Nothing about the output claims the animal is real again — it is fifteen
+seconds of light in a wheat field. If you are including yourself in the first reference,
+that is your own likeness to consent for.
+
+### Can both references be pets?
+
+No. The survivor in the first shot is always a person — the story is built on someone
+lowering the gun. Two animals produce a film with nobody to make that choice.
+
+### How long is the video, and what shape?
+
+Fifteen seconds, four shots, vertical 9:16 — the shape Reels, Shorts and TikTok want —
+with ambience and score rather than a silent clip.
+
+### Do I have to write a prompt?
+
+No. Our generator has no prompt box: the four-shot beat map is already pinned, and the
+only decision is which two photographs go in. If you would rather drive a third-party
+model yourself, the prompts and the reasoning behind each line are free on the
+[prompt page](/ai-zombie-trend-prompts).
+
+### What does a render cost?
+
+One film costs one 480p or 720p tier price from a one-time credit pack — no
+subscription, and a failed render refunds automatically. Current amounts are on the
+[pricing page](/pricing).
+
+## Or make one now
+
+[Open the generator](/#generator), pick the pet story, drop in your photo and your
+dog or cat’s photo. That is the whole workflow — the beat map, the identity lock and
+the no-gore clause are already handled.
+
+If you want to see a rendered pet film before paying for one, the
+[examples page](/examples) carries the frames and clips from this exact pipeline.

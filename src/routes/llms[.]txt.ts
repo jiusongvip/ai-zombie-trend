@@ -35,6 +35,12 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
       'Who builds AI Zombie Trend, how the two-photo pipeline works, and the consent, privacy and synthetic-media labeling principles behind it.',
   },
   {
+    path: '/ai-zombie-pet-video',
+    title: 'AI Zombie Pet Video',
+    description:
+      'The pet version of the two-photo film: the four shots with second ranges, the identity-lock line for a dog or cat (breed, coat, size, facial identity), the reference photo pair that holds, and the fixes for breed drift.',
+  },
+  {
     path: '/ai-zombie-trend-prompts',
     title: 'AI Zombie Trend Prompts',
     description:
