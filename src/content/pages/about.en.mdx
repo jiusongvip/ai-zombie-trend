@@ -9,10 +9,11 @@ export const meta = {
 
 AI Zombie Trend is an online generator for the viral "zombie love story" short —
 a 15-second, scored, four-shot film built from two of your photos. Upload one
-photo of the survivor and one of the turned, pick a story mode (couple, pet,
-best friend or family), and the workbench writes the prompts, orders the shots
-and adds the sound design. The result is a watermark-free MP4 sized for TikTok,
-Reels and Shorts, or in 16:9 for YouTube and a wider frame.
+photo of the survivor and one of the turned, say whether the second photo is a
+person or your pet, and pick the world it happens in — a cabin, a grey shore, a
+rainy street or a snowy doorstep. The workbench writes the prompts, orders the
+shots and adds the sound design. The result is a watermark-free MP4 sized for
+TikTok, Reels and Shorts, or in 16:9 for YouTube and a wider frame.
 
 There is no prompt box here on purpose. The format lives or dies on its
 storyboard, so the storyboard is fixed on our side and the only creative
@@ -28,17 +29,18 @@ a single starting frame, which is what lets two identities stay recognisable
 through four shots and two completely different lighting setups. Each upload is
 capped at 10 MB and re-encoded in your browser before it leaves your device.
 
-### One story template
+### One story template, two dials
 
-`couple`, `pet`, `friend` and `family` share one template body — the cabin at
-0–4 seconds, the undead close-up at 4–6, the lowered gun and open arms at 6–10,
-the match cut into the wheat field at 10–15. A mode changes the opening
-relationship line and the pronouns, and the pet variant rewrites both how
-Character B crosses the room — the animal drags itself closer on a stiff gait
-while the human modes walk — and which identity the model is told to preserve,
-since a breed and a coat matter more there than a hairstyle. Templates are
-composed server-side and never shipped to the browser, so they can be retuned
-without a release.
+A film is one world times one subject. The four worlds — `cabin`, `shore`,
+`street`, `doorstep` — share one template body and change only their setting:
+where the survivor stands, what they are holding, what the weather does to a
+crying face, and what the last five seconds cut into. The subjects — `person`
+or `pet` — change the pronouns, which identity the model is told to preserve
+(a breed and a coat matter more than a hairstyle), and how Character B covers
+the room. Either way the four beats stay fixed: the cold open at 0–4 seconds,
+the undead close-up at 4–6, the lowered hand and open arms at 6–10, the match
+cut into the warm world at 10–15. Templates are composed server-side and never
+shipped to the browser, so they can be retuned without a release.
 
 ### The render
 

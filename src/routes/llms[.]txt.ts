@@ -10,13 +10,13 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
     path: '',
     title: 'AI Zombie Video Generator',
     description:
-      'Turn two photos into a 15-second AI zombie love story film with sound. Four story modes, no prompt writing, no watermark.',
+      'Turn two photos into a 15-second AI zombie love story film with sound. Four story worlds, a person or a pet as the one who turned, no prompt writing, no watermark.',
   },
   {
     path: '/examples',
     title: 'Examples',
     description:
-      'Rendered frames from the two-photo pipeline across the couple, pet, friends and family stories.',
+      'Rendered frames from the two-photo pipeline — the cabin, grey shore, rainy street and snowy doorstep worlds, with a person or a pet as the one who turned.',
   },
   {
     path: '/pricing',

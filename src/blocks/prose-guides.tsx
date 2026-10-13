@@ -81,11 +81,11 @@ export function DeliveryNotes() {
 }
 
 /**
- * The four-shot grammar, expanded per story mode: heading, body and a
- * photo-selection tip unique to that relationship.
+ * The four-shot grammar, expanded per world: heading, body and a
+ * photo-selection tip unique to that setting.
  */
 export function StoryModes() {
-  const modes = ['couple', 'pet', 'friend', 'family'] as const;
+  const worlds = ['cabin', 'shore', 'street', 'doorstep'] as const;
   return (
     <section className="border-border/60 border-t px-4 py-20 sm:py-24">
       <div className="mx-auto max-w-5xl">
@@ -99,23 +99,25 @@ export function StoryModes() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          {modes.map((mode) => (
+          {worlds.map((world) => (
             <article
-              key={mode}
+              key={world}
               className="border-border/70 bg-card/60 rounded-xl border p-6"
             >
               <h3 className="font-display text-sm font-semibold tracking-wide uppercase">
                 {m[
-                  `landing.modes.${mode}.title` as 'landing.modes.couple.title'
+                  `landing.worlds.${world}.title` as 'landing.worlds.cabin.title'
                 ]()}
               </h3>
               <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
                 {m[
-                  `landing.modes.${mode}.body` as 'landing.modes.couple.body'
+                  `landing.worlds.${world}.body` as 'landing.worlds.cabin.body'
                 ]()}
               </p>
               <p className="border-primary/50 text-foreground/90 mt-4 border-l-2 pl-4 text-sm leading-relaxed italic">
-                {m[`landing.modes.${mode}.tip` as 'landing.modes.couple.tip']()}
+                {m[
+                  `landing.worlds.${world}.tip` as 'landing.worlds.cabin.tip'
+                ]()}
               </p>
             </article>
           ))}

@@ -1,17 +1,26 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { getVideoModel } from '@/config/video-models';
-import { zombieFilmTiers, zombieStyles } from '@/config/zombie-styles';
+import {
+  defaultZombieSubject,
+  defaultZombieWorld,
+  zombieFilmTiers,
+  zombieSubjects,
+  zombieWorlds,
+} from '@/config/zombie-styles';
 import { getConfiguredProviders } from '@/modules/video/service';
 import { respData, respErr } from '@/lib/resp';
 
 /**
- * Public style + quality menu for the homepage generator.
+ * Public story + quality menu for the homepage generator.
  *
  * Deliberately carries no prompts — the scene templates are the product's
  * secret sauce and are applied server-side at generate time. The client gets
  * the ids (labels come from its own i18n messages), the price of each
  * resolution tier, and whether the underlying provider is actually configured.
+ *
+ * A story is two independent pickers, so the two axes ship separately rather
+ * than as the eight combinations they multiply into.
  */
 async function GET() {
   try {
@@ -22,7 +31,10 @@ async function GET() {
     const model = models[0];
 
     return respData({
-      styles: zombieStyles.map((style) => ({ id: style.id })),
+      worlds: zombieWorlds.map((world) => ({ id: world.id })),
+      subjects: zombieSubjects.map((subject) => ({ id: subject.id })),
+      defaultWorld: defaultZombieWorld,
+      defaultSubject: defaultZombieSubject,
       // The generator preselects the first tier, which is the server's default.
       tiers: zombieFilmTiers.map((tier, i) => ({
         resolution: tier.resolution,

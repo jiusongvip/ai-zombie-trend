@@ -101,9 +101,10 @@ export function Showcase({
    * Hand the card's story to the generator workbench. On the homepage the
    * workbench is on-screen, so scroll to it. From a separate page (e.g.
    * /examples) there is nothing to scroll to — send the user home with the
-   * story preselected via the `style` query param instead.
+   * subject preselected via the `subject` query param instead.
    */
   function tryItem(item: ShowcaseItem) {
+    const subject = item.tag === 'pet' ? 'pet' : 'person';
     if (document.getElementById('generator')) {
       window.dispatchEvent(
         new CustomEvent('zombie-style', { detail: item.tag })
@@ -113,7 +114,7 @@ export function Showcase({
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    router.push(`/?style=${item.tag}#generator`);
+    router.push(`/?subject=${subject}#generator`);
   }
 
   return (

@@ -120,7 +120,8 @@ export function webApplicationSchema(params: {
     isAccessibleForFree: params.freeTrial ?? false,
     featureList: [
       'Four-shot zombie love story from two photos',
-      'Couple, pet, friends and family story modes',
+      'Four story worlds — cabin, shore, rainy street, snowy doorstep',
+      'A person or a pet as the one who has turned',
       '15-second scored video, 9:16 and 16:9',
       'No prompt writing required',
       'No watermark',

@@ -64,11 +64,11 @@ Text first, then each photograph, then the clip that comes back — cheapest che
 
 Whether the render succeeded, failed, or never ran. They are inputs to one request, not a library, and they are never used to train a model.
 
-## Pick a story mode, not a prompt
+## Pick a world, not a prompt
 
-There is no prompt box, and that is deliberate. [AI Zombie Trend](/) applies a scene template on the server for each of the four story modes, so the video model receives tuned cinematic direction rather than whatever you happened to type. The modes are **Zombie Couple**, **Zombie Pet**, **Zombie Friends**, and **Zombie Family**, and all four ride the same shot grammar: the survivor cannot fire, lets the gun fall, opens their arms, and the embrace that follows match-cuts into a golden field. Each carries its own pacing, colour grade, and score.
+There is no prompt box, and that is deliberate. [AI Zombie Trend](/) applies a scene template on the server for each of the four worlds, so the video model receives tuned cinematic direction rather than whatever you happened to type. The worlds are **The Cabin**, **The Grey Shore**, **The Rainy Street**, and **The Snowy Doorstep**, and on top of each one you say whether the second photo is a person you love or your pet. All of them ride the same shot grammar: the survivor holds the dead's own belonging and cannot use it, drops their hand, opens their arms, and the embrace that follows match-cuts into the same place made warm. Each world carries its own weather, prop, colour grade, and score.
 
-Because the template is server-side, it can be retuned without shipping a new build — which is also why the four modes read as one family rather than four unrelated effects.
+Because the template is server-side, it can be retuned without shipping a new build — which is also why eight combinations read as one family rather than eight unrelated effects.
 
 ## What makes the four-shot structure read as cinematic
 
@@ -100,7 +100,7 @@ Models in this space handle audio and multi-image input natively. [ByteDance's S
 
 **Length is fixed at 15 seconds.** Four shots need that much room and a feed does not reward more. **Aspect is 9:16 or 16:9** — vertical for TikTok, Reels and Shorts, horizontal for YouTube and anything embedded in a page. **Resolution is 480p or 720p**, at 20 credits and 40 credits respectively: same length, same four shots, same grade and sound, more pixels.
 
-That is the entire control surface. Everything else is decided by your two photographs and your choice of mode, which is why the pair matters more than the settings.
+That is the entire control surface. Everything else is decided by your two photographs, the world you pick and whether the second one is a person or your pet, which is why the pair matters more than the settings.
 
 ## Render, then post-process for the feed
 
@@ -117,7 +117,7 @@ A film usually takes 10–15 minutes. You can close the tab — the render finis
 
 1. Open the [generator](/) and stage both photos — no account needed to upload, and files up to 10 MB are accepted.
 2. Put the survivor in slot one and the turned character in slot two.
-3. Pick the mode that matches the relationship in your pair, not the one that looks coolest.
+3. Pick the world your pair actually fits — the prop, the weather, the doorway — not the one that looks coolest.
 4. Choose 9:16 unless you are posting somewhere horizontal.
 5. Sign in only when you press render, and pick 480p for a first take.
 6. Wait for the notification in your library rather than watching the progress bar.
@@ -127,10 +127,10 @@ If the result disappoints, change the photographs before you change anything els
 
 ## What goes wrong, and why
 
-**Faces warp mid-shot.** Almost always a lighting mismatch between the two uploads, so the model has to relight a head it is also animating. **The characters swap.** The slots were filled in the wrong order; the template gives the gun to photo one. **The turn reads as a jump cut.** The 10–15 second cut works by continuing one embrace across the join, so a second photo where the subject is turned away costs you the match. **Nothing arrives.** The job failed upstream or was blocked in review, and your credits are already back — a failed render is not a charge.
+**Faces warp mid-shot.** Almost always a lighting mismatch between the two uploads, so the model has to relight a head it is also animating. **The characters swap.** The slots were filled in the wrong order; the template always gives photo one the survivor's role. **The turn reads as a jump cut.** The 10–15 second cut works by continuing one embrace across the join, so a second photo where the subject is turned away costs you the match. **Nothing arrives.** The job failed upstream or was blocked in review, and your credits are already back — a failed render is not a charge.
 
 ## What it costs
 
-One film costs 20 credits at 480p or 40 at 720p. Packs are one-time purchases with no subscription and credits that never expire, from $5.99 for a single film to $126.00 for sixty, which is $2.10 a film. The three-film pack is enough to run one mode twice and keep the better take — see [pricing](/pricing) for the full per-film math.
+One film costs 20 credits at 480p or 40 at 720p. Packs are one-time purchases with no subscription and credits that never expire, from $5.99 for a single film to $126.00 for sixty, which is $2.10 a film. The three-film pack is enough to run one pairing in two worlds and keep the better take — see [pricing](/pricing) for the full per-film math.
 
 Browse the [examples wall](/examples) before you spend anything: seeing which variant matches your pair beats reasoning about it, and [what happens to the faces you upload](/blog/ai-zombie-trend-photo-privacy) is worth four minutes before your first render.

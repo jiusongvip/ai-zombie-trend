@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { getAuth } from '@/core/auth';
 import { envConfigs } from '@/config';
 import { getVideoModel } from '@/config/video-models';
-import { getZombieFilmTier, getZombieStyle } from '@/config/zombie-styles';
+import { getZombieFilm, getZombieFilmTier } from '@/config/zombie-styles';
 import { getBalance } from '@/modules/credits/service';
 import {
   CONSENT_POLICY_VERSION,
@@ -25,10 +25,10 @@ function absolutizeUrl(url: string): string {
 }
 
 /**
- * The homepage's one-button render: two uploaded photos, a style id and a
- * resolution tier in, a generation task out. Prompt, model, duration and the
- * billed price all come from the server-side catalogs — the client only ever
- * picks between the ids the styles endpoint hands it.
+ * The homepage's one-button render: two uploaded photos, a world + subject
+ * pair and a resolution tier in, a generation task out. Prompt, model,
+ * duration and the billed price all come from the server-side catalogs — the
+ * client only ever picks between the ids the styles endpoint hands it.
  */
 async function POST({ request }: { request: Request }) {
   const limited = enforceMinIntervalRateLimit(request, {
@@ -43,8 +43,7 @@ async function POST({ request }: { request: Request }) {
     if (!session?.user) return respErr('Unauthorized');
 
     const body = await request.json().catch(() => ({}));
-    const style = getZombieStyle(body.style);
-    if (!style) return respErr('Unknown style');
+    const film = getZombieFilm(body.world, body.subject);
 
     const imageUrl =
       typeof body.imageUrl === 'string' && body.imageUrl.trim()
@@ -96,8 +95,8 @@ async function POST({ request }: { request: Request }) {
     const task = await generateVideo({
       userId: session.user.id,
       modelId: tier.modelId,
-      prompt: style.prompt,
-      duration: style.duration,
+      prompt: film.prompt,
+      duration: film.duration,
       resolution: tier.resolution,
       aspectRatio,
       imageUrl,

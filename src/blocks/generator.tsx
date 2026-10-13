@@ -7,13 +7,22 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { CheckCircle2, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import {
+  CheckCircle2,
+  CloudRain,
+  Home,
+  Loader2,
+  Lock,
+  Snowflake,
+  TriangleAlert,
+  Waves,
+  type LucideIcon,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
 import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
-import { showcaseItems, type ShowcaseTag } from '@/config/showcase';
 import { apiGet, apiPost, type PageResult } from '@/lib/api-client';
 import { currentLocationPath, openAuthDialog } from '@/lib/auth-dialog';
 import { cn } from '@/lib/utils';
@@ -24,7 +33,21 @@ import { FrameSlot, type FrameSlotValue } from '@/components/studio/frame-slot';
 import { Stage } from '@/components/studio/stage';
 import { Button } from '@/components/ui/button';
 
-const STYLES: ShowcaseTag[] = ['couple', 'pet', 'friend', 'family'];
+/**
+ * The four worlds, in display order. The server catalog is the authority;
+ * these are only the placeholders shown while `/api/zombie/styles` is in
+ * flight, so a mismatch costs one re-render, never a rejected generate call.
+ */
+const WORLDS = ['cabin', 'shore', 'street', 'doorstep'] as const;
+const SUBJECTS = ['person', 'pet'] as const;
+const WORLD_ICONS: Record<string, LucideIcon> = {
+  cabin: Home,
+  shore: Waves,
+  street: CloudRain,
+  doorstep: Snowflake,
+};
+type ZombieWorld = (typeof WORLDS)[number];
+type ZombieSubject = (typeof SUBJECTS)[number];
 const MAX_FRAME_MB = 10;
 const FALLBACK_RATIOS = ['9:16', '16:9'];
 /** Source photos are phone-shot portraits; the slots keep this shape whatever the output ratio. */
@@ -43,7 +66,10 @@ interface ZombieTier {
 }
 
 interface ZombieStylesResponse {
-  styles: { id: string }[];
+  /** The worlds on offer — the first one is preselected. */
+  worlds: { id: string }[];
+  /** Who the second photo can be: a person or a pet. */
+  subjects: { id: string }[];
   /** Resolution tiers on offer, cheapest first — the first one is preselected. */
   tiers: ZombieTier[];
   aspectRatios: string[];
@@ -51,7 +77,8 @@ interface ZombieStylesResponse {
 }
 
 interface FilmDraft {
-  style: ShowcaseTag;
+  world: ZombieWorld;
+  subject: ZombieSubject;
   aspectRatio: string;
   resolution: string;
   imageUrl?: string;
@@ -61,7 +88,8 @@ interface FilmDraft {
 }
 
 const DRAFT_KEY = 'zombie-draft';
-const TAGS: string[] = STYLES;
+const WORLD_TAGS: readonly string[] = WORLDS;
+const SUBJECT_TAGS: readonly string[] = SUBJECTS;
 
 function saveDraft(draft: FilmDraft) {
   try {
@@ -78,13 +106,16 @@ function takeDraft(): FilmDraft | null {
     sessionStorage.removeItem(DRAFT_KEY);
     const parsed = JSON.parse(raw) as Partial<FilmDraft>;
     if (
-      typeof parsed.style === 'string' &&
-      TAGS.includes(parsed.style) &&
+      typeof parsed.world === 'string' &&
+      WORLD_TAGS.includes(parsed.world) &&
+      typeof parsed.subject === 'string' &&
+      SUBJECT_TAGS.includes(parsed.subject) &&
       typeof parsed.imageUrl === 'string' &&
       typeof parsed.lastFrameUrl === 'string'
     ) {
       return {
-        style: parsed.style as ShowcaseTag,
+        world: parsed.world as ZombieWorld,
+        subject: parsed.subject as ZombieSubject,
         aspectRatio:
           typeof parsed.aspectRatio === 'string' &&
           FALLBACK_RATIOS.includes(parsed.aspectRatio)
@@ -141,7 +172,8 @@ export function Generator() {
   const signedIn = !!session?.user;
 
   // Form state
-  const [style, setStyle] = useState<ShowcaseTag>('couple');
+  const [world, setWorld] = useState<ZombieWorld>(WORLDS[0]);
+  const [subject, setSubject] = useState<ZombieSubject>(SUBJECTS[0]);
   const [aspectRatio, setAspectRatio] = useState(FALLBACK_RATIOS[0]);
   // Empty until the tier list lands or the user picks — see `activeResolution`.
   const [resolution, setResolution] = useState('');
@@ -159,7 +191,8 @@ export function Generator() {
   useEffect(() => {
     const draft = takeDraft();
     if (!draft) return;
-    setStyle(draft.style);
+    setWorld(draft.world);
+    setSubject(draft.subject);
     setAspectRatio(draft.aspectRatio);
     setResolution(draft.resolution);
     setFirstFrame({ url: draft.imageUrl, status: 'uploaded' });
@@ -167,19 +200,25 @@ export function Generator() {
     toast.info(m['landing.generator.draft_restored']());
   }, []);
 
-  // Style from URL (?style=xxx)
+  // Deep links into one axis of the story: ?world=shore&subject=pet
   useEffect(() => {
-    const styleParam = new URLSearchParams(window.location.search).get('style');
-    if (styleParam && TAGS.includes(styleParam as ShowcaseTag)) {
-      setStyle(styleParam as ShowcaseTag);
+    const params = new URLSearchParams(window.location.search);
+    const worldParam = params.get('world');
+    const subjectParam = params.get('subject');
+    if (worldParam && WORLD_TAGS.includes(worldParam)) {
+      setWorld(worldParam as ZombieWorld);
+    }
+    if (subjectParam && SUBJECT_TAGS.includes(subjectParam)) {
+      setSubject(subjectParam as ZombieSubject);
     }
   }, []);
 
-  // External "Try this" event
+  // External "Try this" event — the example wall is organised by *who* turns,
+  // so a showcase tag lands on the subject axis, never on a world.
   useEffect(() => {
     const pick = (event: Event) => {
       const tag = (event as CustomEvent<string>).detail;
-      if (TAGS.includes(tag)) setStyle(tag as ShowcaseTag);
+      setSubject(tag === 'pet' ? 'pet' : 'person');
     };
     window.addEventListener('zombie-style', pick);
     return () => window.removeEventListener('zombie-style', pick);
@@ -202,6 +241,20 @@ export function Generator() {
     : tiers[0].resolution;
   const cost =
     tiers.find((tier) => tier.resolution === activeResolution)?.creditCost ?? 0;
+  // Same guard on the story axes: a since-removed world or subject falls back
+  // to the first one the server still offers rather than POSTing a dead id.
+  const activeWorld = (stylesQuery.data?.worlds.length
+    ? stylesQuery.data.worlds.map((entry) => entry.id)
+    : WORLD_TAGS
+  ).includes(world)
+    ? world
+    : (WORLDS[0] as ZombieWorld);
+  const activeSubject = (stylesQuery.data?.subjects.length
+    ? stylesQuery.data.subjects.map((entry) => entry.id)
+    : SUBJECT_TAGS
+  ).includes(subject)
+    ? subject
+    : (SUBJECTS[0] as ZombieSubject);
   const ratios = stylesQuery.data?.aspectRatios.length
     ? stylesQuery.data.aspectRatios.filter((r) => ['9:16', '16:9'].includes(r))
     : FALLBACK_RATIOS;
@@ -267,7 +320,8 @@ export function Generator() {
   const hasBothPhotos = !!firstFrame.url && !!lastFrame.url;
 
   const draft = (): FilmDraft => ({
-    style,
+    world: activeWorld,
+    subject: activeSubject,
     aspectRatio,
     resolution: activeResolution,
     imageUrl: firstFrame.url,
@@ -482,45 +536,75 @@ export function Generator() {
 
           {/* ── Middle: Story & Settings Card ────────────────────────── */}
           <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* Story Scene Cards */}
+            {/* Who turns, then where it happens — the two halves of the story. */}
+            <div className="mb-4">
+              <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                {m['landing.generator.subject']()}
+              </p>
+              <div className="bg-muted/50 flex rounded-lg p-1">
+                {SUBJECTS.map((id) => {
+                  const active = id === activeSubject;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setSubject(id)}
+                      className={cn(
+                        'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+                        active
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {tDynamic(`landing.generator.subject.${id}`)}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-muted-foreground mt-2 text-xs leading-snug">
+                {m['landing.generator.subject_hint']()}
+              </p>
+            </div>
+
+            {/* World cards — the setting and the match cut, not the relationship. */}
             <div className="mb-4">
               <p className="text-foreground mb-3 text-sm font-semibold">
                 {m['landing.generator.pick']()}
               </p>
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                {STYLES.map((tag) => {
-                  const item = showcaseItems.find((i) => i.tag === tag)!;
-                  const active = style === tag;
+              <div className="grid grid-cols-2 gap-2.5">
+                {WORLDS.map((id) => {
+                  const Icon = WORLD_ICONS[id];
+                  const active = id === activeWorld;
                   return (
                     <button
-                      key={tag}
+                      key={id}
                       type="button"
-                      onClick={() => setStyle(tag)}
+                      onClick={() => setWorld(id)}
                       className={cn(
-                        'group relative overflow-hidden rounded-xl border text-left transition-all',
+                        'relative rounded-xl border p-3 text-left transition-all',
                         active
-                          ? 'border-primary ring-primary/30 ring-2'
-                          : 'border-border/60 hover:border-primary/50'
+                          ? 'border-primary bg-primary/10 ring-primary/30 ring-2'
+                          : 'border-border/60 bg-muted/20 hover:border-primary/50'
                       )}
                     >
-                      <img
-                        src={item.cover}
-                        alt={tDynamic(
-                          `landing.usecases.${tag}.title` as 'landing.usecases.couple.title'
+                      <span
+                        className={cn(
+                          'mb-2 flex size-8 items-center justify-center rounded-lg',
+                          active
+                            ? 'bg-primary/15 text-primary'
+                            : 'bg-muted text-muted-foreground'
                         )}
-                        loading="lazy"
-                        className="aspect-[4/3] size-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
-                      />
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent px-2.5 pt-8 pb-2.5">
-                        <p className="text-xs leading-tight font-semibold text-white">
-                          {tDynamic(`landing.usecases.${tag}.title`)}
-                        </p>
-                        <p className="mt-0.5 text-[10px] leading-tight text-white/70">
-                          {tDynamic(`landing.usecases.${tag}.desc`)}
-                        </p>
-                      </div>
+                      >
+                        <Icon className="size-4" />
+                      </span>
+                      <span className="block text-sm leading-tight font-semibold">
+                        {tDynamic(`landing.worlds.${id}.title`)}
+                      </span>
+                      <span className="text-muted-foreground mt-1 block text-[11px] leading-snug">
+                        {tDynamic(`landing.worlds.${id}.desc`)}
+                      </span>
                       {active && (
-                        <CheckCircle2 className="text-primary absolute top-2 right-2 size-4 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]" />
+                        <CheckCircle2 className="text-primary absolute top-2.5 right-2.5 size-4" />
                       )}
                     </button>
                   );
