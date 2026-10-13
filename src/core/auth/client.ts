@@ -15,7 +15,12 @@ export const {
   useSession,
   requestPasswordReset,
   resetPassword,
+  changePassword,
 } = authClient;
+
+// Mirrors better-auth's own `emailAndPassword.minPasswordLength` default — the
+// server rejects anything shorter, so the forms must not promise otherwise.
+export const MIN_PASSWORD_LENGTH = 8;
 
 // Build a per-call auth client with the Google One Tap plugin attached.
 // The plugin needs the client_id at construction time, so we can't add

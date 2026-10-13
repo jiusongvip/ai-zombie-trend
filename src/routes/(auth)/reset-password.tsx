@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 
-import { resetPassword } from '@/core/auth/client';
+import { MIN_PASSWORD_LENGTH, resetPassword } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { m } from '@/paraglide/messages.js';
@@ -20,8 +20,12 @@ import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
 
 const resetSchema = z
   .object({
-    password: z.string().min(8),
-    confirmPassword: z.string().min(8),
+    password: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, m['common.sign.password_min_length']()),
+    confirmPassword: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, m['common.sign.password_min_length']()),
   })
   .refine((d) => d.password === d.confirmPassword, {
     path: ['confirmPassword'],
@@ -72,7 +76,10 @@ function ResetPasswordPage() {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center text-lg font-semibold tracking-tight">
+        <Link
+          href="/"
+          className="self-center text-lg font-semibold tracking-tight"
+        >
           {envConfigs.app_name}
         </Link>
         <Card>

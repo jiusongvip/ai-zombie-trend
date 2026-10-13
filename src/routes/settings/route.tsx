@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   Receipt,
+  ShieldCheck,
   User,
 } from 'lucide-react';
 
@@ -27,6 +28,12 @@ function SettingsLayout() {
       href: '/settings',
       label: m['settings.nav.overview'](),
       icon: LayoutDashboard,
+      group,
+    },
+    {
+      href: '/settings/security',
+      label: m['settings.nav.security'](),
+      icon: ShieldCheck,
       group,
     },
     {

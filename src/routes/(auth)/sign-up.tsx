@@ -3,7 +3,13 @@ import { useForm } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 
-import { authClient, signIn, signUp, useSession } from '@/core/auth/client';
+import {
+  authClient,
+  MIN_PASSWORD_LENGTH,
+  signIn,
+  signUp,
+  useSession,
+} from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { apiPost } from '@/lib/api-client';
@@ -29,8 +35,12 @@ const signUpSchema = z
   .object({
     name: z.string().min(1),
     email: z.string().email(m['common.sign.email_placeholder']()),
-    password: z.string().min(8),
-    confirmPassword: z.string().min(8),
+    password: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, m['common.sign.password_min_length']()),
+    confirmPassword: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, m['common.sign.password_min_length']()),
     inviteCode: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
