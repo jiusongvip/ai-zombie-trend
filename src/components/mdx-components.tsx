@@ -91,6 +91,15 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  pre: ({ className, ...props }: HTMLAttributes<HTMLPreElement>) => (
+    <pre
+      className={cn(
+        'bg-muted/60 border-border/70 text-foreground/90 my-4 overflow-x-auto rounded-lg border p-4 text-[13px] leading-6 [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-[13px]',
+        className
+      )}
+      {...props}
+    />
+  ),
   hr: ({ className, ...props }: HTMLAttributes<HTMLHRElement>) => (
     <hr className={cn('border-border my-8', className)} {...props} />
   ),
@@ -116,7 +125,7 @@ export const mdxComponents: MDXComponents = {
   ),
   td: ({ className, ...props }: HTMLAttributes<HTMLTableCellElement>) => (
     <td
-      className={cn('border-border align-top border-b px-3 py-2', className)}
+      className={cn('border-border border-b px-3 py-2 align-top', className)}
       {...props}
     />
   ),

@@ -34,6 +34,12 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
     description:
       'Who builds AI Zombie Trend, how the two-photo pipeline works, and the consent, privacy and synthetic-media labeling principles behind it.',
   },
+  {
+    path: '/ai-zombie-trend-prompts',
+    title: 'AI Zombie Trend Prompts',
+    description:
+      'Free, copy-ready prompts for the two-photo zombie love story: the four-shot beat map with second ranges, the identity-lock sentence, swap-in lines for partner, pet, parent and best friend, and fixes for the common first-render failures.',
+  },
 ];
 
 export const Route = createFileRoute('/llms.txt')({

@@ -16,6 +16,10 @@ export function Footer() {
       title: m['landing.footer.resources'](),
       links: [
         { label: m['landing.footer.blog'](), href: '/blog' },
+        {
+          label: m['landing.footer.prompts'](),
+          href: '/ai-zombie-trend-prompts',
+        },
         { label: m['landing.footer.about'](), href: '/about' },
         { label: m['landing.footer.settings'](), href: '/settings' },
       ],

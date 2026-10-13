@@ -39,6 +39,11 @@ const ENTRIES = [
     desc: 'landing.directory.po3.desc',
   },
   {
+    href: '/ai-zombie-trend-prompts',
+    title: 'landing.directory.pm.title',
+    desc: 'landing.directory.pm.desc',
+  },
+  {
     href: '/library',
     title: 'landing.footer.library',
     desc: 'landing.directory.lib.desc',

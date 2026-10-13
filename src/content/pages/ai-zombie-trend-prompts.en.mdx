@@ -1,0 +1,194 @@
+export const meta = {
+  title: 'AI Zombie Trend Prompts',
+  description:
+    'Copy-ready AI zombie trend prompts: the four-shot beat map with second ranges, the identity-lock sentence, swap-in lines for each story, and the fix for each first-render failure.',
+  updated_at: '2026-10-13',
+};
+
+The zombie trend format is a fifteen-second film with a fixed shape: a survivor
+cannot raise a gun, the turned one comes closer, arms open instead of a shot,
+and the embrace hard-cuts from a cold cabin into a golden field. A prompt has to
+hold all of that in one pass, and hold two faces recognisable while it does.
+
+This page is for people writing those prompts themselves, in a video model that
+takes images as character references. **Our own generator does not have a prompt
+box** — the beat map below is already pinned server-side, so the only decision
+left in [the workbench](/#generator) is which two photographs go in. That is a
+deliberate product choice, not a missing feature; here is what the prompt is
+actually doing so you can judge both routes.
+
+## What a zombie trend prompt has to carry
+
+Six jobs, and a prompt that misses any one of them produces a different video
+than the one you came for:
+
+1. **Two named identities.** Character A is the survivor, Character B is the one
+   who has turned. Every later sentence refers back to those names, which is how
+   a model keeps two people from blending into one.
+2. **A locked appearance per character.** Undead B is described once, in detail,
+   and the living version is explicitly tied back to the reference photo.
+3. **The beat map, timed.** Four shots with second ranges. Without timestamps a
+   model rushes the ending and the match cut lands at the wrong moment.
+4. **The colour contract.** Cold blue-grey for the cabin, warm gold for the
+   field. The emotional turn is carried by the grade, not by the acting.
+5. **A restraint clause.** No gore, no biting, no blood. The format is a romance
+   dressed as horror; and the clause keeps the render inside moderation on the
+   models that have it.
+6. **Format and length.** 9:16 vertical, about fifteen seconds, with scene audio
+   — the aspect ratio and the duration are the two things most often left out and
+   most annoying to re-render for.
+
+## The all-in-one prompt
+
+Paste this whole block into a model that accepts two character references, then
+attach your survivor photo as reference one and the turned photo as reference
+two.
+
+```text
+Create a 15-second cinematic short from two character references.
+Vertical 9:16, with scene audio. Photorealistic, soft film grain.
+
+CHARACTER A: @image1 — the survivor, fully human.
+CHARACTER B: @image2 — the one who has turned.
+
+Identity lock: preserve Character A's facial identity, hairstyle and body
+proportions exactly as in the reference. Preserve Character B's facial
+identity, hairstyle and proportions as in the reference, and apply the undead
+make-up on top of it: pale grey skin, cloudy pale eyes, dark veins at the
+temples, hollow features, dishevelled hair. B must stay unmistakably
+recognisable as the person in the reference photo.
+
+SHOT 1 — THE CABIN (0-4s). A dark, abandoned wooden cabin, dim daylight
+through old windows, dust in the air, cold blue-grey grade. Tight close-up of
+Character A's face, crying, red eyes, trembling lips, shaking hands. A handgun
+hangs lowered at A's side. A cannot bring themself to raise it. Cut wide: B
+crosses the room toward A with a stiff, unnatural gait — approaching, not
+attacking.
+
+SHOT 2 — THE UNDEAD FACE (4-6s). Extreme close-up of B: the make-up above,
+shallow depth of field, small facial twitches, uneven breathing. Frightening
+but recognisable. No gore, no open wounds, no biting, no blood.
+
+SHOT 3 — THE CHOICE (6-10s). Back to A, still crying, gun still lowered. A
+lets the weapon fall from their hands and slowly opens both arms — not in
+defence, in recognition. B stops. Something familiar moves behind the cloudy
+eyes. B crosses the last few steps and rests their head against A's shoulder.
+A closes their eyes and holds them. The camera begins a slow arc around the
+two figures.
+
+SHOT 4 — THE MATCH CUT (10-15s). Exactly as B leans in, cut. The cabin becomes
+an open wheat field at sunset, warm golden grade, wind. Both characters are
+alive and healthy, appearance restored to the reference photos, clean everyday
+clothing. The embrace continues without a break across the cut — same arms,
+same distance, same direction of movement, now in sunlight. Hold two seconds,
+then the film ends.
+
+Tone: grief turning into reunion. This is a love story, not a horror scene.
+```
+
+## Read it back, beat by beat
+
+**The identity sentence goes second, not last.** Models weight earlier clauses
+more heavily, and face drift is the single most common failure of this format. If
+the faces soften after the cut, move the identity lock to the top of the prompt
+and repeat B's restored-appearance line inside shot 4.
+
+**"Approaching, not attacking" is load-bearing.** Without it the model reads a
+zombie crossing a room as a chase, and the whole third shot — the choice to lower
+the gun — has nothing to be a choice about.
+
+**The match cut is a movement instruction, not an edit instruction.** "The embrace
+continues without a break across the cut, same arms, same direction of movement"
+is what makes the transition read as one continuous gesture instead of two clips
+glued together. If the cut feels abrupt, name the pose on both sides of it.
+
+**The restraint clause is also a moderation shield.** "Frightening but
+recognisable, no gore, no open wounds, no blood" keeps the render on the romance
+side of the line. Describe the undead look as make-up on a known face and you get
+both a safer submission and a better result.
+
+## Swap-in lines for each story
+
+Change only the relationship line under the character block, and the pronouns that
+follow it. Everything above it is shared.
+
+**Partner** — `B is A's partner, who has tragically turned.`
+**Best friend** — `B is A's best friend, who has tragically turned.`
+**Parent** — `A is the younger survivor. B is A's parent, the elder of the two references, who has tragically turned.`
+**Pet** — `B is A's dog or cat, matching the second reference, an undead animal.` With the pet variant, replace the
+identity lock with the animal's own features — `preserve the exact breed, coat,
+size and facial identity of the animal` — and change how B crosses the room to
+`dragging itself closer on a stiff gait`.
+
+Keep the pronouns consistent after you swap: a pet is `it` and `its` throughout,
+and mixing `they` into the animal variant is how you end up with a humanoid figure
+in fur.
+
+## If your model takes no image references
+
+Describe both faces in words instead, one short paragraph each — hair, eyes,
+build, the one detail that makes the person recognisable to you — and accept that
+identity will drift across fifteen seconds. That drift is the honest limit of the
+text-only route: nothing in a written description can carry a specific face the way
+a reference image does. It is the reason this product submits both photographs as
+character references rather than as a starting frame.
+
+## What goes wrong, and the line that fixes it
+
+| Symptom                                 | The line to add or move                                                                               |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Faces drift or swap after the cut       | Move the identity lock to the top; repeat "appearance restored to the reference photos" inside shot 4 |
+| B lunges or attacks                     | "Approaching, not attacking" in shot 1, "does not attack" in shot 3                                   |
+| Render comes back gory, or gets blocked | "No gore, no open wounds, no biting, no blood" plus undead described as make-up on a known face       |
+| Two unrelated clips, not one story      | Keep the four shot headers with their second ranges inside a single prompt                            |
+| The cut reads as an edit                | Name the pose on both sides and add "same arms, same distance, same direction of movement"            |
+| Wrong framing for Reels                 | State "vertical 9:16" in the first line, not the last                                                 |
+| Flat, unscored output                   | Ask for scene audio and, in shot 3, the room tone dropping before the cut                             |
+
+## Before you upload the two photographs
+
+The prompt can only work with a usable pair. One clear face per photo, A close to
+the camera, both subjects roughly the same distance from the lens, and no
+group shots. The order matters: the survivor goes in first, the turned second —
+that order is what the prompt calls `@image1` and `@image2`. Full guidance in
+[how to make an AI zombie video](/blog/how-to-make-ai-zombie-video).
+
+## Frequently asked questions
+
+### Are these prompts free to use?
+
+Yes. This page is free, the blocks are yours to copy, and there is no attribution
+requirement. What costs money is the render — either your own credits on whatever
+model you use, or a one-time credit pack here, with no subscription.
+
+### Do I need a specific video model?
+
+Any that accepts two character references and runs to about fifteen seconds. The
+prompt is written around the mechanism, not a vendor, so the same block moves
+between services. Reference support is the part worth checking before you spend
+anything.
+
+### Can the zombie be my dog or cat?
+
+Yes — the pet variant above rewrites the identity lock to hold breed and coat
+instead of a human face. Same structure, same four beats.
+
+### Why does your own generator not have a prompt box?
+
+Because the format's quality comes from the storyboard, and a storyboard people
+edit is a storyboard people break. The beat map on this page is pinned on our side
+and applied to every film, which is also why renders here come out looking like
+each other. If you would rather write the prompt yourself, this page is the whole
+recipe.
+
+### Can I use a photo of someone else?
+
+Only with their agreement, and never a public figure or a minor. The generator asks
+you to declare that before it renders. Guidance on choosing and clearing photos in
+[the privacy guide](/blog/ai-zombie-trend-photo-privacy).
+
+## Or skip the prompting
+
+Two photos, one story mode, and the fifteen seconds come back with the sound design
+already on it — [open the generator](/#generator), or see what came out of the last
+renders in [examples](/examples).

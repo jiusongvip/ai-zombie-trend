@@ -10,6 +10,7 @@ const STATIC_PATHS = [
   '/pricing',
   '/blog',
   '/about',
+  '/ai-zombie-trend-prompts',
   '/privacy-policy',
   '/terms-of-service',
   '/refund-policy',
