@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/core/auth/client';
 import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
+import { showcaseItems } from '@/config/showcase';
 import { apiGet, apiPost, type PageResult } from '@/lib/api-client';
 import { currentLocationPath, openAuthDialog } from '@/lib/auth-dialog';
 import { cn } from '@/lib/utils';
@@ -90,6 +91,16 @@ interface FilmDraft {
 const DRAFT_KEY = 'zombie-draft';
 const WORLD_TAGS: readonly string[] = WORLDS;
 const SUBJECT_TAGS: readonly string[] = SUBJECTS;
+
+/**
+ * The clip the empty stage shows as proof. Taken from the example wall rather
+ * than a new asset so there is one copy of it to keep honest; it's a local,
+ * fast-start file, so a tap plays immediately. Missing it just falls back to
+ * the plain placeholder — the stage never blocks on proof.
+ */
+const SAMPLE_FILM = showcaseItems.find(
+  (item) => item.id === 'zombie-couple-film'
+);
 
 function saveDraft(draft: FilmDraft) {
   try {
@@ -820,6 +831,16 @@ export function Generator() {
                 statusLabel={statusLabel}
                 error={submitError}
                 busy={generateMutation.isPending}
+                sample={
+                  SAMPLE_FILM?.video
+                    ? {
+                        video: SAMPLE_FILM.video,
+                        poster: SAMPLE_FILM.cover,
+                        badge: m['landing.generator.sample.badge'](),
+                        playLabel: m['landing.generator.sample.play'](),
+                      }
+                    : undefined
+                }
                 onRegenerate={() => generateMutation.mutate(draft())}
                 onLoadSettings={() => activeTask && loadSettings(activeTask)}
               />

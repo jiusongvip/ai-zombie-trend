@@ -1109,6 +1109,8 @@
   "landing.generator.top_up": "Get credits",
   "landing.generator.stage.empty_title": "Your film lands here",
   "landing.generator.stage.empty_body": "Upload two photos, pick a size and a story, then hit generate.",
+  "landing.generator.sample.badge": "Example — a real film made from two photos",
+  "landing.generator.sample.play": "Play the example film",
   "landing.generator.step_photos": "Add two photos",
   "landing.generator.step_style": "Pick size & story",
   "landing.generator.step_render": "Render",

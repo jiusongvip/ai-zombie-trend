@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import {
   Clapperboard,
   Download,
   Film,
   Loader2,
+  Play,
   RotateCcw,
   SlidersHorizontal,
   TriangleAlert,
@@ -41,6 +43,23 @@ export interface StageLabels {
   /** Chip label for a shot rendered with a soundtrack. */
   audioOn: string;
   costTemplate: string;
+}
+
+/**
+ * An example clip to show in the empty stage — proof of what the button
+ * actually produces, on the screen where the decision is made.
+ *
+ * Deliberately poster-only until tapped. This project has already lost mobile
+ * LCP to an autoplayed clip in the first screen, so the video element (and its
+ * multi-megabyte fetch) is created by the tap, never by the page load.
+ */
+export interface StageSample {
+  video: string;
+  poster: string;
+  /** Corner badge, e.g. "Example — made from two photos". */
+  badge: string;
+  /** Accessible name for the play control. */
+  playLabel: string;
 }
 
 /**
@@ -89,6 +108,7 @@ export function Stage({
   onRegenerate,
   onLoadSettings,
   busy = false,
+  sample,
   vhBudget = 58,
 }: {
   task: VideoTaskView | null;
@@ -108,6 +128,8 @@ export function Stage({
   onLoadSettings?: () => void;
   /** A new generation is being submitted right now. */
   busy?: boolean;
+  /** Example clip for the empty frame; omit to get the plain placeholder. */
+  sample?: StageSample;
   /**
    * Share of the viewport height (in vh) the frame may occupy. Landing pages
    * that must keep the submit button above the fold pass a smaller budget
@@ -131,6 +153,8 @@ export function Stage({
       : !task && error
         ? error
         : null;
+  /** Tapping the example is what creates the <video>, hence what pulls the bytes. */
+  const [samplePlaying, setSamplePlaying] = useState(false);
 
   return (
     <div
@@ -164,15 +188,52 @@ export function Stage({
             )}
           </div>
         ) : !task ? (
-          <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 px-6 text-center">
-            <Film className="text-primary/50 size-6" strokeWidth={1.5} />
-            <p className="text-foreground/70 text-sm font-medium">
-              {labels.emptyTitle}
-            </p>
-            <p className="max-w-xs text-[11px] leading-relaxed">
-              {labels.emptyBody}
-            </p>
-          </div>
+          sample && !samplePlaying ? (
+            <button
+              type="button"
+              onClick={() => setSamplePlaying(true)}
+              className="group absolute inset-0 cursor-pointer"
+              aria-label={sample.playLabel}
+            >
+              <img
+                src={sample.poster}
+                alt={sample.badge}
+                loading="lazy"
+                decoding="async"
+                className="size-full object-cover"
+              />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
+              <span className="text-foreground/90 absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
+                {sample.badge}
+              </span>
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-primary/90 text-primary-foreground flex size-14 items-center justify-center rounded-full shadow-lg transition-transform group-hover:scale-105">
+                  <Play className="size-6 translate-x-0.5" />
+                </span>
+              </span>
+            </button>
+          ) : sample ? (
+            <video
+              src={sample.video}
+              poster={sample.poster}
+              controls
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+              className="size-full object-cover"
+            />
+          ) : (
+            <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 px-6 text-center">
+              <Film className="text-primary/50 size-6" strokeWidth={1.5} />
+              <p className="text-foreground/70 text-sm font-medium">
+                {labels.emptyTitle}
+              </p>
+              <p className="max-w-xs text-[11px] leading-relaxed">
+                {labels.emptyBody}
+              </p>
+            </div>
+          )
         ) : task.status === 'success' && video?.videoUrl ? (
           <VideoPlayer
             src={video.videoUrl}
