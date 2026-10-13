@@ -141,7 +141,7 @@ export function Pricing({
       }),
     onSuccess: (data) => {
       if (!data?.checkout_url) {
-        toast.error('Checkout failed');
+        toast.error(m['landing.pricing.checkout_failed']());
         setLoadingProvider(null);
         return;
       }

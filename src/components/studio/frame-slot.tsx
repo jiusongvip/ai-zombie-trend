@@ -19,6 +19,8 @@ export interface FrameSlotLabels {
   remove: string;
   maxSize: string;
   imageOnly: string;
+  readFailed: string;
+  processFailed: string;
 }
 
 /** Longest edge kept after re-encoding — models do not need more than this. */
@@ -29,12 +31,15 @@ const MAX_UPLOAD_EDGE = 2048;
  * output carries no EXIF block, so GPS coordinates and device details are
  * never uploaded, and drawing honours the photo's own orientation tag.
  */
-async function toCleanImage(file: File): Promise<File> {
+async function toCleanImage(
+  file: File,
+  labels: FrameSlotLabels
+): Promise<File> {
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   } catch {
-    throw new Error('This image could not be read. Try a JPG, PNG or WebP.');
+    throw new Error(labels.readFailed);
   }
 
   const scale = Math.min(
@@ -48,7 +53,7 @@ async function toCleanImage(file: File): Promise<File> {
   const context = canvas.getContext('2d');
   if (!context) {
     bitmap.close();
-    throw new Error('This image could not be processed.');
+    throw new Error(labels.processFailed);
   }
   context.fillStyle = '#ffffff';
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -58,7 +63,7 @@ async function toCleanImage(file: File): Promise<File> {
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, 'image/jpeg', 0.92)
   );
-  if (!blob) throw new Error('This image could not be processed.');
+  if (!blob) throw new Error(labels.processFailed);
 
   return new File(
     [blob],
@@ -78,9 +83,12 @@ async function toCleanImage(file: File): Promise<File> {
  * it joins the 24-hour retention ledger, unlike the site-content uploads that
  * `ImageUploader` and the rich-text editor stage here.
  */
-async function uploadFrame(file: File): Promise<string> {
+async function uploadFrame(
+  file: File,
+  labels: FrameSlotLabels
+): Promise<string> {
   const body = new FormData();
-  body.append('files', await toCleanImage(file));
+  body.append('files', await toCleanImage(file, labels));
   body.append('scope', 'photo');
 
   const response = await fetch('/api/storage/upload-image', {
@@ -88,13 +96,13 @@ async function uploadFrame(file: File): Promise<string> {
     body,
   });
   if (!response.ok) {
-    throw new Error(`Upload failed with status ${response.status}`);
+    throw new Error(`${labels.failed} (${response.status})`);
   }
 
   const result = await response.json().catch(() => null);
   const url = result?.data?.urls?.[0];
   if (result?.code !== 0 || !url) {
-    throw new Error(result?.message || 'Upload failed');
+    throw new Error(result?.message || labels.failed);
   }
   return url as string;
 }
@@ -198,16 +206,14 @@ export function FrameSlot({
     onChange({ status: 'uploading' });
 
     try {
-      const url = await uploadFrame(file);
+      const url = await uploadFrame(file, labels);
       // Keep the `blob:` as the shown preview; `url` (R2) is only the model input.
       setState({ url, preview: blob, status: 'uploaded' });
       onChange({ url, status: 'uploaded' });
     } catch (error: any) {
       setState({ status: 'error', preview: blob });
       onChange({ status: 'error' });
-      toast.error(
-        error?.message ? `${labels.failed}: ${error.message}` : labels.failed
-      );
+      toast.error(error?.message || labels.failed);
     } finally {
       if (inputRef.current) inputRef.current.value = '';
     }

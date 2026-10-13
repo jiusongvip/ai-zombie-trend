@@ -354,6 +354,8 @@ export function Generator() {
     remove: m['studio.frames.remove'](),
     maxSize: m['studio.frames.max_size']({ size: '{size}' }),
     imageOnly: m['studio.frames.image_only'](),
+    readFailed: m['studio.frames.read_failed'](),
+    processFailed: m['studio.frames.process_failed'](),
   };
 
   const stageLabels = {

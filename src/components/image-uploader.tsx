@@ -5,6 +5,7 @@ import { ImageIcon, RefreshCw, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
+import { m } from '@/paraglide/messages.js';
 import { Button } from '@/components/ui/button';
 
 export type UploadStatus = 'idle' | 'uploading' | 'uploaded' | 'error';
@@ -30,7 +31,8 @@ interface ImageUploaderProps {
   itemClassName?: string;
   /** Vertical (poster) tile shape, for portrait source frames. */
   itemAspect?: 'square' | 'video' | 'portrait';
-  /** Copy overrides. Defaults are English; pass i18n strings from the calling page. */
+  /** Copy overrides. Defaults follow the active locale and reuse the generator's
+   *  accepted-format wording, so both uploaders state the same limits. */
   labels?: Partial<ImageUploaderLabels>;
   disabled?: boolean;
 }
@@ -41,21 +43,23 @@ export interface ImageUploaderLabels {
   failed: string;
   upload: string;
   maxSize: string;
+  oversize: string;
   replace: string;
   remove: string;
   imageOnly: string;
 }
 
-const DEFAULT_LABELS: ImageUploaderLabels = {
-  drop: 'Drop to upload',
-  uploading: 'Uploading…',
-  failed: 'Failed',
-  upload: 'Upload',
-  maxSize: 'Max {size}MB',
-  replace: 'Replace image',
-  remove: 'Remove image',
-  imageOnly: 'Only image files are supported',
-};
+const defaultLabels = (): ImageUploaderLabels => ({
+  drop: m['common.uploader.drop'](),
+  uploading: m['studio.frames.uploading'](),
+  failed: m['studio.frames.failed'](),
+  upload: m['common.uploader.upload'](),
+  maxSize: m['studio.frames.max_size']({ size: '{size}' }),
+  oversize: m['common.uploader.oversize']({ size: '{size}' }),
+  replace: m['studio.frames.replace'](),
+  remove: m['studio.frames.remove'](),
+  imageOnly: m['studio.frames.image_only'](),
+});
 
 interface UploadItem extends ImageUploaderValue {
   file?: File;
@@ -106,7 +110,7 @@ export function ImageUploader({
   labels,
   disabled = false,
 }: ImageUploaderProps) {
-  const l = { ...DEFAULT_LABELS, ...labels };
+  const l = { ...defaultLabels(), ...labels };
   const inputRef = useRef<HTMLInputElement | null>(null);
   const isInitializedRef = useRef(false);
   const onChangeRef = useRef(onChange);
@@ -268,7 +272,7 @@ export function ImageUploader({
       }
       if (file.size > maxBytes) {
         toast.error(
-          `"${file.name}" ${l.maxSize.replace('{size}', String(maxSizeMB))}`
+          `"${file.name}" ${l.oversize.replace('{size}', String(maxSizeMB))}`
         );
         if (inputRef.current) inputRef.current.value = '';
         return;
@@ -286,7 +290,7 @@ export function ImageUploader({
         }
         if (file.size > maxBytes) {
           toast.error(
-            `"${file.name}" ${l.maxSize.replace('{size}', String(maxSizeMB))}`
+            `"${file.name}" ${l.oversize.replace('{size}', String(maxSizeMB))}`
           );
           return false;
         }
