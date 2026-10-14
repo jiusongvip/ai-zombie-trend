@@ -93,15 +93,15 @@ const SAMPLE_FILM = showcaseItems.find(
 );
 
 /**
- * One photograph, as a numbered row: the number and the role on the left, the
- * drop zone on the right.
+ * One photograph, and it takes up exactly one picture's room: the 9:16 drop
+ * zone, the number and role floating over its top edge, the meaning of the slot
+ * in a line under it. Two of these sit side by side.
  *
- * Stacked rather than side by side because the two slots are not
- * interchangeable — `@image1` is the survivor and `@image2` is the one who
- * turned — and swapping them is the one input mistake that wrecks the film
- * without ever raising an error. A number in front of each role makes the
- * order part of the layout instead of part of a caption you have to remember
- * to read.
+ * The number is not decoration — the slots are not interchangeable, `@image1`
+ * is the survivor and `@image2` is the one who turned, and swapping them is the
+ * one input mistake that wrecks the film without ever raising an error. Keeping
+ * the order on the frame itself makes it impossible to upload into the wrong
+ * slot without seeing which one that was.
  */
 function PhotoRow({
   index,
@@ -121,33 +121,37 @@ function PhotoRow({
   labels: FrameSlotLabels;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <span
-        aria-hidden
-        className={cn(
-          'flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums',
-          invalid
-            ? 'border-destructive text-destructive'
-            : 'border-border/70 bg-muted/40 text-muted-foreground'
-        )}
-      >
-        {index}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-foreground text-sm font-medium">{title}</p>
-        <p className="text-muted-foreground text-xs leading-snug">{hint}</p>
-      </div>
-      <div className="w-[104px] shrink-0 sm:w-[118px]">
-        <FrameSlot
-          value={value}
-          onChange={onChange}
-          aspectRatio={FRAME_ASPECT}
-          maxHeight="min(26vh, 15rem)"
-          maxSizeMB={MAX_FRAME_MB}
-          invalid={invalid}
-          labels={labels}
-        />
-      </div>
+    <div className="relative w-[112px] sm:w-[120px]">
+      <p className="pointer-events-none absolute top-2 left-2 z-10 flex max-w-[calc(100%-1rem)] items-center gap-1">
+        <span
+          aria-hidden
+          className={cn(
+            'flex size-4 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none font-semibold tabular-nums',
+            invalid
+              ? 'border-destructive bg-destructive/15 text-destructive'
+              : 'border-white/40 bg-black/55 text-white'
+          )}
+        >
+          {index}
+        </span>
+        <span className="truncate rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] leading-tight font-medium text-white">
+          {title}
+        </span>
+      </p>
+      <FrameSlot
+        value={value}
+        onChange={onChange}
+        aspectRatio={FRAME_ASPECT}
+        maxSizeMB={MAX_FRAME_MB}
+        invalid={invalid}
+        labels={labels}
+      />
+      {/* The role rides inside the frame's bottom edge rather than sitting
+          under it — the caption belongs to the slot you are dropping onto, and
+          a line of its own would push everything below it down the page. */}
+      <p className="absolute inset-x-0 bottom-0 rounded-b-xl bg-black/60 px-1.5 py-1 text-[10px] leading-snug font-medium text-white">
+        {hint}
+      </p>
     </div>
   );
 }
@@ -551,31 +555,35 @@ export function Generator() {
             the right — so the button sits directly under the picture it makes. */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-6">
           {/* ── Left: everything you decide, in the order you decide it ── */}
-          <div className="border-border/60 bg-card/90 space-y-5 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* Who turns comes first: it decides what the second photo is of. */}
+          <div className="border-border/60 bg-card/90 space-y-3 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
+            {/* Who turns comes first: it decides what the second photo is of.
+                Label and control share a row so the whole flow stays on one
+                screen — the toggle is two words, it does not need a line. */}
             <div>
-              <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                {m['landing.generator.subject']()}
-              </p>
-              <div className="bg-muted/50 flex rounded-lg p-1">
-                {SUBJECTS.map((id) => {
-                  const active = id === activeSubject;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setSubject(id)}
-                      className={cn(
-                        'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
-                        active
-                          ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      {tDynamic(`landing.generator.subject.${id}`)}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-foreground text-xs font-semibold tracking-wide uppercase">
+                  {m['landing.generator.subject']()}
+                </p>
+                <div className="bg-muted/50 flex rounded-lg p-1">
+                  {SUBJECTS.map((id) => {
+                    const active = id === activeSubject;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setSubject(id)}
+                        className={cn(
+                          'rounded-md px-3 py-1.5 text-sm font-medium transition-all',
+                          active
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        {tDynamic(`landing.generator.subject.${id}`)}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <p className="text-muted-foreground mt-2 text-xs leading-snug">
                 {m['landing.generator.subject_hint']()}
@@ -584,14 +592,10 @@ export function Generator() {
 
             <div ref={photosRef}>
               {/* Form-group label, not a content heading — keeps every h3 on the page inside an h2 section. */}
-              <p className="text-foreground mb-3 text-sm font-semibold">
+              <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
                 {m['landing.generator.step_photos']()}
               </p>
-              <div className="relative space-y-3">
-                <span
-                  aria-hidden
-                  className="border-border/60 absolute top-10 bottom-10 left-[13px] border-l border-dashed"
-                />
+              <div className="flex items-start gap-3">
                 <PhotoRow
                   index={1}
                   title={m['landing.generator.frame_a']()}
@@ -620,7 +624,7 @@ export function Generator() {
               )}
 
               {/* Photo-permission rule, next to the upload slots */}
-              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
+              <p className="text-muted-foreground mt-2 flex items-start gap-2 text-[11px] leading-snug">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
                 {m['landing.generator.photo_rules']()}
               </p>
@@ -628,7 +632,7 @@ export function Generator() {
 
             {/* World cards — the setting and the match cut, not the relationship. */}
             <div>
-              <p className="text-foreground mb-3 text-sm font-semibold">
+              <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
                 {m['landing.generator.pick']()}
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -641,12 +645,16 @@ export function Generator() {
                       type="button"
                       onClick={() => setWorld(id)}
                       className={cn(
-                        'relative overflow-hidden rounded-xl border text-left transition-all',
+                        'relative isolate flex min-h-24 flex-col justify-end overflow-hidden rounded-xl border p-2 text-left transition-all',
                         active
                           ? 'border-primary ring-primary/30 ring-2'
-                          : 'border-border/60 bg-muted/20 hover:border-primary/50'
+                          : 'border-border/60 hover:border-primary/50'
                       )}
                     >
+                      {/* The scene fills the card, so the choice is made on the
+                          place itself. A scrim carries the text: these frames
+                          are bright in places and the label has to stay legible
+                          over all four. */}
                       {scene ? (
                         <img
                           src={scene.thumb}
@@ -654,21 +662,23 @@ export function Generator() {
                           aria-hidden
                           loading="lazy"
                           decoding="async"
-                          className="h-14 w-full object-cover"
+                          className="absolute inset-0 -z-10 size-full object-cover"
                         />
                       ) : (
-                        <span className="bg-muted/40 block h-14 w-full" />
+                        <span className="bg-muted/40 absolute inset-0 -z-10" />
                       )}
-                      <span className="block p-2.5">
-                        <span className="block text-sm leading-tight font-semibold">
-                          {tDynamic(`landing.worlds.${id}.title`)}
-                        </span>
-                        <span className="text-muted-foreground mt-1 block text-[11px] leading-snug">
-                          {tDynamic(`landing.worlds.${id}.desc`)}
-                        </span>
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/65 to-black/20"
+                      />
+                      <span className="block text-sm leading-tight font-semibold text-white">
+                        {tDynamic(`landing.worlds.${id}.title`)}
+                      </span>
+                      <span className="mt-1 block text-[11px] leading-snug text-white/80">
+                        {tDynamic(`landing.worlds.${id}.desc`)}
                       </span>
                       {active && (
-                        <CheckCircle2 className="text-primary absolute top-2 right-2 size-4" />
+                        <CheckCircle2 className="absolute top-2 right-2 size-4 text-white" />
                       )}
                     </button>
                   );
@@ -677,13 +687,13 @@ export function Generator() {
             </div>
 
             {/* Duration, Format & Quality */}
-            <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
               {/* Duration (fixed at 15s for zombie) */}
               <div>
-                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                <p className="text-foreground mb-1.5 text-xs font-semibold tracking-wide uppercase">
                   {m['landing.generator.duration']()}
                 </p>
-                <div className="border-primary/50 bg-primary/10 flex items-center justify-between rounded-lg border px-3 py-2.5">
+                <div className="border-primary/50 bg-primary/10 flex items-center justify-between rounded-lg border px-3 py-2">
                   <span className="text-primary text-sm font-medium">15s</span>
                   <span className="text-muted-foreground text-xs">
                     {m['landing.generator.cinematic']()}
@@ -693,7 +703,7 @@ export function Generator() {
 
               {/* Format toggle */}
               <div>
-                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                <p className="text-foreground mb-1.5 text-xs font-semibold tracking-wide uppercase">
                   {m['landing.generator.format']()}
                 </p>
                 <div className="bg-muted/50 flex rounded-lg p-1">
@@ -705,7 +715,7 @@ export function Generator() {
                         type="button"
                         onClick={() => setAspectRatio(ratio)}
                         className={cn(
-                          'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+                          'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all',
                           active
                             ? 'bg-background text-foreground shadow-sm'
                             : 'text-muted-foreground hover:text-foreground'
@@ -788,7 +798,7 @@ export function Generator() {
                 task={activeTask}
                 elapsedSeconds={elapsed}
                 frameAspect={cssAspect(aspectRatio)}
-                vhBudget={46}
+                vhBudget={30}
                 labels={stageLabels}
                 statusLabel={statusLabel}
                 error={submitError}
@@ -824,7 +834,7 @@ export function Generator() {
 
             {/* Cost, consent, action — stacked under the result so the last
                 thing you read is the button. */}
-            <div className="border-border/60 bg-card/90 space-y-4 rounded-2xl border p-4 backdrop-blur-sm">
+            <div className="border-border/60 bg-card/90 space-y-3 rounded-2xl border p-4 backdrop-blur-sm">
               <div ref={creditsRef} className="space-y-2">
                 {/* Only a signed-in reader has a balance to show. For a guest a
                     "after this run" row would be an invented number, and the
@@ -873,7 +883,7 @@ export function Generator() {
               </div>
 
               {/* Likeness consent — the server refuses the render without it */}
-              <div ref={consentRef} className="space-y-2.5 border-t pt-3">
+              <div ref={consentRef} className="space-y-2 border-t pt-2.5">
                 <label
                   className={cn(
                     'hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors',
@@ -935,13 +945,15 @@ export function Generator() {
                       : m['landing.generator.start']()}
               </Button>
 
-              <p className="text-muted-foreground flex items-start gap-2 text-[11px] leading-snug">
-                <Lock className="mt-0.5 size-3.5 shrink-0" />
-                {m['landing.generator.privacy_note']()}
-              </p>
-              <p className="text-muted-foreground text-center text-xs">
-                {m['landing.hero.note']()}
-              </p>
+              <div className="text-muted-foreground space-y-1.5">
+                <p className="flex items-start gap-2 text-[11px] leading-snug">
+                  <Lock className="mt-0.5 size-3.5 shrink-0" />
+                  {m['landing.generator.privacy_note']()}
+                </p>
+                <p className="text-center text-xs">
+                  {m['landing.hero.note']()}
+                </p>
+              </div>
             </div>
 
             {signedIn && recent.length > 0 && (
