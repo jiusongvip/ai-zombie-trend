@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Clapperboard,
   Download,
   Film,
   Loader2,
-  Play,
   RotateCcw,
   SlidersHorizontal,
   TriangleAlert,
@@ -49,17 +48,16 @@ export interface StageLabels {
  * An example clip to show in the empty stage — proof of what the button
  * actually produces, on the screen where the decision is made.
  *
- * Deliberately poster-only until tapped. This project has already lost mobile
- * LCP to an autoplayed clip in the first screen, so the video element (and its
- * multi-megabyte fetch) is created by the tap, never by the page load.
+ * It plays on its own. The poster paints with the page and the `<video>` is
+ * only mounted once loading has finished, so its multi-megabyte fetch never
+ * competes with the resources LCP is measured on — this project has already
+ * lost mobile LCP to a clip that started playing at page load.
  */
 export interface StageSample {
   video: string;
   poster: string;
   /** Corner badge, e.g. "Example — made from two photos". */
   badge: string;
-  /** Accessible name for the play control. */
-  playLabel: string;
 }
 
 /**
@@ -169,8 +167,31 @@ export function Stage({
       : !task && error
         ? error
         : null;
-  /** Tapping the example is what creates the <video>, hence what pulls the bytes. */
-  const [samplePlaying, setSamplePlaying] = useState(false);
+  /** The example's bytes are fetched only after the page has finished loading. */
+  const [sampleArmed, setSampleArmed] = useState(false);
+  const showingSample = !task && !scene && Boolean(sample);
+
+  useEffect(() => {
+    if (!showingSample || sampleArmed) return;
+    const arm = () => setSampleArmed(true);
+    const whenIdle = () => {
+      const win = window as Window & {
+        requestIdleCallback?: (
+          cb: () => void,
+          opts?: { timeout?: number }
+        ) => number;
+      };
+      if (win.requestIdleCallback)
+        win.requestIdleCallback(arm, { timeout: 4000 });
+      else arm();
+    };
+    if (document.readyState === 'complete') {
+      whenIdle();
+      return;
+    }
+    window.addEventListener('load', whenIdle, { once: true });
+    return () => window.removeEventListener('load', whenIdle);
+  }, [showingSample, sampleArmed]);
 
   return (
     <div
@@ -217,17 +238,12 @@ export function Stage({
                 {scene.badge}
               </span>
             </div>
-          ) : sample && !samplePlaying ? (
-            <button
-              type="button"
-              onClick={() => setSamplePlaying(true)}
-              className="group absolute inset-0 cursor-pointer"
-              aria-label={sample.playLabel}
-            >
+          ) : sample && !sampleArmed ? (
+            <div className="size-full">
               <img
                 src={sample.poster}
                 alt={sample.badge}
-                loading="lazy"
+                fetchPriority="high"
                 decoding="async"
                 className="size-full object-cover"
               />
@@ -235,23 +251,24 @@ export function Stage({
               <span className="text-foreground/90 absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
                 {sample.badge}
               </span>
-              <span className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-primary/90 text-primary-foreground flex size-14 items-center justify-center rounded-full shadow-lg transition-transform group-hover:scale-105">
-                  <Play className="size-6 translate-x-0.5" />
-                </span>
-              </span>
-            </button>
+            </div>
           ) : sample ? (
-            <video
-              src={sample.video}
-              poster={sample.poster}
-              controls
-              autoPlay
-              loop
-              playsInline
-              preload="metadata"
-              className="size-full object-cover"
-            />
+            <div className="size-full">
+              <video
+                src={sample.video}
+                poster={sample.poster}
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                className="size-full object-cover"
+              />
+              <span className="text-foreground/90 pointer-events-none absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
+                {sample.badge}
+              </span>
+            </div>
           ) : (
             <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 px-6 text-center">
               <Film className="text-primary/50 size-6" strokeWidth={1.5} />

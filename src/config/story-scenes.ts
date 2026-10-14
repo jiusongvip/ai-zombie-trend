@@ -9,21 +9,21 @@
  * because it holds the prompts, and the prompts are the one thing this product
  * promises never to ship to the browser.
  */
-export const worldScenes: Record<string, { full: string; thumb: string }> = {
+export const worldScenes: Record<string, { full: string; banner: string }> = {
   cabin: {
     full: '/images/scenes/scene-cabin.webp',
-    thumb: '/images/scenes/scene-cabin-thumb.webp',
+    banner: '/images/scenes/scene-cabin-banner.webp',
   },
   shore: {
     full: '/images/scenes/scene-shore.webp',
-    thumb: '/images/scenes/scene-shore-thumb.webp',
+    banner: '/images/scenes/scene-shore-banner.webp',
   },
   street: {
     full: '/images/scenes/scene-street.webp',
-    thumb: '/images/scenes/scene-street-thumb.webp',
+    banner: '/images/scenes/scene-street-banner.webp',
   },
   doorstep: {
     full: '/images/scenes/scene-doorstep.webp',
-    thumb: '/images/scenes/scene-doorstep-thumb.webp',
+    banner: '/images/scenes/scene-doorstep-banner.webp',
   },
 };

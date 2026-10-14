@@ -534,6 +534,37 @@ export function Generator() {
                 <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
               )}
 
+              {/* Who photo two is. It lives with the upload because it changes
+                  what you should photograph, not what the story looks like. */}
+              <div className="border-border/60 mt-4 border-t pt-4">
+                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                  {m['landing.generator.subject']()}
+                </p>
+                <div className="bg-muted/50 flex rounded-lg p-1">
+                  {SUBJECTS.map((id) => {
+                    const active = id === activeSubject;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setSubject(id)}
+                        className={cn(
+                          'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+                          active
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        {tDynamic(`landing.generator.subject.${id}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-muted-foreground mt-2 text-xs leading-snug">
+                  {m['landing.generator.subject_hint']()}
+                </p>
+              </div>
+
               {/* Photo-permission rule, next to the upload slots */}
               <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
@@ -550,37 +581,8 @@ export function Generator() {
 
           {/* ── Middle: Story & Settings Card ────────────────────────── */}
           <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* Who turns, then where it happens — the two halves of the story. */}
-            <div className="mb-4">
-              <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                {m['landing.generator.subject']()}
-              </p>
-              <div className="bg-muted/50 flex rounded-lg p-1">
-                {SUBJECTS.map((id) => {
-                  const active = id === activeSubject;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setSubject(id)}
-                      className={cn(
-                        'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
-                        active
-                          ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      {tDynamic(`landing.generator.subject.${id}`)}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-muted-foreground mt-2 text-xs leading-snug">
-                {m['landing.generator.subject_hint']()}
-              </p>
-            </div>
-
-            {/* World cards — the setting and the match cut, not the relationship. */}
+            {/* World cards — the setting and the match cut, not the relationship.
+                Who turns moved to the photo card: it decides what to shoot. */}
             <div className="mb-4">
               <p className="text-foreground mb-3 text-sm font-semibold">
                 {m['landing.generator.pick']()}
@@ -595,7 +597,7 @@ export function Generator() {
                       type="button"
                       onClick={() => setWorld(id)}
                       className={cn(
-                        'relative isolate flex min-h-24 flex-col justify-end overflow-hidden rounded-xl border p-2 text-left transition-all',
+                        'relative isolate flex aspect-[64/27] min-h-24 flex-col justify-end overflow-hidden rounded-xl border p-2 text-left transition-all',
                         active
                           ? 'border-primary ring-primary/30 ring-2'
                           : 'border-border/60 hover:border-primary/50'
@@ -607,7 +609,7 @@ export function Generator() {
                           over all four. */}
                       {scene ? (
                         <img
-                          src={scene.thumb}
+                          src={scene.banner}
                           alt=""
                           aria-hidden
                           loading="lazy"
@@ -624,7 +626,7 @@ export function Generator() {
                       <span className="block text-sm leading-tight font-semibold text-white">
                         {tDynamic(`landing.worlds.${id}.title`)}
                       </span>
-                      <span className="mt-1 block text-[11px] leading-snug text-white/80">
+                      <span className="mt-1 line-clamp-2 block text-[11px] leading-snug text-white/80">
                         {tDynamic(`landing.worlds.${id}.desc`)}
                       </span>
                       {active && (
@@ -876,7 +878,6 @@ export function Generator() {
                         video: SAMPLE_FILM.video,
                         poster: SAMPLE_FILM.cover,
                         badge: m['landing.generator.sample.badge'](),
-                        playLabel: m['landing.generator.sample.play'](),
                       }
                     : undefined
                 }
