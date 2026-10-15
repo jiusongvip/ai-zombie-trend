@@ -1,0 +1,171 @@
+export const meta = {
+  title: 'AI Zombie Couple Video',
+  description:
+    'A zombie couple video made from two photos: how both faces stay yours across four shots, the embrace that survives the match cut, and why the run never reads as an attack.',
+  updated_at: '2026-10-15',
+};
+
+Two people who are together in real life, one film: the survivor stands in a dark cabin
+with a handgun they cannot bring themself to raise, and the partner they love stands at
+the far end of the room — grey, still, facing them. The gun falls. Both arms open. The
+partner crosses the last few metres at a run and lands in the embrace, and mid-embrace
+the cabin hard-cuts into a golden wheat field at sunset with both of them alive.
+
+That is the couple version of the AI zombie trend, and it is the hardest one to render
+well because **two human faces** have to hold. A pet film asks the model to keep one
+human face and one animal. A couple film asks it to keep two faces that look like each
+other, stay distinct from each other, and both end the clip recognisable as the two
+people in your photos.
+
+<video
+  width="270"
+  controls
+  preload="none"
+  playsInline
+  poster="/images/showcase/zombie-couple-film.webp"
+>
+  <source src="/videos/showcase/zombie-couple-film.mp4" type="video/mp4" />
+</video>
+
+_A rendered couple film from the [examples page](/examples), in the cabin world. The
+[homepage generator](/#generator) also runs this story live on your own two photos._
+
+## The four shots, in order
+
+The couple story uses the same skeleton as every other film on this site — same four
+beats, same seconds, same match cut — and the world you pick (cabin, grey shore, rainy
+street, snowy doorstep) is shared across subjects. What belongs to the couple version is
+who is on screen and how the contact reads.
+
+| Shot                | Seconds | What happens                                                                                                                                                                                              |
+| ------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 — The two of them | 0–4     | The survivor stands trembling, the weapon or the held object lowered at their side, unable to use it. Cut wide: their partner waits, motionless, facing them — not attacking.                             |
+| 2 — The undead face | 4–6     | Extreme close-up on the partner. Pale grey skin, cloudy white eyes, dark veins, disheveled hair. Frightening, and still unmistakably the person in your second photo.                                     |
+| 3 — The choice      | 6–10    | The survivor lets go of what they were holding and opens both arms wide. Something familiar flickers in those cloudy eyes. The partner runs the last few metres and wraps their arms tightly around them. |
+| 4 — The match cut   | 10–15   | At the precise moment of the embrace, hard cut: the cabin becomes a sunlit wheat field. Both are alive and healthy, both faces exactly as in the references, in clean everyday clothing.                  |
+
+Cold blue-grey light for the first ten seconds, warm gold for the last five. The colour
+change carries most of the emotion; the two performances only have to stay still enough
+for the cut to read as one embrace rather than two clips.
+
+## How both faces stay yours
+
+The identity instruction in the couple template names four things, for **both**
+characters, and repeats the lock at the end where drift shows up:
+
+- **Facial identity** — each face against its own reference, not a blend of the two.
+- **Hairstyle and body proportions** — the two things that make two faces of similar age
+  read as two different people.
+- **Who is who** — the first photo is the survivor, the second is the partner. The model
+  is told the survivor cannot raise the weapon and the partner never moves behind them,
+  so the two roles stay on opposite sides of the frame.
+- **The undead look is painted on top, not substituted** — grey skin and cloudy eyes go
+  onto _that_ person, which is why shot 2 is still recognisable as your partner.
+
+Nothing in the story assumes a gender or an orientation. The two references decide who
+these people are, so a straight couple, a same-sex couple, or two people whose
+relationship you would rather not label all run through the same template.
+
+If you write prompts yourself, the free [prompt page](/ai-zombie-trend-prompts) walks
+the same beat map line by line, including the partner swap-in line.
+
+## The two photographs that work
+
+**Reference one — the survivor.** Shoulders-up, face toward the camera, daylight or an
+even room light. No heavy filter, no sunglasses, no hat brim across the eyes. This face
+gets re-rendered in four shots, so a clear front view does more work than a flattering
+one.
+
+**Reference two — the partner.** The same rules, because this face carries even more: it
+has to survive the undead makeup in shot 2 and the hard cut in shot 4. A photo where the
+eyes, jawline and hairline are all visible is worth more than a candid where the face is
+turned away.
+
+Two things that matter more for a couple than for any other subject: **brightness and
+colour grade should be similar in both photos** (one sunlit beach shot and one dim
+indoor shot push the model toward inventing a third lighting setup), and **avoid a photo
+of the two of you together as either reference** — a frame with both faces in it gives
+the model no way to tell which face belongs to which role.
+
+## Where couple renders fail, and the line that fixes each one
+
+| What you get                                              | The fix                                                                                                                         |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| The two faces converge into one mid-clip look             | Lock each face to its own reference by name (Character A, Character B) instead of “the couple”                                  |
+| The partner’s hair or jawline is taken from the survivor  | Name hairstyle and body proportions in the identity line, and again inside the final shot                                       |
+| The survivor’s face drifts while the partner holds        | The survivor needs their own lock — face, hairstyle, body proportions against the first reference                               |
+| One of them ends up behind or beside the other at the hug | Keep the facing clause: the partner always faces the survivor and never moves behind them                                       |
+| The ending looks like two unrelated clips                 | Put continuity on the embrace itself: same arms, same distance, same direction of movement across the cut                       |
+| The approach reads as an attack instead of a choice       | Keep both guards: “they do not attack” before the run, and the all-scenes clause that the only contact is running into the arms |
+
+## Why the zombified partner runs closer instead of attacking
+
+Because the hug is what the film is about. An approach that charges turns the third shot
+into a struggle, and then opening both arms stops being a choice and becomes
+self-defence. The whole beat map is built on the survivor putting the weapon down first,
+and on something familiar flickering in those cloudy eyes before the run.
+
+There is a second, practical reason: no excessive gore, no graphic wounds, no biting, no
+blood anywhere in the four shots. That restraint is what makes a couple film something
+you can post on the short-video platforms it is made for, and why the trend reads as a
+love story dressed as a horror clip rather than the reverse.
+
+## Questions people ask about AI zombie couple videos
+
+### Is the couple story the default one?
+
+Yes. The generator’s subject switch is preselected on **a person**, and the second photo
+becomes whoever you put in it — a partner is what the story was written around.
+
+### Can both photos be of my partner and me?
+
+That is exactly the intended use: one photo of you as the survivor, one of your partner
+as the one who has turned. Both of you appear in the same film, and consent for your own
+likeness is yours to give.
+
+### Can I make it about a partner who has died?
+
+A single photograph is all the render needs, and this is one of the films people make
+about someone they lost. Nothing in the output claims the person is real again — it is
+fifteen seconds of light in a wheat field. If the second photo is somebody else’s face
+and they are still living, that is their consent to give.
+
+### Does it work for a same-sex couple?
+
+Yes. The template refers to both characters with they/them and states that their genders,
+appearances and relationship are whatever the supplied references show, so nothing has to
+be configured.
+
+### How long is the video, and what shape?
+
+Fifteen seconds, four shots, vertical 9:16 — the shape Reels, Shorts and TikTok want —
+with ambience and score rather than a silent clip.
+
+### Can I choose the setting?
+
+Four worlds, all of them built on the same cold-to-warm arc: a dark cabin, a grey shore,
+a rainy street at night, and a snowy doorstep. Each one changes the prop the survivor
+lowers and the light the match cut resolves into, not the story.
+
+### Do I have to write a prompt?
+
+No. The generator has no prompt box: the four-shot beat map, the identity locks and the
+no-gore clause are already pinned, and the only decisions are the two photographs, the
+world, and the resolution tier. If you would rather drive a third-party model yourself,
+the prompts and the reasoning behind each line are free on the
+[prompt page](/ai-zombie-trend-prompts).
+
+### What does a render cost?
+
+One film costs one 480p or 720p tier price from a one-time credit pack — no subscription,
+and a failed render refunds automatically. Current amounts are on the
+[pricing page](/pricing).
+
+## Or make one now
+
+[Open the generator](/#generator), keep the subject on **a person**, pick the world you
+want, and drop in the two photos — yours first, your partner’s second.
+
+If you want to see a rendered couple film before paying for one, the
+[examples page](/examples) carries the frames and clips from this exact pipeline, and the
+[pet version](/ai-zombie-pet-video) shows what changes when the second photo is an animal.

@@ -12,6 +12,10 @@ export function Footer() {
           label: m['landing.footer.pet_video'](),
           href: '/ai-zombie-pet-video',
         },
+        {
+          label: m['landing.footer.couple_video'](),
+          href: '/ai-zombie-couple-video',
+        },
         { label: m['landing.footer.library'](), href: '/library' },
         { label: m['landing.footer.pricing'](), href: '/pricing' },
       ],

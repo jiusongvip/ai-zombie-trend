@@ -12,6 +12,7 @@ const STATIC_PATHS = [
   '/about',
   '/ai-zombie-trend-prompts',
   '/ai-zombie-pet-video',
+  '/ai-zombie-couple-video',
   '/privacy-policy',
   '/terms-of-service',
   '/refund-policy',

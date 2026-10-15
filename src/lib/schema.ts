@@ -107,6 +107,7 @@ export function webApplicationSchema(params: {
       'ai zombie video generator',
       'ai zombie trend',
       'zombie love story video',
+      'zombie couple video',
       'zombie pet video',
       'turn into a zombie ai',
     ],

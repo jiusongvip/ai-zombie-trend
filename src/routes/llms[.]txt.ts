@@ -41,6 +41,12 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
       'The pet version of the two-photo film: the four shots with second ranges, the identity-lock line for a dog or cat (breed, coat, size, facial identity), the reference photo pair that holds, and the fixes for breed drift.',
   },
   {
+    path: '/ai-zombie-couple-video',
+    title: 'AI Zombie Couple Video',
+    description:
+      'The couple version of the two-photo film: how both faces stay distinct across the four shots, the two reference photos that work, the embrace continuity over the match cut, and the fixes for the failures specific to two human faces.',
+  },
+  {
     path: '/ai-zombie-trend-prompts',
     title: 'AI Zombie Trend Prompts',
     description:
