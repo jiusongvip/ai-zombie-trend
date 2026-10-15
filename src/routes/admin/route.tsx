@@ -14,6 +14,12 @@ import { m } from '@/paraglide/messages.js';
 import { AppLayout } from '@/components/app-layout';
 
 export const Route = createFileRoute('/admin')({
+  head: () => ({
+    meta: [
+      // Auth-gated console with an empty SSR shell — never a search result.
+      { name: 'robots', content: 'noindex,follow' },
+    ],
+  }),
   component: AdminLayout,
 });
 

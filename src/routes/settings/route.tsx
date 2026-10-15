@@ -18,6 +18,12 @@ import { SupportWidget } from '@/blocks/support-widget';
 import { AppLayout } from '@/components/app-layout';
 
 export const Route = createFileRoute('/settings')({
+  head: () => ({
+    meta: [
+      // Auth-gated console with an empty SSR shell — never a search result.
+      { name: 'robots', content: 'noindex,follow' },
+    ],
+  }),
   component: SettingsLayout,
 });
 
