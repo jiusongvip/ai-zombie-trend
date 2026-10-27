@@ -57,8 +57,8 @@ export interface StageLabels {
 export interface StageSample {
   video: string;
   poster: string;
-  /** Corner badge, e.g. "Example — made from two photos". */
-  badge: string;
+  /** Accessible description only — nothing is painted over the frame. */
+  alt: string;
 }
 
 /**
@@ -214,21 +214,18 @@ export function Stage({
             <div className="size-full">
               <img
                 src={sample.poster}
-                alt={sample.badge}
+                alt={sample.alt}
                 fetchPriority="high"
                 decoding="async"
                 className="size-full object-cover"
               />
-              <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
-              <span className="text-foreground/90 absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
-                {sample.badge}
-              </span>
             </div>
           ) : sample ? (
             <div className="size-full">
               <video
                 src={sample.video}
                 poster={sample.poster}
+                aria-label={sample.alt}
                 controls
                 autoPlay
                 muted
@@ -237,9 +234,6 @@ export function Stage({
                 preload="auto"
                 className="size-full object-cover"
               />
-              <span className="text-foreground/90 pointer-events-none absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
-                {sample.badge}
-              </span>
             </div>
           ) : (
             <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 px-6 text-center">

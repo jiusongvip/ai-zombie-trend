@@ -7,7 +7,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { CheckCircle2, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Loader2, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
@@ -597,7 +597,7 @@ export function Generator() {
                   sample={{
                     video: SAMPLE_FILM.video,
                     poster: SAMPLE_FILM.poster,
-                    badge: m['landing.generator.sample.badge'](),
+                    alt: m['landing.generator.sample.badge'](),
                   }}
                   onRegenerate={() => generateMutation.mutate(draft())}
                   onLoadSettings={() => activeTask && loadSettings(activeTask)}
@@ -615,16 +615,6 @@ export function Generator() {
                   </Link>
                 </p>
               )}
-
-              {/* The four beats, in order, under the preview they describe. */}
-              <p className="text-muted-foreground/80 mt-2 text-center text-[11px] leading-relaxed">
-                {[
-                  m['landing.shot.s1.title'](),
-                  m['landing.shot.s2.title'](),
-                  m['landing.shot.s3.title'](),
-                  m['landing.shot.s4.title'](),
-                ].join(' → ')}
-              </p>
             </div>
 
             {signedIn && recent.length > 0 && (
@@ -735,11 +725,6 @@ export function Generator() {
               {attempted && !uploading && !hasBothPhotos && (
                 <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
               )}
-
-              <p className="text-muted-foreground mt-2.5 flex items-start gap-1.5 text-[11px] leading-snug">
-                <Lock className="mt-0.5 size-3 shrink-0" />
-                {m['landing.generator.privacy_note']()}
-              </p>
             </div>
 
             {/* The world: four thumbnails, one tap, no paragraph to read. */}

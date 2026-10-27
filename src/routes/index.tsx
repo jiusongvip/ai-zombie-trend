@@ -42,11 +42,11 @@ import { TrendNote } from '@/blocks/trend-note';
  * Single-page landing for the "ai zombie trend" keyword: the workbench owns the
  * whole first screen — the pitch and the proof on the left, the submit card on
  * the right — so two photos, a story and the render button are visible before
- * any scrolling. Below: shot list, community
- * feed, then the conversion ladder (how → pricing → FAQ). The long explainers
- * (photo handling, format, tiers, the trend itself, the match cut, delivery)
- * sit after the ladder, because someone deciding whether to pay needs the
- * price and the questions answered first — and search still reads all of it.
+ * any scrolling. Below: the four shots the sample film is made of, then what the
+ * upload buys, the community feed, then the conversion ladder (how → pricing → FAQ).
+ * The long explainers (photo handling, format, tiers, the trend itself, the match
+ * cut, delivery) sit after the ladder, because someone deciding whether to pay
+ * needs the price and the questions answered first — and search still reads it all.
  * Only /library, /pricing, /blog and account pages remain as separate routes.
  */
 function HomePage() {
@@ -55,8 +55,8 @@ function HomePage() {
       <Header />
       <main>
         <Generator />
-        <SpecCards />
         <ShotList />
+        <SpecCards />
         <StoryModes />
         <Showcase />
         <HowItWorks />

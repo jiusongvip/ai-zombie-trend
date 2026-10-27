@@ -43,10 +43,11 @@ export const showcaseItems: ShowcaseItem[] = [
     aspect: '9:16',
     tag: 'couple',
     cover: '/images/showcase/zombie-cabin.webp',
-    video: 'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/hfsy/video/79cf471c-1260-4692-9228-fd3c10ff27f8.mp4',
+    video:
+      'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/hfsy/video/79cf471c-1260-4692-9228-fd3c10ff27f8.mp4',
     prompt: {
-      en: 'A real couple film generated live on the homepage: two uploaded photos become the survivor and their zombified partner, running the full four-shot story from the dark cabin to the sunset wheat-field embrace',
-      zh: '在首页实跑生成的情侣成片：两张上传照片化身幸存者与其丧尸化的爱人，完整跑通从昏暗木屋到落日麦田相拥的四镜头故事',
+      en: 'A real couple film generated in our own workbench: two uploaded photos become the survivor and their zombified partner, running the full four-shot story from the dark cabin to the sunset wheat-field embrace',
+      zh: '在本站工作台实跑生成的情侣成片：两张上传照片化身幸存者与其丧尸化的爱人，完整跑通从昏暗木屋到落日麦田相拥的四镜头故事',
     },
   },
   {
@@ -70,8 +71,8 @@ export const showcaseItems: ShowcaseItem[] = [
     tag: 'couple',
     cover: '/images/showcase/zombie-cabin.webp',
     prompt: {
-      en: 'The Cabin, shot one of four: a survivor aims a trembling handgun at the zombified partner they love, tears streaming, dim daylight through the broken cabin windows, cold blue-grey cinematic 3D',
-      zh: '四个分镜的第一幕「木屋」：幸存者颤抖着用枪指着已变成丧尸的爱人，泪水滑落，微弱的日光透进破旧的木窗，冷青灰色调电影感 3D 画面',
+      en: 'The Raised Gun, shot one of four: a survivor aims a trembling handgun at the zombified partner they love, tears streaming, dim daylight through the broken cabin windows, cold blue-grey cinematic 3D',
+      zh: '四个分镜的第一幕「含泪举枪」：幸存者颤抖着用枪指着已变成丧尸的爱人，泪水滑落，微弱的日光透进破旧的木窗，冷青灰色调电影感 3D 画面',
     },
   },
   {
@@ -82,8 +83,8 @@ export const showcaseItems: ShowcaseItem[] = [
     tag: 'couple',
     cover: '/images/showcase/zombie-reunion.webp',
     prompt: {
-      en: 'The Match Cut, shot four of four: mid-air the dark cabin becomes a golden wheat field at sunset, the zombie leap landing as a tight embrace with both characters alive again, warm cinematic 3D',
-      zh: '匹配剪辑，第四幕：腾空瞬间昏暗木屋化作落日下的金色麦田，丧尸的扑跃落成一次紧拥，两人恢复人样，温暖电影感 3D',
+      en: 'The Wheat Field, shot four of four: mid-air the dark cabin becomes a golden wheat field at sunset, the zombie leap landing as a tight embrace with both characters alive again, warm cinematic 3D',
+      zh: '落日麦田，第四幕：腾空瞬间昏暗木屋化作落日下的金色麦田，丧尸的扑跃落成一次紧拥，两人恢复人样，温暖电影感 3D',
     },
   },
   {
@@ -94,8 +95,8 @@ export const showcaseItems: ShowcaseItem[] = [
     tag: 'couple',
     cover: '/images/showcase/zombie-memory.webp',
     prompt: {
-      en: 'The Choice, shot three of four: still crying, the survivor lowers the handgun and lets it fall, then spreads both arms wide in painful acceptance, inviting the zombie into an embrace',
-      zh: '抉择，第三幕：幸存者仍在落泪，却缓缓垂下手枪任其跌落，随即张开双臂——以痛苦的接纳向丧尸发出拥抱的邀请',
+      en: 'The Open Arms, shot three of four: still crying, the survivor lowers the handgun and lets it fall, then spreads both arms wide in painful acceptance, inviting the zombie into an embrace',
+      zh: '张开双臂，第三幕：幸存者仍在落泪，却缓缓垂下手枪任其跌落，随即张开双臂——以痛苦的接纳向丧尸发出拥抱的邀请',
     },
   },
   {
@@ -141,10 +142,11 @@ export const showcaseItems: ShowcaseItem[] = [
     aspect: '9:16',
     tag: 'family',
     cover: '/images/showcase/zombie-family.webp',
-    video: 'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-1.mp4',
+    video:
+      'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-1.mp4',
     prompt: {
-      en: 'A real family film generated with AI Zombie Video: two photos become the survivor and their zombified parent, running the four-shot story from the dark cabin to the sunset embrace',
-      zh: '用 AI Zombie Video 实跑的亲情成片：两张照片化身幸存者与其丧尸化的至亲，完整跑通从昏暗木屋到落日相拥的四镜头故事',
+      en: 'A real family film generated in our own workbench: two photos become the survivor and their zombified parent, running the four-shot story from the dark cabin to the sunset embrace',
+      zh: '用本站工作台实跑的亲情成片：两张照片化身幸存者与其丧尸化的至亲，完整跑通从昏暗木屋到落日相拥的四镜头故事',
     },
   },
   {
@@ -154,7 +156,8 @@ export const showcaseItems: ShowcaseItem[] = [
     aspect: '9:16',
     tag: 'family',
     cover: '/images/showcase/zombie-family.webp',
-    video: 'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-2.mp4',
+    video:
+      'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-2.mp4',
     prompt: {
       en: 'Another family generation from two photos — the grown child lowers the gun, opens both arms, and the zombified parent’s leap match-cuts into a tight embrace under a golden sunset',
       zh: '另一条从两张照片生成的亲情成片——子女放下枪、张开双臂，丧尸化至亲的那记扑跃经匹配剪辑，在金色落日下化作一个紧拥',

@@ -265,7 +265,7 @@ function ShowcaseCard({
       ) : (
         <img
           src={item.cover}
-          alt={item.prompt.en}
+          alt={item.prompt[locale as 'en' | 'zh'] ?? item.prompt.en}
           loading="lazy"
           className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />

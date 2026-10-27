@@ -75,10 +75,20 @@ function pack(
 }
 
 export const pricingCatalog: Record<string, PricingProduct> = {
-  film_pack_1: pack(1, 'Single Pack', 599, 890),
-  film_pack_3: pack(3, 'Trio Pack', 1499, 2190),
-  film_pack_10: pack(10, 'Ten Pack', 3990, 5790),
-  film_pack_60: pack(60, 'Annual Pack', 12600, 17999),
+  film_pack_1: pack(1, 'Single Pack', 589, 890),
+  film_pack_3: pack(3, 'Trio Pack', 989, 1290),
+  film_pack_9: pack(9, 'Nine Pack', 2489, 3490),
+};
+
+/**
+ * Message key carrying the localized display name of each pack. The English
+ * `productName` above is what the payment provider registers and what the
+ * checkout payload carries; the cards and the comparison table show this.
+ */
+export const packNameKey: Record<string, string> = {
+  film_pack_1: 'landing.pricing.pack.single',
+  film_pack_3: 'landing.pricing.pack.trio',
+  film_pack_9: 'landing.pricing.pack.nine',
 };
 
 export function getPricingProduct(productId: string): PricingProduct | null {
@@ -90,7 +100,7 @@ export function listPricingProducts(): PricingProduct[] {
   return Object.values(pricingCatalog);
 }
 
-/** Display price with forced two decimals — `$126.00`, not `$126`. */
+/** Display price with forced two decimals — `$9.00`, not `$9`. */
 export function formatPrice(priceInCents: number) {
   return `$${(priceInCents / 100).toFixed(2)}`;
 }

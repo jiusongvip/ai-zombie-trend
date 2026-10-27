@@ -2,12 +2,16 @@ import type { ReactNode } from 'react';
 
 import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
-import { formatPrice, listPricingProducts } from '@/config/pricing';
+import {
+  formatPrice,
+  listPricingProducts,
+  packNameKey,
+} from '@/config/pricing';
 import { m } from '@/paraglide/messages.js';
 import type { locales } from '@/paraglide/runtime.js';
 
 const HOW = ['s1', 's2', 's3'] as const;
-const PACKS = ['single', 'trio', 'ten', 'annual'] as const;
+const PACKS = ['single', 'trio', 'nine'] as const;
 const INCLUDED = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6'] as const;
 const FAQ = ['1', '2', '3', '4', '5'] as const;
 
@@ -143,7 +147,9 @@ export function PricingGuide() {
                     scope="row"
                     className="text-foreground px-4 py-3 text-left font-medium whitespace-nowrap"
                   >
-                    {p.productName}
+                    {packNameKey[p.productId]
+                      ? tDynamic(packNameKey[p.productId])
+                      : p.productName}
                   </th>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {formatPrice(p.priceInCents)}

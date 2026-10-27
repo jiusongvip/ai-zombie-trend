@@ -13,11 +13,13 @@ import {
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
+import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
 import {
   CREDITS_PER_FILM,
   CREDITS_PER_HD_FILM,
   formatPrice,
+  packNameKey,
   pricingCatalog,
 } from '@/config/pricing';
 import { apiPost } from '@/lib/api-client';
@@ -76,15 +78,23 @@ export function Pricing({
     { icon: RotateCcw, label: m['landing.pricing.feature_refund']() },
   ];
 
+  /**
+   * Pack names are product data, not copy: the catalog keeps the English name it
+   * registers with the payment provider, while the card shows the localized one.
+   */
+  const localizedName = (id: string, fallback: string) =>
+    packNameKey[id] ? tDynamic(packNameKey[id]) : fallback;
+
   const packBadges: Record<string, { badge?: string; featured?: boolean }> = {
     film_pack_1: { badge: m['landing.pricing.limited_time']() },
-    film_pack_10: { featured: true, badge: m['landing.pricing.popular']() },
-    film_pack_60: { badge: m['landing.pricing.best_value']() },
+    film_pack_3: { featured: true, badge: m['landing.pricing.popular']() },
+    film_pack_9: { badge: m['landing.pricing.best_value']() },
   };
 
   const plans: PricingPlan[] = Object.values(pricingCatalog).map((p) => ({
     id: p.productId,
-    name: p.productName,
+    name: localizedName(p.productId, p.productName),
+    productName: p.productName,
     description:
       p.hdFilms > 0
         ? m['landing.pricing.tier_counts']({
@@ -127,11 +137,11 @@ export function Pricing({
       apiPost<{ checkout_url?: string }>('/api/payment/checkout', {
         product_id: plan.productId,
         product_name: plan.productName || plan.name,
-        plan_name: plan.plan?.name || plan.name,
+        plan_name: plan.plan?.name || plan.productName || plan.name,
         price: plan.priceInCents,
         currency: plan.currency || 'usd',
         type: 'one-time',
-        description: plan.name,
+        description: plan.productName || plan.name,
         plan: plan.plan,
         credits: plan.credits,
         credits_valid_days: plan.creditsValidDays,
