@@ -983,9 +983,14 @@ export function Generator() {
               <CheckCircle2 className="mt-0.5 size-3 shrink-0" />
               {m['landing.generator.trust_line']()}
             </p>
-            <p className="text-muted-foreground/70 mt-1 text-center text-[11px] leading-relaxed">
-              {m['landing.generator.delivery_note']()}
-            </p>
+            {/* Waits for a render in flight: before a task exists this line
+                promises a delivery time for something not yet started, and once
+                the film lands it is no longer a wait. */}
+            {(generateMutation.isPending || !!activeTask?.polling) && (
+              <p className="text-muted-foreground/70 mt-1 text-center text-[11px] leading-relaxed">
+                {m['landing.generator.delivery_note']()}
+              </p>
+            )}
 
             <p className="text-muted-foreground/70 mt-2 text-center text-[10px] leading-relaxed">
               {m['landing.generator.photo_rules']()}
