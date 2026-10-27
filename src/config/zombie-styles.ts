@@ -20,6 +20,22 @@
  * lock, undead look, contact and restoration. Neither axis is a separate
  * prompt to maintain.
  *
+ * The beats themselves live as JSON so they can be edited one story at a
+ * time without touching this module:
+ *
+ *   ./prompts/{cabin,shore,street,doorstep}.json   one file per world
+ *   ./prompts/subjects/{person,pet}.json           one file per subject
+ *
+ * This module only loads them and composes `storyPrompt()`; nothing below
+ * needs editing to change what a film says.
+ *
+ * A world can also be pinned to a hand-tuned full prompt instead of being
+ * composed. Those drafts live in the world's own JSON as `prompt`, one string
+ * per line, and are sent byte for byte (joined with newlines), so the file is
+ * the whole truth for that film and `storyPrompt()` is skipped:
+ *
+ *   ./prompts/cabin.json  →  "prompt": [ "Create a 15-second…", … ]
+ *
  * Every film rides the same pipeline: the two photos are submitted as two
  * character references (`@image1` / `@image2`), which is how both identities
  * are held across the whole clip. `supportsLastFrame` on the catalog entry is
@@ -32,6 +48,13 @@
  *
  * Server-only: import from modules and API routes, never from components.
  */
+
+import cabinWorld from './prompts/cabin.json';
+import doorstepWorld from './prompts/doorstep.json';
+import shoreWorld from './prompts/shore.json';
+import streetWorld from './prompts/street.json';
+import personSubject from './prompts/subjects/person.json';
+import petSubject from './prompts/subjects/pet.json';
 
 /**
  * Render tiers the generator offers. The story is identical across them —
@@ -71,6 +94,15 @@ export const defaultZombieSubject: ZombieSubjectId = 'person';
  */
 interface ZombieWorld {
   id: ZombieWorldId;
+  /** Human label for curation only; never reaches the provider. */
+  label?: string;
+  /**
+   * A hand-tuned full prompt, one array entry per line. When present it
+   * replaces every beat below: the lines are joined with `\n` and sent as is,
+   * for both subjects. The beats stay for reference and for worlds that are
+   * still composed.
+   */
+  prompt?: readonly string[];
   /** SHOT 1 heading. */
   shot: string;
   /** Where Character A stands and what they hold. */
@@ -108,140 +140,16 @@ interface ZombieWorld {
   soundFirst: string;
 }
 
+/**
+ * The four worlds, in the order the picker shows them. Each file holds every
+ * beat for one story, so a rewrite is a one-file change.
+ */
 export const zombieWorlds: readonly ZombieWorld[] = [
-  {
-    id: 'cabin',
-    shot: 'THE CABIN',
-    setup:
-      'Inside a dark, abandoned rustic wooden cabin, Character A stands trembling, holding a handgun lowered at their side.',
-    onAFace: '',
-    restraint: 'Character A cannot bring themself to raise the weapon.',
-    bWaiting:
-      'Across the cabin, Character B — zombified, pale, stiff, but still unmistakably {loved} — stands perfectly still, facing Character A, watching.',
-    atmosphere:
-      'Dim daylight enters through old wooden windows, illuminating floating dust particles. Cold blue-grey lighting and deep shadows create a tragic, oppressive atmosphere.',
-    onBFace: '',
-    tension: 'and unsettling breathing',
-    propLowered: 'Cut back to Character A, still crying, the gun lowered.',
-    choice:
-      'Instead of firing, Character A deliberately lets the gun fall away from their hands, then slowly spreads both arms wide — not in aggression, but in silent grief and recognition.',
-    sees: "Character B sees Character A's open arms.",
-    motionless:
-      'For a brief instant, Character A remains motionless with both arms open.',
-    ground: 'across the cabin floor',
-    circlePlace: 'in the cold cabin',
-    poseScene: 'cabin',
-    worldShift:
-      'The dark wooden cabin becomes an expansive golden wheat field under a breathtaking sunset.',
-    warmLight:
-      'Golden sunlight illuminates their hair and faces. A gentle breeze moves through the surrounding wheat.',
-    reveal:
-      'The camera slowly pulls back to reveal the vast, peaceful wheat field, ending on the two characters embracing beneath the glowing sunset.',
-    volumetric: 'volumetric sunlight',
-    atmospheric: 'atmospheric dust',
-    soundFirst:
-      'First scene: eerie wooden cabin ambience, faint wind, shaky breathing, quiet sobbing, and rising cinematic tension.',
-  },
-  {
-    id: 'shore',
-    shot: 'THE GREY SHORE',
-    setup:
-      "On a cold, overcast beach under a pale grey sky, Character A stands trembling at the water's edge, holding Character B's necklace in one hand.",
-    onAFace: ' Wind moves through their hair.',
-    restraint: '',
-    bWaiting:
-      'Across the wet sand, Character B — zombified, pale, stiff, but still unmistakably {loved} — stands perfectly still, facing Character A, watching.',
-    atmosphere:
-      'Cold blue-grey lighting, grey waves, and deep shadows create a tragic, oppressive atmosphere.',
-    onBFace: ' Sea wind moves through {poss} {hair}.',
-    tension: 'and the sound of waves',
-    propLowered: 'Cut back to Character A, still crying, the necklace lowered.',
-    choice:
-      'Instead of turning away, Character A slowly opens both arms wide — not in aggression, but in silent grief and recognition.',
-    sees: "Character B sees Character A's open arms.",
-    motionless:
-      'For a brief instant, Character A remains motionless with both arms open on the grey shore.',
-    ground: 'across the wet sand',
-    circlePlace: 'by the sea',
-    poseScene: 'grey shore',
-    worldShift:
-      'The grey overcast shore becomes the exact same beach at golden sunset.',
-    warmLight:
-      'Golden sunset light illuminates their hair and faces. A gentle sea breeze moves through the air. The waves glow warm.',
-    reveal:
-      'The camera slowly pulls back to reveal the vast, peaceful beach, ending on the two characters embracing beneath the glowing sunset.',
-    volumetric: 'volumetric sunset light',
-    atmospheric: 'atmospheric sea mist',
-    soundFirst:
-      'First scene: grey waves, cold sea wind, shaky breathing, quiet sobbing, and rising cinematic tension.',
-  },
-  {
-    id: 'street',
-    shot: 'THE RAINY STREET',
-    setup:
-      "On a dark, rain-soaked city street at night, Character A stands trembling under a flickering neon sign, holding Character B's folded umbrella in both hands.",
-    onAFace: ' Rain runs down their cheeks together with their tears.',
-    restraint: '',
-    bWaiting:
-      'Across the street, Character B — zombified, pale, stiff, but still unmistakably {loved} — stands perfectly still in the rain, facing Character A, watching.',
-    atmosphere:
-      'Neon reflections shimmer on the wet asphalt. Cold blue-violet lighting and deep shadows create a tragic, oppressive atmosphere.',
-    onBFace: ' Rain drips from {poss} {hair}.',
-    tension: 'and rain on {poss} {surface}',
-    propLowered: 'Cut back to Character A, still crying, the umbrella lowered.',
-    choice:
-      'Instead of backing away, Character A opens the umbrella and holds it out toward Character B — not in aggression, but in silent grief and recognition.',
-    sees: 'Character B sees the umbrella held out to {object}.',
-    motionless:
-      'For a brief instant, Character A remains motionless with the umbrella held open.',
-    ground: 'across the wet street',
-    circlePlace: 'in the rain',
-    poseScene: 'rainy',
-    worldShift:
-      'The rainy night street becomes the exact same street corner on a bright, sunny afternoon.',
-    warmLight:
-      'Golden afternoon sunlight illuminates their hair and faces. A gentle breeze moves through the street.',
-    reveal:
-      'The camera slowly pulls back to reveal the peaceful street corner, ending on the two characters embracing under the warm sun.',
-    volumetric: 'volumetric sunlight',
-    atmospheric: 'atmospheric rain',
-    soundFirst:
-      'First scene: rain on asphalt, distant city hum, shaky breathing, quiet sobbing, and rising cinematic tension.',
-  },
-  {
-    id: 'doorstep',
-    shot: 'THE SNOWY DOORSTEP',
-    setup:
-      "Outside a quiet house on a snowy winter night, Character A stands trembling at the front door, holding Character B's house key in one hand.",
-    onAFace: ' Snowflakes settle on their hair and shoulders.',
-    restraint: '',
-    bWaiting:
-      'Across the snowy yard, Character B — zombified, pale, stiff, but still unmistakably {loved} — stands perfectly still in the snow, facing Character A, watching.',
-    atmosphere:
-      'Warm porch light spills onto the snow. Cold blue-grey lighting and deep shadows create a tragic, oppressive atmosphere.',
-    onBFace: ' Snowflakes catch on {poss} {hair}.',
-    tension: 'and breath in the cold air',
-    propLowered: 'Cut back to Character A, still crying, the key lowered.',
-    choice:
-      'Instead of retreating inside, Character A slowly opens both arms wide — not in aggression, but in silent grief and recognition.',
-    sees: "Character B sees Character A's open arms.",
-    motionless:
-      'For a brief instant, Character A remains motionless with both arms open in the falling snow.',
-    ground: 'across the snow',
-    circlePlace: 'in the snow',
-    poseScene: 'snowy',
-    worldShift:
-      'The snowy winter night becomes the exact same doorstep on a warm summer evening.',
-    warmLight:
-      'Golden evening sunlight illuminates their hair and faces. A gentle breeze moves through the warm air.',
-    reveal:
-      'The camera slowly pulls back to reveal the peaceful doorstep, ending on the two characters embracing under the summer sky.',
-    volumetric: 'volumetric sunlight',
-    atmospheric: 'atmospheric snow',
-    soundFirst:
-      'First scene: soft wind, falling snow, shaky breathing, quiet sobbing, and rising cinematic tension.',
-  },
-];
+  cabinWorld,
+  shoreWorld,
+  streetWorld,
+  doorstepWorld,
+] as readonly ZombieWorld[];
 
 /**
  * Subject beats — everything that depends on whether the second reference is
@@ -250,6 +158,8 @@ export const zombieWorlds: readonly ZombieWorld[] = [
  */
 interface ZombieSubject {
   id: ZombieSubjectId;
+  /** Human label for curation only; never reaches the provider. */
+  label?: string;
   bObject: string;
   bPossessive: string;
   /** How B is described while waiting. */
@@ -276,50 +186,14 @@ interface ZombieSubject {
   texture: string;
 }
 
+/**
+ * The two subjects. Shared by all four worlds, so a pronoun or identity-lock
+ * change lands in every film at once.
+ */
 export const zombieSubjects: readonly ZombieSubject[] = [
-  {
-    id: 'person',
-    bObject: 'them',
-    bPossessive: 'their',
-    loved: 'the person Character A loves',
-    opening:
-      'Character A is the survivor. Character B is someone Character A deeply loves — their partner, best friend, or family member, exactly as the two references suggest — who has tragically transformed into a zombie.',
-    identity:
-      'Preserve the exact facial identity, recognizable hairstyle, body proportions, and distinctive appearance of both characters throughout the video. Their genders, appearances, and relationship can vary depending on the supplied references.',
-    undeadLook:
-      'Character B has pale grey skin, cloudy white eyes, dark veins, hollow facial features, and disheveled hair. The expression is frightening and inhuman, yet the character remains unmistakably recognizable as Character B.',
-    hair: 'hair',
-    surface: 'skin',
-    advance: 'They do not attack. They suddenly run forward',
-    contact:
-      "straight into Character A's arms, and wrap their arms tightly around Character A.",
-    embrace: 'Character B wraps their arms around Character A',
-    restored:
-      'Both characters are now completely alive and healthy, restored to their normal human appearance exactly matching the reference images, wearing clean everyday clothing that fits their original gender and identity.',
-    texture: 'natural skin textures, detailed hair simulation',
-  },
-  {
-    id: 'pet',
-    bObject: 'it',
-    bPossessive: 'its',
-    loved: 'the animal Character A loves',
-    opening:
-      'Character A is the owner. Character B is their beloved pet — the dog or cat from the second reference — which has tragically transformed into an undead animal.',
-    identity:
-      "Preserve the exact breed, coat, size, and facial identity of the pet, and Character A's exact face, hairstyle, and body proportions, throughout the video.",
-    undeadLook:
-      'Character B has pale grey fur, cloudy white eyes, dark veins, and disheveled fur. The expression is frightening and inhuman, yet the animal remains unmistakably recognizable as the same beloved pet.',
-    hair: 'fur',
-    surface: 'fur',
-    advance: 'It does not attack. It suddenly runs forward',
-    contact:
-      "straight into Character A's arms, and presses its head and body against their chest.",
-    embrace: "Character B presses its body into Character A's arms",
-    restored:
-      'Both are now completely alive and healthy — Character A restored to their normal human appearance, and Character B to its living coat, bright eyes, and size, both exactly matching the reference images. Character A wears clean everyday clothing.',
-    texture: 'natural fur and coat texture, detailed hair simulation',
-  },
-];
+  personSubject,
+  petSubject,
+] as readonly ZombieSubject[];
 
 /** World text is shared by both subjects, so subject words are substituted in. */
 function fill(template: string, role: ZombieSubject): string {
@@ -418,7 +292,10 @@ export function getZombieFilm(
   return {
     world: world.id,
     subject: subject.id,
-    prompt: storyPrompt(world, subject),
+    // A pinned draft is the whole film: no subject substitution applies.
+    prompt: world.prompt
+      ? world.prompt.join('\n')
+      : storyPrompt(world, subject),
     duration: 15,
   };
 }
