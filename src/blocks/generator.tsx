@@ -14,7 +14,6 @@ import { useSession } from '@/core/auth/client';
 import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
 import { formatPrice, lowestPricePerFilmInCents } from '@/config/pricing';
-import { showcaseItems } from '@/config/showcase';
 import { worldScenes } from '@/config/story-scenes';
 import { apiGet, apiPost, type PageResult } from '@/lib/api-client';
 import { currentLocationPath, openAuthDialog } from '@/lib/auth-dialog';
@@ -33,8 +32,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
  */
 const WORLDS = ['cabin', 'shore', 'street', 'doorstep'] as const;
 const SUBJECTS = ['person', 'pet'] as const;
-/** What the empty stage shows: the real example film, or the chosen world's frame. */
-const PREVIEW_MODES = ['film', 'scene'] as const;
 type ZombieWorld = (typeof WORLDS)[number];
 type ZombieSubject = (typeof SUBJECTS)[number];
 const MAX_FRAME_MB = 10;
@@ -86,14 +83,17 @@ const WORLD_TAGS: readonly string[] = WORLDS;
 const SUBJECT_TAGS: readonly string[] = SUBJECTS;
 
 /**
- * The clip the empty stage shows as proof. Taken from the example wall rather
- * than a new asset so there is one copy of it to keep honest; it's a local,
- * fast-start file, so a tap plays immediately. Missing it just falls back to
- * the plain placeholder — the stage never blocks on proof.
+ * The clip the empty stage shows as proof: the cabin story, rendered end to end
+ * from two photos. It is local and fast-start, so a tap plays immediately, and
+ * the stage takes its 16:9 shape from the file rather than cropping it into the
+ * portrait cell a render would use. A missing file just falls back to the plain
+ * placeholder — the stage never blocks on proof.
  */
-const SAMPLE_FILM = showcaseItems.find(
-  (item) => item.id === 'zombie-couple-film'
-);
+const SAMPLE_FILM = {
+  video: '/videos/showcase/zombie-sample-film.mp4',
+  poster: '/images/showcase/zombie-sample-film.webp',
+  aspect: '16 / 9',
+} as const;
 
 function saveDraft(draft: FilmDraft) {
   try {
@@ -231,10 +231,8 @@ export function Generator() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consented, setConsented] = useState(false);
   const [shareToWall, setShareToWall] = useState(false);
-  const [previewMode, setPreviewMode] =
-    useState<(typeof PREVIEW_MODES)[number]>('film');
-  // The example film is portrait, so its height is the thing that decides how
-  // far the form sits down the page. Phones get a shorter proof than laptops.
+  // The example film decides how far the form sits down the page. Phones get a
+  // shorter proof than laptops.
   const [stageBudget, setStageBudget] = useState(48);
   useEffect(() => {
     const compact = window.matchMedia('(max-width: 1023px)');
@@ -482,10 +480,9 @@ export function Generator() {
   const stageLabels = {
     emptyTitle: m['landing.generator.stage.empty_title'](),
     emptyBody: m['landing.generator.stage.empty_body'](),
-    queuedTitle: m['studio.stage.queued'](),
-    processingTitle: m['studio.stage.processing'](),
-    renderingBody: m['studio.stage.rendering_body'](),
+    renderingTitle: m['studio.stage.processing'](),
     elapsedTemplate: m['studio.stage.elapsed']({ seconds: '{seconds}' }),
+    waitNote: m['landing.generator.delivery_note'](),
     failedTitle: m['studio.result.failed_title'](),
     failedFallback: m['studio.result.failed_fallback'](),
     refundedTemplate: m['studio.result.refunded']({ credits: '{credits}' }),
@@ -504,31 +501,13 @@ export function Generator() {
   /** Empty slots only turn red once a click has asked for them. */
   const photosInvalid = attempted && !uploading;
 
-  /** The chosen world's concept frame, for the `scene` preview mode. */
-  const activeScene = worldScenes[activeWorld];
-  const stageScene =
-    previewMode === 'scene' && activeScene
-      ? {
-          image: activeScene.full,
-          badge: m['landing.generator.scene.badge'](),
-          alt: [
-            tDynamic(`landing.worlds.${activeWorld}.title`),
-            m['landing.generator.preview.scene'](),
-          ].join(' — '),
-        }
-      : undefined;
-
   /**
-   * The example film is 9:16 and the concept frames are 16:9, so the empty
-   * frame takes its shape from what it is actually showing. A real render
+   * The sample film is 16:9, so the empty frame takes its shape from what it is
+   * actually showing instead of cropping it into a portrait cell. A real render
    * always uses the ratio the user picked — that is the shape being bought.
    */
-  const stageAspect = activeTask
-    ? cssAspect(aspectRatio)
-    : previewMode === 'scene'
-      ? '16 / 9'
-      : '9 / 16';
-  const showingSample = !activeTask && previewMode === 'film';
+  const stageAspect = activeTask ? cssAspect(aspectRatio) : SAMPLE_FILM.aspect;
+  const showingSample = !activeTask;
 
   const ctaLabel = generateMutation.isPending
     ? m['studio.generate.submitting']()
@@ -605,29 +584,6 @@ export function Generator() {
 
             {/* Proof sits in the same slot the render will land in. */}
             <div className="mt-6">
-              {!activeTask && (
-                <div className="mb-2 flex justify-end">
-                  <div className="bg-muted/50 flex gap-1 rounded-lg p-1">
-                    {PREVIEW_MODES.map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        aria-pressed={mode === previewMode}
-                        onClick={() => setPreviewMode(mode)}
-                        className={cn(
-                          'rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
-                          mode === previewMode
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        {tDynamic(`landing.generator.preview.${mode}`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div ref={stageRef}>
                 <Stage
                   task={activeTask}
@@ -638,16 +594,11 @@ export function Generator() {
                   statusLabel={statusLabel}
                   error={submitError}
                   busy={generateMutation.isPending}
-                  sample={
-                    SAMPLE_FILM?.video
-                      ? {
-                          video: SAMPLE_FILM.video,
-                          poster: SAMPLE_FILM.cover,
-                          badge: m['landing.generator.sample.badge'](),
-                        }
-                      : undefined
-                  }
-                  scene={stageScene}
+                  sample={{
+                    video: SAMPLE_FILM.video,
+                    poster: SAMPLE_FILM.poster,
+                    badge: m['landing.generator.sample.badge'](),
+                  }}
                   onRegenerate={() => generateMutation.mutate(draft())}
                   onLoadSettings={() => activeTask && loadSettings(activeTask)}
                 />
@@ -983,14 +934,6 @@ export function Generator() {
               <CheckCircle2 className="mt-0.5 size-3 shrink-0" />
               {m['landing.generator.trust_line']()}
             </p>
-            {/* Waits for a render in flight: before a task exists this line
-                promises a delivery time for something not yet started, and once
-                the film lands it is no longer a wait. */}
-            {(generateMutation.isPending || !!activeTask?.polling) && (
-              <p className="text-muted-foreground/70 mt-1 text-center text-[11px] leading-relaxed">
-                {m['landing.generator.delivery_note']()}
-              </p>
-            )}
 
             <p className="text-muted-foreground/70 mt-2 text-center text-[10px] leading-relaxed">
               {m['landing.generator.photo_rules']()}

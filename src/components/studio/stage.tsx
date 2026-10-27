@@ -17,11 +17,12 @@ import { VideoPlayer } from '@/components/video-player';
 export interface StageLabels {
   emptyTitle: string;
   emptyBody: string;
-  queuedTitle: string;
-  processingTitle: string;
-  renderingBody: string;
+  /** Shown for every in-flight state — queue jargon stays hidden. */
+  renderingTitle: string;
   /** Contains `{seconds}`. */
   elapsedTemplate: string;
+  /** Delivery expectation, directly under the elapsed clock. */
+  waitNote: string;
   failedTitle: string;
   failedFallback: string;
   /** Contains `{credits}`. */
@@ -58,19 +59,6 @@ export interface StageSample {
   poster: string;
   /** Corner badge, e.g. "Example — made from two photos". */
   badge: string;
-}
-
-/**
- * A concept frame for the story world the form currently has selected.
- *
- * Swapping this in when the world changes is what makes the picker feel like a
- * choice rather than a label, but it is illustration and not output — the badge
- * has to say so, or the stage would be claiming a render it did not make.
- */
-export interface StageScene {
-  image: string;
-  badge: string;
-  alt: string;
 }
 
 /**
@@ -120,7 +108,6 @@ export function Stage({
   onLoadSettings,
   busy = false,
   sample,
-  scene,
   vhBudget = 58,
 }: {
   task: VideoTaskView | null;
@@ -142,8 +129,6 @@ export function Stage({
   busy?: boolean;
   /** Example clip for the empty frame; omit to get the plain placeholder. */
   sample?: StageSample;
-  /** Concept frame for the selected world. Wins over `sample` when present. */
-  scene?: StageScene;
   /**
    * Share of the viewport height (in vh) the frame may occupy. Landing pages
    * that must keep the submit button above the fold pass a smaller budget
@@ -169,7 +154,7 @@ export function Stage({
         : null;
   /** The example's bytes are fetched only after the page has finished loading. */
   const [sampleArmed, setSampleArmed] = useState(false);
-  const showingSample = !task && !scene && Boolean(sample);
+  const showingSample = !task && Boolean(sample);
 
   useEffect(() => {
     if (!showingSample || sampleArmed) return;
@@ -225,20 +210,7 @@ export function Stage({
             )}
           </div>
         ) : !task ? (
-          scene ? (
-            <div className="size-full">
-              <img
-                src={scene.image}
-                alt={scene.alt}
-                className="size-full object-cover"
-                decoding="async"
-              />
-              <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
-              <span className="text-foreground/90 absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase backdrop-blur-sm">
-                {scene.badge}
-              </span>
-            </div>
-          ) : sample && !sampleArmed ? (
+          sample && !sampleArmed ? (
             <div className="size-full">
               <img
                 src={sample.poster}
@@ -291,19 +263,15 @@ export function Stage({
           <div className="flex size-full flex-col items-center justify-center gap-3 px-6 text-center">
             <Loader2 className="text-primary size-5 animate-spin" />
             <div className="space-y-1">
-              <p className="text-sm font-medium">
-                {task.status === 'pending'
-                  ? labels.queuedTitle
-                  : labels.processingTitle}
-              </p>
+              <p className="text-sm font-medium">{labels.renderingTitle}</p>
               <p className="text-muted-foreground text-[11px]">
                 {labels.elapsedTemplate.replace(
                   '{seconds}',
                   String(elapsedSeconds)
                 )}
               </p>
-              <p className="text-muted-foreground max-w-xs text-[11px] leading-relaxed">
-                {labels.renderingBody}
+              <p className="text-muted-foreground/70 max-w-xs text-[11px] leading-relaxed">
+                {labels.waitNote}
               </p>
             </div>
             <div className="h-1 w-40 overflow-hidden rounded-full bg-white/10">
