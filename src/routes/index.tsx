@@ -21,7 +21,6 @@ import { Faq, faqEntries } from '@/blocks/faq';
 import { Footer } from '@/blocks/footer';
 import { Generator } from '@/blocks/generator';
 import { Header } from '@/blocks/header';
-import { Hero } from '@/blocks/hero';
 import { HowItWorks } from '@/blocks/how-it-works';
 import { MatchCut } from '@/blocks/match-cut';
 import { Pricing } from '@/blocks/pricing';
@@ -40,9 +39,10 @@ import { SupportWidget } from '@/blocks/support-widget';
 import { TrendNote } from '@/blocks/trend-note';
 
 /**
- * Single-page landing for the "ai zombie trend" keyword: compact poster hero
- * and the generator workbench together fill the first screen — upload two
- * photos, pick a story, render, all on this page. Below: shot list, community
+ * Single-page landing for the "ai zombie trend" keyword: the workbench owns the
+ * whole first screen — the pitch and the proof on the left, the submit card on
+ * the right — so two photos, a story and the render button are visible before
+ * any scrolling. Below: shot list, community
  * feed, then the conversion ladder (how → pricing → FAQ). The long explainers
  * (photo handling, format, tiers, the trend itself, the match cut, delivery)
  * sit after the ladder, because someone deciding whether to pay needs the
@@ -54,7 +54,6 @@ function HomePage() {
     <div className="bg-background text-foreground flex min-h-screen flex-col">
       <Header />
       <main>
-        <Hero />
         <Generator />
         <SpecCards />
         <ShotList />

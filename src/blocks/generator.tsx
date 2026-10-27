@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/core/auth/client';
 import { tDynamic } from '@/core/i18n/dynamic';
 import { Link } from '@/core/i18n/navigation';
+import { formatPrice, lowestPricePerFilmInCents } from '@/config/pricing';
 import { showcaseItems } from '@/config/showcase';
 import { worldScenes } from '@/config/story-scenes';
 import { apiGet, apiPost, type PageResult } from '@/lib/api-client';
@@ -23,7 +24,7 @@ import { m } from '@/paraglide/messages.js';
 import { Filmstrip } from '@/components/studio/filmstrip';
 import { FrameSlot, type FrameSlotValue } from '@/components/studio/frame-slot';
 import { Stage } from '@/components/studio/stage';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 
 /**
  * The four worlds, in display order. The server catalog is the authority;
@@ -38,8 +39,13 @@ type ZombieWorld = (typeof WORLDS)[number];
 type ZombieSubject = (typeof SUBJECTS)[number];
 const MAX_FRAME_MB = 10;
 const FALLBACK_RATIOS = ['9:16', '16:9'];
-/** Source photos are phone-shot portraits; the slots keep this shape whatever the output ratio. */
-const FRAME_ASPECT = '9 / 16';
+/**
+ * Square cells, like the form the market already trained people on. A portrait
+ * cell is prettier, but two of them ate ~60px of height and pushed the submit
+ * button under the fold on a 900px-tall laptop — the one element that must
+ * never need a scroll is the button.
+ */
+const FRAME_ASPECT = '1 / 1';
 /** Shown while the real tier list is in flight — no prices, same two choices. */
 const FALLBACK_TIERS: ZombieTier[] = [
   { resolution: '480p', creditCost: 0 },
@@ -158,11 +164,55 @@ function FieldNote({ children }: { children: ReactNode }) {
   );
 }
 
+/** One option in the Quality / Format stacks: label left, consequence right. */
+function OptionRow({
+  active,
+  label,
+  note,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  note?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        'flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-all',
+        active
+          ? 'border-primary bg-primary/10 text-foreground'
+          : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+      )}
+    >
+      <span className="text-sm font-medium">{label}</span>
+      {note && (
+        <span className="text-[11px] whitespace-nowrap tabular-nums opacity-80">
+          {note}
+        </span>
+      )}
+    </button>
+  );
+}
+
 /**
- * Redesigned generator — a three-column workbench on large screens so the
- * whole flow (upload → story → submit) lives in the first screen: photo
- * slots left, story + settings + CTA in the wide middle column that used to
- * be dead margin, preview stage right. No numbered steps. Stacks on mobile.
+ * The first screen is the whole product: the pitch and the proof on the left,
+ * the submit card on the right, both inside one viewport on a laptop.
+ *
+ * This replaced a centred hero sitting above a three-column workbench. That
+ * layout was prettier and worse: the two photo slots, the four story cards,
+ * the tier toggles, the balance block, two checkboxes and the button needed
+ * roughly 1,200px of height, so the only element that matters — the submit
+ * button — sat below the fold on every laptop screen.
+ *
+ * The shape now follows the reference the market has already validated: one
+ * promise column, one form column, one button. The story worlds, the balance
+ * and the auto-refund line are kept, but each is one compact row instead of a
+ * card, and the result of a render replaces the example film in the same slot
+ * the example film occupied, so nothing jumps across the page when it lands.
  */
 export function Generator() {
   const queryClient = useQueryClient();
@@ -183,6 +233,16 @@ export function Generator() {
   const [shareToWall, setShareToWall] = useState(false);
   const [previewMode, setPreviewMode] =
     useState<(typeof PREVIEW_MODES)[number]>('film');
+  // The example film is portrait, so its height is the thing that decides how
+  // far the form sits down the page. Phones get a shorter proof than laptops.
+  const [stageBudget, setStageBudget] = useState(48);
+  useEffect(() => {
+    const compact = window.matchMedia('(max-width: 1023px)');
+    const apply = () => setStageBudget(compact.matches ? 34 : 48);
+    apply();
+    compact.addEventListener('change', apply);
+    return () => compact.removeEventListener('change', apply);
+  }, []);
   // Gate messages stay hidden until the first click, then track live — each one
   // disappears the moment its own condition is met.
   const [attempted, setAttempted] = useState(false);
@@ -266,6 +326,9 @@ export function Generator() {
   });
   const balance = creditsQuery.data?.balance;
   const canAfford = balance === undefined || balance >= cost;
+  // A signed-in account with too few credits is not a form error, it is a
+  // purchase decision — so the button changes job instead of turning red.
+  const needsTopUp = signedIn && balance !== undefined && balance < cost;
 
   const recentQuery = useQuery({
     queryKey: ['video-tasks', 'recent'],
@@ -376,15 +439,19 @@ export function Generator() {
   }
 
   function onGenerate() {
-    if (blocked) {
-      setAttempted(true);
-      revealMissing();
-      return;
-    }
+    // Sign-in comes first: the button says "Sign in" for a guest, so it must
+    // open sign-in even when no photos are picked yet. Running the gates first
+    // left a visitor staring at two red boxes under a button that promised a
+    // sign-in prompt. Whatever they did fill in survives in the draft.
     if (!signedIn) {
       saveDraft(draft());
       // Come back to the form itself, not the top of the page.
       openAuthDialog(`${currentLocationPath('/').split('#')[0]}#generator`);
+      return;
+    }
+    if (blocked) {
+      setAttempted(true);
+      revealMissing();
       return;
     }
     generateMutation.mutate(draft());
@@ -451,17 +518,39 @@ export function Generator() {
         }
       : undefined;
 
+  /**
+   * The example film is 9:16 and the concept frames are 16:9, so the empty
+   * frame takes its shape from what it is actually showing. A real render
+   * always uses the ratio the user picked — that is the shape being bought.
+   */
+  const stageAspect = activeTask
+    ? cssAspect(aspectRatio)
+    : previewMode === 'scene'
+      ? '16 / 9'
+      : '9 / 16';
+  const showingSample = !activeTask && previewMode === 'film';
+
+  const ctaLabel = generateMutation.isPending
+    ? m['studio.generate.submitting']()
+    : needsTopUp
+      ? m['landing.generator.cta_get_credits']()
+      : !signedIn
+        ? m['landing.generator.cta_signin']()
+        : cost > 0
+          ? m['studio.generate.submit_cost']({ credits: cost })
+          : m['landing.generator.start']();
+
   return (
     <section
       id="generator"
-      className="grain-overlay relative scroll-mt-16 overflow-hidden px-4 pt-5 pb-10 sm:pt-7 sm:pb-12 lg:pt-3 lg:pb-8"
+      className="grain-overlay relative scroll-mt-16 overflow-hidden px-4 pt-6 pb-12 sm:pt-8 lg:pt-10 lg:pb-14"
     >
       {/* Background glow */}
       <div aria-hidden className="absolute inset-0 -z-10">
         <div className="animate-drift-a absolute -top-1/3 -left-1/4 size-[70vmin] rounded-full opacity-15 blur-3xl [background:radial-gradient(circle_at_center,var(--primary)_0%,transparent_60%)]" />
       </div>
 
-      <div className="mx-auto w-full max-w-6xl xl:max-w-[84rem] 2xl:max-w-[104rem]">
+      <div className="mx-auto w-full max-w-6xl xl:max-w-[76rem]">
         {/* Dev warning */}
         {import.meta.env.DEV && !providerReady && stylesQuery.isSuccess && (
           <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
@@ -477,431 +566,118 @@ export function Generator() {
           </div>
         )}
 
-        {/* Main layout: photo card + story/settings card + stage */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)_minmax(0,20rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)_minmax(0,26rem)] xl:gap-6 2xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)_minmax(0,30rem)]">
-          {/* ── Left: Photo Upload Card ──────────────────────────────── */}
-          <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* Photo Upload Section */}
-            <div ref={photosRef}>
-              {/* Form-group label, not a content heading — keeps every h3 on the page inside an h2 section. */}
-              <p className="text-foreground mb-3 text-sm font-semibold">
-                {m['landing.generator.step_photos']()}
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {/* Photo 1 */}
-                <div>
-                  <FrameSlot
-                    value={firstFrame}
-                    onChange={setFirstFrame}
-                    aspectRatio={FRAME_ASPECT}
-                    maxHeight="min(38vh, 22rem)"
-                    maxSizeMB={MAX_FRAME_MB}
-                    invalid={photosInvalid && !firstFrame.url}
-                    labels={frameLabels}
-                  />
-                  <p className="text-foreground mt-2 text-sm font-medium">
-                    {m['landing.generator.frame_a']()}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {m['landing.generator.frame_a_hint']()}
-                  </p>
-                </div>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,31rem)] xl:gap-14">
+          {/* ── Left: the promise, then the proof ───────────────────────── */}
+          <div className="flex flex-col">
+            <span className="border-primary/40 bg-primary/10 text-primary inline-flex w-fit items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide uppercase">
+              <span className="bg-primary size-1.5 animate-pulse rounded-full" />
+              {m['landing.hero.badge']()}
+            </span>
 
-                {/* Photo 2 */}
-                <div>
-                  <FrameSlot
-                    value={lastFrame}
-                    onChange={setLastFrame}
-                    aspectRatio={FRAME_ASPECT}
-                    maxHeight="min(38vh, 22rem)"
-                    maxSizeMB={MAX_FRAME_MB}
-                    invalid={photosInvalid && !lastFrame.url}
-                    labels={frameLabels}
-                  />
-                  <p className="text-foreground mt-2 text-sm font-medium">
-                    {m['landing.generator.frame_b']()}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {m['landing.generator.frame_b_hint']()}
-                  </p>
-                </div>
-              </div>
+            <h1 className="font-display text-glow mt-4 text-3xl leading-[1.05] font-bold tracking-tight text-balance uppercase sm:text-4xl lg:text-[2.9rem]">
+              {m['landing.hero.headline']()}
+            </h1>
 
-              {attempted && uploading && (
-                <FieldNote>{m['studio.form.upload_uploading']()}</FieldNote>
-              )}
-              {attempted && !uploading && !hasBothPhotos && (
-                <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
-              )}
-
-              {/* Who photo two is. It lives with the upload because it changes
-                  what you should photograph, not what the story looks like. */}
-              <div className="border-border/60 mt-4 border-t pt-4">
-                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                  {m['landing.generator.subject']()}
-                </p>
-                <div className="bg-muted/50 flex rounded-lg p-1">
-                  {SUBJECTS.map((id) => {
-                    const active = id === activeSubject;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setSubject(id)}
-                        className={cn(
-                          'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
-                          active
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        {tDynamic(`landing.generator.subject.${id}`)}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-muted-foreground mt-2 text-xs leading-snug">
-                  {m['landing.generator.subject_hint']()}
-                </p>
-              </div>
-
-              {/* Photo-permission rule, next to the upload slots */}
-              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
-                <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
-                {m['landing.generator.photo_rules']()}
-              </p>
-
-              {/* Privacy note */}
-              <p className="text-muted-foreground mt-3 flex items-start gap-2 text-xs leading-snug">
-                <Lock className="mt-0.5 size-3.5 shrink-0" />
-                {m['landing.generator.privacy_note']()}
-              </p>
-            </div>
-          </div>
-
-          {/* ── Middle: Story & Settings Card ────────────────────────── */}
-          <div className="border-border/60 bg-card/90 rounded-2xl border p-4 backdrop-blur-sm sm:p-5">
-            {/* World cards — the setting and the match cut, not the relationship.
-                Who turns moved to the photo card: it decides what to shoot. */}
-            <div className="mb-4">
-              <p className="text-foreground mb-3 text-sm font-semibold">
-                {m['landing.generator.pick']()}
-              </p>
-              <div className="grid grid-cols-2 gap-2.5">
-                {WORLDS.map((id) => {
-                  const active = id === activeWorld;
-                  const scene = worldScenes[id];
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setWorld(id)}
-                      className={cn(
-                        'relative isolate flex aspect-[64/27] min-h-24 flex-col justify-end overflow-hidden rounded-xl border p-2 text-left transition-all',
-                        active
-                          ? 'border-primary ring-primary/30 ring-2'
-                          : 'border-border/60 hover:border-primary/50'
-                      )}
-                    >
-                      {/* The scene fills the card, so the choice is made on the
-                          place itself. A scrim carries the text: these frames
-                          are bright in places and the label has to stay legible
-                          over all four. */}
-                      {scene ? (
-                        <img
-                          src={scene.banner}
-                          alt=""
-                          aria-hidden
-                          loading="lazy"
-                          decoding="async"
-                          className="absolute inset-0 -z-10 size-full object-cover"
-                        />
-                      ) : (
-                        <span className="bg-muted/40 absolute inset-0 -z-10" />
-                      )}
-                      <span
-                        aria-hidden
-                        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/65 to-black/20"
-                      />
-                      <span className="block text-sm leading-tight font-semibold text-white">
-                        {tDynamic(`landing.worlds.${id}.title`)}
-                      </span>
-                      <span className="mt-1 line-clamp-2 block text-[11px] leading-snug text-white/80">
-                        {tDynamic(`landing.worlds.${id}.desc`)}
-                      </span>
-                      {active && (
-                        <CheckCircle2 className="absolute top-2 right-2 size-4 text-white" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Duration, Format & Quality */}
-            <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
-              {/* Duration (fixed at 15s for zombie) */}
-              <div>
-                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                  {m['landing.generator.duration']()}
-                </p>
-                <div className="border-primary/50 bg-primary/10 flex items-center justify-between rounded-lg border px-3 py-2.5">
-                  <span className="text-primary text-sm font-medium">15s</span>
-                  <span className="text-muted-foreground text-xs">
-                    {m['landing.generator.cinematic']()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Format toggle */}
-              <div>
-                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                  {m['landing.generator.format']()}
-                </p>
-                <div className="bg-muted/50 flex rounded-lg p-1">
-                  {ratios.map((ratio) => {
-                    const active = ratio === aspectRatio;
-                    return (
-                      <button
-                        key={ratio}
-                        type="button"
-                        onClick={() => setAspectRatio(ratio)}
-                        className={cn(
-                          'flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
-                          active
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        {tDynamic(
-                          `landing.generator.format.${ratio === '9:16' ? 'vertical' : 'wide'}`
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Quality toggle — the one paid choice in this form */}
-              <div className="col-span-2 lg:col-span-1">
-                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                  {m['landing.generator.quality']()}
-                </p>
-                <div className="bg-muted/50 flex rounded-lg p-1">
-                  {tiers.map((tier) => {
-                    const active = tier.resolution === activeResolution;
-                    return (
-                      <button
-                        key={tier.resolution}
-                        type="button"
-                        onClick={() => setResolution(tier.resolution)}
-                        className={cn(
-                          'flex-1 rounded-md px-2 py-1.5 text-center text-sm leading-tight font-medium transition-all',
-                          active
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        {tier.resolution}
-                        {tier.creditCost > 0 && (
-                          <span className="block text-[11px] font-normal">
-                            {m['studio.result.cost']({
-                              credits: tier.creditCost,
-                            })}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Credit info */}
-            <div
-              ref={creditsRef}
-              className="border-border/60 mb-4 border-t pt-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <p className="text-muted-foreground text-xs">
-                    {m['studio.form.balance_label']()}
-                  </p>
-                  <p className="text-foreground text-sm font-medium tabular-nums">
-                    {signedIn
-                      ? balance !== undefined
-                        ? m['studio.form.balance_value']({ balance })
-                        : '…'
-                      : '—'}
-                  </p>
-                </div>
-                <div className="space-y-0.5 text-right">
-                  <p className="text-muted-foreground text-xs">
-                    {m['studio.form.after_label']()}
-                  </p>
-                  <p className="text-foreground text-sm font-medium tabular-nums">
-                    {signedIn && balance !== undefined
-                      ? m['studio.form.after_value']({
-                          left: Math.max(0, balance - cost),
-                        })
-                      : m['studio.result.cost']({ credits: cost })}
-                  </p>
-                </div>
-              </div>
-
-              {attempted && !providerReady && (
-                <FieldNote>{m['studio.form.no_provider']()}</FieldNote>
-              )}
-              {attempted && !canAfford && (
-                <FieldNote>
-                  {m['landing.generator.insufficient']()}{' '}
-                  <Link
-                    href="/pricing"
-                    className="underline underline-offset-4"
-                  >
-                    {m['landing.generator.top_up']()}
-                  </Link>
-                </FieldNote>
-              )}
-            </div>
-
-            {/* Likeness consent — the server refuses the render without it */}
-            <div ref={consentRef} className="mt-4 space-y-2.5">
-              <label
-                className={cn(
-                  'hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors',
-                  attempted && !consented
-                    ? 'text-destructive'
-                    : 'text-muted-foreground'
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={consented}
-                  onChange={(event) => setConsented(event.target.checked)}
-                  className="accent-primary mt-0.5 size-4 shrink-0"
-                />
-                <span>
-                  {m['landing.generator.consent_body']()}{' '}
-                  <Link
-                    href="/terms-of-service"
-                    className={cn(
-                      'underline',
-                      attempted && !consented
-                        ? 'text-destructive'
-                        : 'text-foreground'
-                    )}
-                  >
-                    {m['landing.generator.consent_terms']()}
-                  </Link>
-                </span>
-              </label>
-              {attempted && !consented && (
-                <FieldNote>{m['landing.generator.need_consent']()}</FieldNote>
-              )}
-              <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-start gap-2.5 text-xs leading-snug transition-colors">
-                <input
-                  type="checkbox"
-                  checked={shareToWall}
-                  onChange={(event) => setShareToWall(event.target.checked)}
-                  className="accent-primary mt-0.5 size-4 shrink-0"
-                />
-                <span>{m['landing.generator.share_body']()}</span>
-              </label>
-            </div>
-
-            {/* CTA Button */}
-            <Button
-              size="lg"
-              className="bg-primary shadow-primary/25 hover:bg-primary/90 w-full rounded-xl text-base font-semibold shadow-lg disabled:opacity-50"
-              onClick={onGenerate}
-              disabled={generateMutation.isPending}
-            >
-              {generateMutation.isPending ? (
-                <Loader2 className="mr-2 size-5 animate-spin" />
-              ) : null}
-              {generateMutation.isPending
-                ? m['studio.generate.submitting']()
-                : !signedIn && cost > 0
-                  ? m['landing.generator.cta_guest']({ credits: cost })
-                  : cost > 0
-                    ? m['studio.generate.submit_cost']({ credits: cost })
-                    : m['landing.generator.start']()}
-            </Button>
-
-            <p className="text-muted-foreground mt-3 text-center text-xs">
-              {m['landing.hero.note']()}
+            <p className="text-muted-foreground mt-4 max-w-xl text-sm leading-relaxed sm:text-[15px]">
+              {m['landing.hero.subheadline']()}
             </p>
-          </div>
 
-          {/* ── Right: Preview Stage ─────────────────────────────────── */}
-          <div className="space-y-4">
-            {/* What the empty frame shows. A finished film answers "is this the
-                look I want"; the world's own frame answers "does my street, my
-                cabin, look right" — and for the four-way choice the concept
-                frame is the faster way to compare the four worlds.
-                Gone once a task exists — the stage then has real content. */}
-            {!activeTask ? (
-              <div className="bg-muted/50 flex gap-1 rounded-lg p-1">
-                {PREVIEW_MODES.map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    aria-pressed={mode === previewMode}
-                    onClick={() => setPreviewMode(mode)}
-                    className={cn(
-                      'flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
-                      mode === previewMode
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    {tDynamic(`landing.generator.preview.${mode}`)}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            <div ref={stageRef}>
-              <Stage
-                task={activeTask}
-                elapsedSeconds={elapsed}
-                frameAspect={cssAspect(aspectRatio)}
-                vhBudget={46}
-                labels={stageLabels}
-                statusLabel={statusLabel}
-                error={submitError}
-                busy={generateMutation.isPending}
-                sample={
-                  SAMPLE_FILM?.video
-                    ? {
-                        video: SAMPLE_FILM.video,
-                        poster: SAMPLE_FILM.cover,
-                        badge: m['landing.generator.sample.badge'](),
-                      }
-                    : undefined
-                }
-                scene={stageScene}
-                onRegenerate={() => generateMutation.mutate(draft())}
-                onLoadSettings={() => activeTask && loadSettings(activeTask)}
-              />
-            </div>
-
-            {/* The four beats, in order, under the preview they describe. The
-                names are the same keys the shot-list section uses, so the
-                caption on the workbench can never drift from the explanation
-                further down the page. */}
-            <p className="text-muted-foreground text-[11px] leading-relaxed">
+            {/* The four facts a buyer checks before uploading anything. */}
+            <ul className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
               {[
-                m['landing.shot.s1.title'](),
-                m['landing.shot.s2.title'](),
-                m['landing.shot.s3.title'](),
-                m['landing.shot.s4.title'](),
-              ].join(' → ')}
+                m['landing.hero.spec_photos'](),
+                m['landing.hero.spec_length'](),
+                m['landing.hero.spec_audio'](),
+                m['landing.hero.spec_format'](),
+              ].map((label) => (
+                <li key={label} className="flex items-center gap-1.5">
+                  <span className="bg-primary size-1.5 rounded-full" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-muted-foreground/80 mt-2 text-xs">
+              {m['landing.hero.price_line']({
+                price: formatPrice(lowestPricePerFilmInCents()),
+              })}
             </p>
+
+            {/* Proof sits in the same slot the render will land in. */}
+            <div className="mt-6">
+              {!activeTask && (
+                <div className="mb-2 flex justify-end">
+                  <div className="bg-muted/50 flex gap-1 rounded-lg p-1">
+                    {PREVIEW_MODES.map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        aria-pressed={mode === previewMode}
+                        onClick={() => setPreviewMode(mode)}
+                        className={cn(
+                          'rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
+                          mode === previewMode
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        {tDynamic(`landing.generator.preview.${mode}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div ref={stageRef}>
+                <Stage
+                  task={activeTask}
+                  elapsedSeconds={elapsed}
+                  frameAspect={stageAspect}
+                  vhBudget={stageBudget}
+                  labels={stageLabels}
+                  statusLabel={statusLabel}
+                  error={submitError}
+                  busy={generateMutation.isPending}
+                  sample={
+                    SAMPLE_FILM?.video
+                      ? {
+                          video: SAMPLE_FILM.video,
+                          poster: SAMPLE_FILM.cover,
+                          badge: m['landing.generator.sample.badge'](),
+                        }
+                      : undefined
+                  }
+                  scene={stageScene}
+                  onRegenerate={() => generateMutation.mutate(draft())}
+                  onLoadSettings={() => activeTask && loadSettings(activeTask)}
+                />
+              </div>
+
+              {showingSample && (
+                <p className="text-muted-foreground mt-2.5 text-center text-[11px] leading-relaxed">
+                  {m['landing.generator.sample.caption']()}{' '}
+                  <Link
+                    href="/examples"
+                    className="hover:text-primary underline underline-offset-4"
+                  >
+                    {m['landing.generator.examples_link']()}
+                  </Link>
+                </p>
+              )}
+
+              {/* The four beats, in order, under the preview they describe. */}
+              <p className="text-muted-foreground/80 mt-2 text-center text-[11px] leading-relaxed">
+                {[
+                  m['landing.shot.s1.title'](),
+                  m['landing.shot.s2.title'](),
+                  m['landing.shot.s3.title'](),
+                  m['landing.shot.s4.title'](),
+                ].join(' → ')}
+              </p>
+            </div>
 
             {signedIn && recent.length > 0 && (
-              <div className="space-y-2">
+              <div className="mt-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold tracking-wide uppercase opacity-70">
                     {m['landing.generator.recent.title']()}
@@ -921,6 +697,311 @@ export function Generator() {
                 />
               </div>
             )}
+          </div>
+
+          {/* ── Right: the submit card ───────────────────────────────────── */}
+          <div className="border-border/60 bg-card/90 rounded-2xl border p-4 shadow-lg backdrop-blur-sm sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-semibold tracking-tight">
+                  {m['landing.generator.card_title']()}
+                </h2>
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  {m['landing.generator.card_hint']()}
+                </p>
+              </div>
+
+              {/* Who turns — it decides what photo two has to be, so it sits
+                  on the title row, before anyone picks up a phone. */}
+              <div
+                role="group"
+                aria-label={m['landing.generator.subject']()}
+                className="bg-muted/50 flex shrink-0 rounded-lg p-1"
+              >
+                {SUBJECTS.map((id) => {
+                  const active = id === activeSubject;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setSubject(id)}
+                      aria-pressed={active}
+                      className={cn(
+                        'rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
+                        active
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {tDynamic(`landing.generator.subject.${id}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Two photos, each labelled with its role in the film. */}
+            <div ref={photosRef} className="mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <FrameSlot
+                    value={firstFrame}
+                    onChange={setFirstFrame}
+                    aspectRatio={FRAME_ASPECT}
+                    maxSizeMB={MAX_FRAME_MB}
+                    invalid={photosInvalid && !firstFrame.url}
+                    labels={frameLabels}
+                  />
+                  <p className="text-foreground mt-2 text-sm font-medium">
+                    {m['landing.generator.frame_a']()}
+                  </p>
+                  <p className="text-muted-foreground text-[11px] leading-snug">
+                    {m['landing.generator.frame_a_hint']()}
+                  </p>
+                </div>
+
+                <div>
+                  <FrameSlot
+                    value={lastFrame}
+                    onChange={setLastFrame}
+                    aspectRatio={FRAME_ASPECT}
+                    maxSizeMB={MAX_FRAME_MB}
+                    invalid={photosInvalid && !lastFrame.url}
+                    labels={frameLabels}
+                  />
+                  <p className="text-foreground mt-2 text-sm font-medium">
+                    {m['landing.generator.frame_b']()}
+                  </p>
+                  <p className="text-muted-foreground text-[11px] leading-snug">
+                    {m['landing.generator.frame_b_hint']()}
+                  </p>
+                </div>
+              </div>
+
+              {attempted && uploading && (
+                <FieldNote>{m['studio.form.upload_uploading']()}</FieldNote>
+              )}
+              {attempted && !uploading && !hasBothPhotos && (
+                <FieldNote>{m['landing.generator.needs_photos']()}</FieldNote>
+              )}
+
+              <p className="text-muted-foreground mt-2.5 flex items-start gap-1.5 text-[11px] leading-snug">
+                <Lock className="mt-0.5 size-3 shrink-0" />
+                {m['landing.generator.privacy_note']()}
+              </p>
+            </div>
+
+            {/* The world: four thumbnails, one tap, no paragraph to read. */}
+            <div className="mt-4">
+              <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                {m['landing.generator.pick']()}
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {WORLDS.map((id) => {
+                  const active = id === activeWorld;
+                  const scene = worldScenes[id];
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setWorld(id)}
+                      aria-pressed={active}
+                      className={cn(
+                        'relative isolate flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-lg border p-1.5 text-left transition-all',
+                        active
+                          ? 'border-primary ring-primary/30 ring-2'
+                          : 'border-border/60 hover:border-primary/50'
+                      )}
+                    >
+                      {scene ? (
+                        <img
+                          src={scene.banner}
+                          alt=""
+                          aria-hidden
+                          loading="lazy"
+                          decoding="async"
+                          className="absolute inset-0 -z-10 size-full object-cover"
+                        />
+                      ) : (
+                        <span className="bg-muted/40 absolute inset-0 -z-10" />
+                      )}
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
+                      />
+                      <span className="block text-[11px] leading-tight font-semibold text-white">
+                        {tDynamic(`landing.worlds.${id}.title`)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quality and format: the two decisions, one row each. */}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                  {m['landing.generator.quality']()}
+                </p>
+                <div className="space-y-1.5">
+                  {tiers.map((tier) => (
+                    <OptionRow
+                      key={tier.resolution}
+                      active={tier.resolution === activeResolution}
+                      label={tier.resolution}
+                      note={
+                        tier.creditCost > 0
+                          ? m['studio.result.cost']({
+                              credits: tier.creditCost,
+                            })
+                          : undefined
+                      }
+                      onClick={() => setResolution(tier.resolution)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                  {m['landing.generator.format']()}
+                </p>
+                <div className="space-y-1.5">
+                  {ratios.map((ratio) => (
+                    <OptionRow
+                      key={ratio}
+                      active={ratio === aspectRatio}
+                      label={ratio}
+                      note={tDynamic(
+                        `landing.generator.format_note.${ratio === '9:16' ? 'vertical' : 'wide'}`
+                      )}
+                      onClick={() => setAspectRatio(ratio)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Balance — only once there is an account to spend from. */}
+            {signedIn && (
+              <div
+                ref={creditsRef}
+                className="border-border/60 mt-4 flex items-center justify-between border-t pt-3 text-xs"
+              >
+                <span className="text-muted-foreground">
+                  {balance !== undefined
+                    ? m['studio.form.balance_value']({ balance })
+                    : '…'}
+                  {cost > 0 && (
+                    <>
+                      {' · '}
+                      {m['landing.generator.this_film']({ credits: cost })}
+                    </>
+                  )}
+                </span>
+                <Link
+                  href="/pricing"
+                  className="text-primary underline underline-offset-4"
+                >
+                  {m['landing.generator.top_up']()}
+                </Link>
+              </div>
+            )}
+
+            {/* Likeness consent — the server refuses the render without it. */}
+            <div ref={consentRef} className="mt-4 space-y-2">
+              <label
+                className={cn(
+                  'hover:text-foreground flex cursor-pointer items-start gap-2.5 text-[11px] leading-snug transition-colors',
+                  attempted && !consented
+                    ? 'text-destructive'
+                    : 'text-muted-foreground'
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={consented}
+                  onChange={(event) => setConsented(event.target.checked)}
+                  className="accent-primary mt-0.5 size-3.5 shrink-0"
+                />
+                <span>
+                  {m['landing.generator.consent_body']()}{' '}
+                  <Link
+                    href="/terms-of-service"
+                    className={cn(
+                      'underline',
+                      attempted && !consented
+                        ? 'text-destructive'
+                        : 'text-foreground'
+                    )}
+                  >
+                    {m['landing.generator.consent_terms']()}
+                  </Link>
+                </span>
+              </label>
+              {attempted && !consented && (
+                <FieldNote>{m['landing.generator.need_consent']()}</FieldNote>
+              )}
+            </div>
+
+            {/* The one button. It never changes meaning except when the
+                account simply cannot pay for this run. */}
+            {needsTopUp ? (
+              <Link
+                href="/pricing"
+                onClick={() => saveDraft(draft())}
+                className={cn(
+                  buttonVariants({ size: 'lg' }),
+                  'bg-primary shadow-primary/25 hover:bg-primary/90 mt-4 w-full rounded-xl text-base font-semibold shadow-lg'
+                )}
+              >
+                {ctaLabel}
+              </Link>
+            ) : (
+              <Button
+                size="lg"
+                className="bg-primary shadow-primary/25 hover:bg-primary/90 mt-4 w-full rounded-xl text-base font-semibold shadow-lg disabled:opacity-50"
+                onClick={onGenerate}
+                disabled={generateMutation.isPending}
+              >
+                {generateMutation.isPending && (
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                )}
+                {ctaLabel}
+              </Button>
+            )}
+
+            {attempted && !providerReady && (
+              <FieldNote>{m['studio.form.no_provider']()}</FieldNote>
+            )}
+            {needsTopUp && (
+              <FieldNote>{m['landing.generator.insufficient']()}</FieldNote>
+            )}
+
+            <p className="text-muted-foreground mt-3 flex items-start justify-center gap-1.5 text-center text-[11px] leading-relaxed">
+              <CheckCircle2 className="mt-0.5 size-3 shrink-0" />
+              {m['landing.generator.trust_line']()}
+            </p>
+            <p className="text-muted-foreground/70 mt-1 text-center text-[11px] leading-relaxed">
+              {m['landing.generator.delivery_note']()}
+            </p>
+
+            <p className="text-muted-foreground/70 mt-2 text-center text-[10px] leading-relaxed">
+              {m['landing.generator.photo_rules']()}
+            </p>
+
+            {/* Optional, and asked after the buyer has decided — not a second
+                question standing between them and the button. */}
+            <label className="text-muted-foreground/80 hover:text-foreground mt-3 flex cursor-pointer items-center justify-center gap-2 text-[11px] leading-snug transition-colors">
+              <input
+                type="checkbox"
+                checked={shareToWall}
+                onChange={(event) => setShareToWall(event.target.checked)}
+                className="accent-primary size-3.5 shrink-0"
+              />
+              <span>{m['landing.generator.share_body']()}</span>
+            </label>
           </div>
         </div>
       </div>
