@@ -28,11 +28,14 @@ export interface ShowcaseItem {
 
 export const showcaseItems: ShowcaseItem[] = [
   {
+    // The id and the file still say "couple": this is the same film the couple
+    // page plays as its own demo (`stageFilmByPage`). Only its bucket on the
+    // wall moved — the story it shows reads as two friends as well as two lovers.
     id: 'zombie-couple-film',
     modelId: 'bytedance/seedance-2.0/image-to-video',
     model: 'Seedance 2',
     aspect: '9:16',
-    tag: 'couple',
+    tag: 'friend',
     cover: '/images/showcase/zombie-couple-film.webp',
     video: '/videos/showcase/zombie-couple-film.mp4',
     prompt: {

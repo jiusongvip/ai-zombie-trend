@@ -1,8 +1,8 @@
 export const meta = {
   title: 'AI Zombie Trend Prompts',
   description:
-    'Copy-ready AI zombie trend prompts: the four-shot beat map with second ranges, the identity-lock sentence, swap-in lines for each story, and the fix for each first-render failure.',
-  lead: 'Copy the whole thing: the four-shot beat map with second ranges, the identity-lock line, swap-in sentences for each story, and what to change when a first render goes wrong. Rather not write one? The generator above has all of it built in — just put in two photos.',
+    'A breakdown of the AI zombie trend prompt: what each of the four shots has to accomplish, the first two shots ready to paste, the identity-lock line, swap-in lines for each story, and the fix for each first-render failure.',
+  lead: 'The first two shots are ready to copy: the four-shot beat map with second ranges, the identity-lock line, swap-in sentences for each story, and what to change when a first render goes wrong. Shots three and four are not printed — that is where the film lands, and it is the half we charge for; what each of them has to accomplish is spelled out below. Rather not write one? The generator above has all of it built in — just put in two photos.',
   updated_at: '2026-10-13',
 };
 
@@ -39,11 +39,12 @@ than the one you came for:
    — the aspect ratio and the duration are the two things most often left out and
    most annoying to re-render for.
 
-## The all-in-one prompt
+## The first two shots, ready to copy
 
-Paste this whole block into a model that accepts two character references, then
-attach your survivor photo as reference one and the turned photo as reference
-two.
+Paste this block into a model that accepts two character references, then attach
+your survivor photo as reference one and the turned photo as reference two. It
+gets you to the six-second mark: the gun that will not come up in the cabin, and
+the face you can still tell who it is.
 
 ```text
 Create a 15-second cinematic short from two character references.
@@ -70,22 +71,34 @@ SHOT 2 — THE UNDEAD FACE (4-6s). Extreme close-up of B: the make-up above,
 shallow depth of field, small facial twitches, uneven breathing. Frightening
 but recognisable. No gore, no open wounds, no biting, no blood.
 
-SHOT 3 — THE CHOICE (6-10s). Back to A, still crying, gun still lowered. A
-lets the weapon fall from their hands and slowly opens both arms — not in
-defence, in recognition. B stops. Something familiar moves behind the cloudy
-eyes. B crosses the last few steps and rests their head against A's shoulder.
-A closes their eyes and holds them. The camera begins a slow arc around the
-two figures.
+SHOT 3 — THE CHOICE (6-10s). Not in this block; the next section says what it
+has to accomplish.
 
-SHOT 4 — THE MATCH CUT (10-15s). Exactly as B leans in, cut. The cabin becomes
-an open wheat field at sunset, warm golden grade, wind. Both characters are
-alive and healthy, appearance restored to the reference photos, clean everyday
-clothing. The embrace continues without a break across the cut — same arms,
-same distance, same direction of movement, now in sunlight. Hold two seconds,
-then the film ends.
+SHOT 4 — THE MATCH CUT (10-15s). Not in this block; the next section says what
+it has to accomplish.
 
 Tone: grief turning into reunion. This is a love story, not a horror scene.
 ```
+
+## What shots three and four have to do
+
+**Shot 3 (6-10s) — the weapon goes down, the arms open.** The film's whole
+choice lives in this shot: the gun slips out of the survivor's hands, both arms
+open not in defence but in recognition, and the zombie crosses the last few
+steps to rest its head on their shoulder. The difficulty is that "no longer
+attacking" and "still frightening" have to be true at the same time, or the
+model reads the shot as a standoff in front of an embrace.
+
+**Shot 4 (10-15s) — one movement across the cut.** The cabin becomes an open
+field at sunset the moment B leans in, both are human again, and the embrace has
+to continue unbroken across the hard cut. This is where most self-run attempts
+are lost: a restored identity drifts, and continuity of movement only survives
+on wording, so what comes back is usually two unrelated clips.
+
+The wording for these two shots is pinned on our side and applied to every film.
+You can build them back yourself from the beats above — that is what the rest of
+this page is for — or drop two photographs into [the generator](#generator),
+which already has them written.
 
 ## Read it back, beat by beat
 
@@ -98,10 +111,11 @@ and repeat B's restored-appearance line inside shot 4.
 zombie crossing a room as a chase, and the whole third shot — the choice to lower
 the gun — has nothing to be a choice about.
 
-**The match cut is a movement instruction, not an edit instruction.** "The embrace
-continues without a break across the cut, same arms, same direction of movement"
-is what makes the transition read as one continuous gesture instead of two clips
-glued together. If the cut feels abrupt, name the pose on both sides of it.
+**The match cut is a movement instruction, not an edit instruction.** Shot 4 has
+to ask for the embrace as one gesture that continues across the hard cut — arms,
+distance and direction of movement all unchanged — or the transition reads as
+two clips glued together. If the cut still feels abrupt, name the same pose on
+both sides of it.
 
 **The restraint clause is also a moderation shield.** "Frightening but
 recognisable, no gore, no open wounds, no blood" keeps the render on the romance
@@ -139,12 +153,12 @@ character references rather than as a starting frame.
 | Symptom                                 | The line to add or move                                                                               |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Faces drift or swap after the cut       | Move the identity lock to the top; repeat "appearance restored to the reference photos" inside shot 4 |
-| B lunges or attacks                     | "Approaching, not attacking" in shot 1, "does not attack" in shot 3                                   |
+| B lunges or attacks                     | "Approaching, not attacking" in shot 1, and restate the non-attack in shot 3                          |
 | Render comes back gory, or gets blocked | "No gore, no open wounds, no biting, no blood" plus undead described as make-up on a known face       |
 | Two unrelated clips, not one story      | Keep the four shot headers with their second ranges inside a single prompt                            |
-| The cut reads as an edit                | Name the pose on both sides and add "same arms, same distance, same direction of movement"            |
+| The cut reads as an edit                | Name the same pose on both sides, then line up arms, distance and direction one by one                |
 | Wrong framing for Reels                 | State "vertical 9:16" in the first line, not the last                                                 |
-| Flat, unscored output                   | Ask for scene audio and, in shot 3, the room tone dropping before the cut                             |
+| Flat, unscored output                   | Ask for scene audio, and let the room tone drop before the cut and hand off to wind after it          |
 
 ## Before you upload the two photographs
 
@@ -156,11 +170,14 @@ that order is what the prompt calls `@image1` and `@image2`. Full guidance in
 
 ## Frequently asked questions
 
-### Are these prompts free to use?
+### How much of this page can I copy?
 
-Yes. This page is free, the blocks are yours to copy, and there is no attribution
-requirement. What costs money is the render — either your own credits on whatever
-model you use, or a one-time credit pack here, with no subscription.
+The first two shots are a block that is yours to copy, with no attribution
+requirement; shots three and four are described by what they have to do rather
+than printed. That is deliberate — those two shots are where the film lands, and
+they are the half we have tuned and pinned for every render. What costs money is
+the render: either your own credits on whatever model you use, or a one-time
+credit pack here, with no subscription.
 
 ### Do I need a specific video model?
 
@@ -179,8 +196,9 @@ instead of a human face. Same structure, same four beats.
 Because the format's quality comes from the storyboard, and a storyboard people
 edit is a storyboard people break. The beat map on this page is pinned on our side
 and applied to every film, which is also why renders here come out looking like
-each other. If you would rather write the prompt yourself, this page is the whole
-recipe.
+each other. If you would rather write it yourself, the first two shots copy
+straight out of this page and the last two are yours to build from the beats
+above.
 
 ### Can I use a photo of someone else?
 

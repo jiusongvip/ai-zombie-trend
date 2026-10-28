@@ -50,7 +50,7 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
     path: '/ai-zombie-trend-prompts',
     title: 'AI Zombie Trend Prompts',
     description:
-      'Free, copy-ready prompts for the two-photo zombie love story: the four-shot beat map with second ranges, the identity-lock sentence, swap-in lines for partner, pet, parent and best friend, and fixes for the common first-render failures.',
+      'A breakdown of the two-photo zombie love story prompt: what each of the four shots has to accomplish, the first two shots ready to paste, the identity-lock line, swap-in lines for partner, pet, parent and best friend, and fixes for the common first-render failures.',
   },
 ];
 
