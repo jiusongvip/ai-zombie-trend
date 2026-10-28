@@ -102,7 +102,6 @@ async function POST({ request }: { request: Request }) {
       imageUrl,
       lastFrameUrl,
       consent: CONSENT_POLICY_VERSION,
-      shareToWall: body.shareToWall === true,
     });
 
     return respData({ task: toTaskView(task) });

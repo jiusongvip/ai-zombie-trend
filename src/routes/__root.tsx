@@ -21,6 +21,7 @@ import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Plausible } from '@/components/analytics/plausible';
 import { Umami } from '@/components/analytics/umami';
 import { AuthDialog } from '@/components/auth-dialog';
+import { BackToTop } from '@/components/back-to-top';
 import { CustomerService } from '@/components/customer-service';
 import { GoogleOneTap } from '@/components/google-one-tap';
 import { SandboxPreviewBridge } from '@/components/sandbox-preview-bridge';
@@ -124,6 +125,7 @@ function RootComponent() {
         <Outlet />
         <SandboxPreviewBridge />
         <Toaster position="top-center" richColors />
+        <BackToTop />
         <GoogleOneTap />
         <AuthDialog />
         {analytics?.gaId ? (

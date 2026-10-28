@@ -17,39 +17,16 @@ import { getLocale } from '@/paraglide/runtime.js';
 
 const TAGS: ShowcaseTag[] = ['couple', 'pet', 'friend', 'family'];
 
-/** Shape of one item from `GET /api/video/community`. */
-interface CommunityClipDto {
-  id: string;
-  video: string;
-  poster?: string;
-  aspect: '16:9' | '9:16';
-  model: string;
-  createdAt: string;
-}
-
-/** Adapt a community clip to the card's `ShowcaseItem` shape. */
-function toCommunityItem(c: CommunityClipDto): ShowcaseItem {
-  return {
-    id: `community-${c.id}`,
-    modelId: 'community',
-    model: c.model,
-    aspect: c.aspect,
-    // Community clips carry no curated story tag; surfaced only on "all".
-    tag: 'couple',
-    cover: c.poster ?? '',
-    video: c.video,
-    prompt: {
-      en: `A community creation, generated straight from two photos with ${envConfigs.app_name}`,
-      zh: `社区作品：用两张照片经 ${envConfigs.app_name} 直接生成`,
-    },
-  };
-}
-
 /**
  * The explore feed — the homepage's main body, laid out like Hailuo/Pika's
  * community wall: full-bleed masonry, filter tabs, minimal chrome. Every card
  * hands its story to the generator workbench above. Real clips autoplay muted
  * when `video` is set.
+ *
+ * The content is curated in code (`src/config/showcase.ts`) and is always a
+ * film this site made itself. Nothing a customer generated appears here: their
+ * clips live in their own library behind a private link, and the wall never
+ * reads the task table.
  */
 export function Showcase({
   tagFilter,
@@ -61,41 +38,11 @@ export function Showcase({
   const locale = getLocale();
   const router = useRouter();
   const [tag, setTag] = useState<ShowcaseTag | 'all'>(tagFilter ?? 'all');
-  const [community, setCommunity] = useState<ShowcaseItem[]>([]);
 
-  useEffect(() => {
-    if (tagFilter) return; // explore-only: a scoped embed skips the fetch
-    let alive = true;
-    fetch('/api/video/community?limit=24')
-      .then((r) => r.json())
-      .then((j) => {
-        if (!alive) return;
-        const items: CommunityClipDto[] = j?.data?.items ?? [];
-        setCommunity(items.map(toCommunityItem));
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, [tagFilter]);
-
-  const staticItems =
+  const items =
     tag === 'all'
       ? showcaseItems
       : showcaseItems.filter((item) => item.tag === tag);
-
-  // Community clips are uncategorised real generations — surface them only on
-  // the "all" tab, and skip any whose file already shows as a curated card.
-  const curatedVideos = new Set(
-    showcaseItems.map((i) => i.video).filter(Boolean)
-  );
-  const items =
-    tag === 'all'
-      ? [
-          ...staticItems,
-          ...community.filter((c) => !curatedVideos.has(c.video)),
-        ]
-      : staticItems;
 
   /**
    * Hand the card's story to the generator workbench. On the homepage the

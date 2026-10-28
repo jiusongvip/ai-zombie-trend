@@ -316,16 +316,6 @@ export function getSettings(): Setting[] {
       tab: 'general',
     },
 
-    // ─── General / Community Wall ────────────────────────────────────
-    {
-      name: 'community_wall_enabled',
-      title: 'Community wall (auto-show user clips on home)',
-      type: 'switch',
-      group: 'community_wall',
-      tab: 'general',
-      defaultValue: 'true',
-    },
-
     // ─── Auth / Email ────────────────────────────────────────────────
     {
       name: 'email_auth_enabled',

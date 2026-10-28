@@ -20,8 +20,8 @@ import {
   AIManager,
   AIMediaType,
   FalProvider,
-  AITaskStatus as ProviderTaskStatus,
   HfsyProvider,
+  AITaskStatus as ProviderTaskStatus,
   ReplicateProvider,
   type AIFile,
   type SaveFilesFunction,
@@ -40,9 +40,6 @@ import {
   findTask,
   findTaskByProviderTaskId,
   getTasks,
-  listFeaturedTasks,
-  listSuccessfulTasks,
-  setTaskFeatured,
   softDeleteTask,
   updateTask,
 } from '@/modules/ai-tasks/service';
@@ -167,88 +164,6 @@ export async function getConfiguredProviders(): Promise<VideoProviderName[]> {
   return names;
 }
 
-// ─── Community wall ───────────────────────────────────────────────────────
-
-/** One community clip for the public explore wall. */
-export interface CommunityClip {
-  id: string;
-  video: string;
-  poster?: string;
-  aspect: '16:9' | '9:16';
-  model: string;
-  createdAt: string;
-}
-
-/** A task row mapped to a clip, or null when it has no playable result URL. */
-function toClip(task: any): CommunityClip | null {
-  const result = (parseJson(task.taskResult) ?? {}) as {
-    videos?: { videoUrl?: string; thumbnailUrl?: string }[];
-  };
-  const video = result.videos?.[0]?.videoUrl;
-  if (!video) return null;
-  const options = (parseJson(task.options) ?? {}) as Partial<VideoOptions>;
-  const model = getVideoModel(task.model);
-  return {
-    id: task.id,
-    video,
-    poster: result.videos?.[0]?.thumbnailUrl,
-    aspect: ['16:9', '4:3', '21:9'].includes(options.aspectRatio || '')
-      ? '16:9'
-      : '9:16',
-    model: model?.label ?? task.model,
-    createdAt: new Date(task.createdAt).toISOString(),
-  };
-}
-
-/**
- * Admin-curated clips for the public "community wall", newest first. Gated by
- * the `community_wall_enabled` master switch; a clip only appears once a
- * curator features it (`aiTask.featured`).
- */
-export async function getCommunityClips(limit = 24): Promise<CommunityClip[]> {
-  const configs = await getAllConfigs();
-  if (configs.community_wall_enabled === 'false') return [];
-
-  const tasks = await listFeaturedTasks({ mediaType: VIDEO_MEDIA_TYPE, limit });
-  const clips: CommunityClip[] = [];
-  for (const task of tasks) {
-    const clip = toClip(task);
-    if (clip) clips.push(clip);
-  }
-  return clips;
-}
-
-/** One row for the admin curation screen — a clip plus its featured flag. */
-export interface AdminClip extends CommunityClip {
-  featured: boolean;
-}
-
-/**
- * Recent successful generations across all users (featured or not) for the
- * admin curation screen, newest first, with a total for pagination.
- */
-export async function getAdminClips(params: {
-  page?: number;
-  limit?: number;
-}): Promise<{ items: AdminClip[]; total: number }> {
-  const { items: tasks, total } = await listSuccessfulTasks({
-    mediaType: VIDEO_MEDIA_TYPE,
-    page: params.page,
-    limit: params.limit,
-  });
-  const items: AdminClip[] = [];
-  for (const task of tasks) {
-    const clip = toClip(task);
-    if (clip) items.push({ ...clip, featured: Boolean(task.featured) });
-  }
-  return { items, total };
-}
-
-/** Feature or un-feature a generated clip for the community wall. */
-export async function setClipFeatured(taskId: string, featured: boolean) {
-  await setTaskFeatured(taskId, featured);
-}
-
 // ─── Status mapping ─────────────────────────────────────────────────────────
 
 const STATUS_MAP: Record<string, AITaskStatus> = {
@@ -337,8 +252,6 @@ export interface GenerateVideoParams {
   shotSize?: VideoShotId;
   /** Policy version of the likeness-consent declaration accepted at submit. */
   consent?: string;
-  /** Uploader opted in to publishing the clip on the public community wall. */
-  shareToWall?: boolean;
 }
 
 /**
@@ -438,7 +351,6 @@ export async function generateVideo(params: GenerateVideoParams) {
     options: persistedOptions,
     scene: CREDIT_SCENE,
     consent: params.consent,
-    shareToWall: params.shareToWall === true && params.consent === CONSENT_POLICY_VERSION,
   });
 
   try {

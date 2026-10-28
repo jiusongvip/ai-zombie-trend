@@ -3,6 +3,10 @@
  * zombie love story pipeline. Covers are rendered placeholders; each entry
  * keeps a display prompt (inspiration copy) and the tag its story maps to
  * in the homepage generator.
+ *
+ * One finished film per story, then the key frames. The couple and pet clips
+ * double as the demo each of those pages plays (`stageFilmFor`), so they are
+ * the ones the wall keeps; the extra workbench takes live in git history.
  */
 
 export type ShowcaseTag = 'couple' | 'pet' | 'friend' | 'family';
@@ -34,20 +38,6 @@ export const showcaseItems: ShowcaseItem[] = [
     prompt: {
       en: 'A finished four-shot film from two photos: the survivor aims a trembling handgun through the dark cabin, cannot fire, opens both arms — and the zombie’s leap match-cuts into an embrace in a golden wheat field at sunset',
       zh: '两张照片跑出的完整四镜头成片：幸存者在昏暗木屋里颤抖举枪、终究没能扣下扳机、张开双臂——丧尸的那记扑跃经匹配剪辑，化作落日麦田里的拥抱',
-    },
-  },
-  {
-    id: 'zombie-couple-film-live',
-    modelId: 'sd-2-vip-480',
-    model: 'Seedance 2 VIP',
-    aspect: '9:16',
-    tag: 'couple',
-    cover: '/images/showcase/zombie-cabin.webp',
-    video:
-      'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/hfsy/video/79cf471c-1260-4692-9228-fd3c10ff27f8.mp4',
-    prompt: {
-      en: 'A real couple film generated in our own workbench: two uploaded photos become the survivor and their zombified partner, running the full four-shot story from the dark cabin to the sunset wheat-field embrace',
-      zh: '在本站工作台实跑生成的情侣成片：两张上传照片化身幸存者与其丧尸化的爱人，完整跑通从昏暗木屋到落日麦田相拥的四镜头故事',
     },
   },
   {
@@ -149,18 +139,36 @@ export const showcaseItems: ShowcaseItem[] = [
       zh: '用本站工作台实跑的亲情成片：两张照片化身幸存者与其丧尸化的至亲，完整跑通从昏暗木屋到落日相拥的四镜头故事',
     },
   },
-  {
-    id: 'zombie-family-live-2',
-    modelId: 'sd-2-vip-480',
-    model: 'Seedance 2 VIP',
-    aspect: '9:16',
-    tag: 'family',
-    cover: '/images/showcase/zombie-family.webp',
-    video:
-      'https://pub-e275f7eb14794b92b2c9b22fca2b0834.r2.dev/uploads/showcase/family-2.mp4',
-    prompt: {
-      en: 'Another family generation from two photos — the grown child lowers the gun, opens both arms, and the zombified parent’s leap match-cuts into a tight embrace under a golden sunset',
-      zh: '另一条从两张照片生成的亲情成片——子女放下枪、张开双臂，丧尸化至亲的那记扑跃经匹配剪辑，在金色落日下化作一个紧拥',
-    },
-  },
 ];
+
+/**
+ * The clip a page's own workbench plays as proof. The couple and pet pages have
+ * a finished film on this wall already, so they show the story they are about
+ * instead of the cabin clip the homepage uses; any other page falls through to
+ * that default.
+ */
+const stageFilmByPage: Record<string, string> = {
+  'ai-zombie-couple-video': 'zombie-couple-film',
+  'ai-zombie-pet-video': 'zombie-pet-film',
+};
+
+export function stageFilmFor(slug: string): {
+  video: string;
+  poster: string;
+  aspect: string;
+  subject: 'person' | 'pet';
+} | null {
+  const id = stageFilmByPage[slug];
+  if (!id) return null;
+  const item = showcaseItems.find((entry) => entry.id === id);
+  if (!item?.video) return null;
+  return {
+    video: item.video,
+    poster: item.cover,
+    // The wall stores the SERP spelling ('9:16'); the stage wants a CSS ratio.
+    aspect: item.aspect.replace(':', ' / '),
+    // The wall sorts by *who* turns; the form's toggle only has two answers, so
+    // every human story falls on `person` and the pet story on `pet`.
+    subject: item.tag === 'pet' ? 'pet' : 'person',
+  };
+}

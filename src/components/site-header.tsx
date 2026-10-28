@@ -39,8 +39,9 @@ export function SiteHeader({ navLinks }: { navLinks?: NavLink[] }) {
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex">
+        {/* Desktop nav. It carries seven links now, so it switches on at lg —
+            below that the row would wrap and the hamburger reads cleaner. */}
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-6">
           {navLinks?.map((link) =>
             isExternalHref(link.href) ? (
               <a
@@ -66,7 +67,7 @@ export function SiteHeader({ navLinks }: { navLinks?: NavLink[] }) {
         </nav>
 
         {/* Desktop actions */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <LocaleSelector />
           <ThemeToggle />
           {user ? (
@@ -97,7 +98,7 @@ export function SiteHeader({ navLinks }: { navLinks?: NavLink[] }) {
 
         {/* Mobile toggle */}
         <button
-          className="p-2 md:hidden"
+          className="p-2 lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -108,7 +109,7 @@ export function SiteHeader({ navLinks }: { navLinks?: NavLink[] }) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-border border-t px-4 pt-2 pb-4 md:hidden">
+        <div className="border-border border-t px-4 pt-2 pb-4 lg:hidden">
           <nav className="flex flex-col gap-2">
             {navLinks?.map((link) =>
               isExternalHref(link.href) ? (

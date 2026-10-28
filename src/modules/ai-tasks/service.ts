@@ -71,7 +71,6 @@ export async function createTask(params: {
   options?: any;
   scene?: string;
   consent?: string;
-  shareToWall?: boolean;
 }): Promise<any> {
   const {
     userId,
@@ -83,7 +82,6 @@ export async function createTask(params: {
     options,
     scene,
     consent,
-    shareToWall,
   } = params;
 
   return db().transaction(async (tx: any) => {
@@ -100,10 +98,11 @@ export async function createTask(params: {
       options: options ? JSON.stringify(options) : null,
       scene: scene || '',
       consent: consent ?? null,
-      // Always written: a deployed database may still carry `featured DEFAULT
-      // true` from before the wall became opt-in, and an omitted column would
-      // let that default publish a stranger's likeness on its own.
-      featured: shareToWall === true,
+      // Always written as false. The example wall is curated in code, so no
+      // user generation is ever published from this column — but a deployed
+      // database may still carry `featured DEFAULT true` from when the wall
+      // read it, and an omitted column would let that default flag a row.
+      featured: false,
     };
 
     const [task] = await tx.insert(aiTask).values(taskData).returning();
@@ -216,68 +215,6 @@ export async function getTasks(params: {
     .orderBy(desc(aiTask.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
-}
-
-/**
- * Clips for the public community wall: successful, not soft-deleted, and
- * featured. `featured` defaults false, so this is the opt-in set only —
- * uploads that declared wall sharing at submit time, plus admin curations.
- * Newest first.
- */
-export async function listFeaturedTasks(params: {
-  mediaType: string;
-  limit?: number;
-}) {
-  const { mediaType, limit = 24 } = params;
-  return db()
-    .select()
-    .from(aiTask)
-    .where(
-      and(
-        eq(aiTask.mediaType, mediaType),
-        eq(aiTask.status, AITaskStatus.SUCCESS),
-        eq(aiTask.featured, true),
-        isNull(aiTask.deletedAt)
-      )
-    )
-    .orderBy(desc(aiTask.createdAt))
-    .limit(limit);
-}
-
-/**
- * Recent successful tasks across all users for the admin curation screen —
- * featured or not — newest first, with a total for pagination.
- */
-export async function listSuccessfulTasks(params: {
-  mediaType: string;
-  page?: number;
-  limit?: number;
-}) {
-  const { mediaType, page = 1, limit = 24 } = params;
-  const where = and(
-    eq(aiTask.mediaType, mediaType),
-    eq(aiTask.status, AITaskStatus.SUCCESS),
-    isNull(aiTask.deletedAt)
-  );
-  const [items, [{ total }]] = await Promise.all([
-    db()
-      .select()
-      .from(aiTask)
-      .where(where)
-      .orderBy(desc(aiTask.createdAt))
-      .limit(limit)
-      .offset((page - 1) * limit),
-    db().select({ total: count() }).from(aiTask).where(where),
-  ]);
-  return { items, total };
-}
-
-/** Feature or un-feature a task for the community wall. */
-export async function setTaskFeatured(taskId: string, featured: boolean) {
-  return db()
-    .update(aiTask)
-    .set({ featured })
-    .where(eq(aiTask.id, taskId));
 }
 
 /**

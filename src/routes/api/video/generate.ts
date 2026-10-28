@@ -104,7 +104,6 @@ async function POST({ request }: { request: Request }) {
           : undefined,
       shotSize: typeof body.shotSize === 'string' ? body.shotSize : undefined,
       consent,
-      shareToWall: body.shareToWall === true,
     });
 
     return respData({ task: toTaskView(task) });

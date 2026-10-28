@@ -75,7 +75,6 @@ interface FilmDraft {
   imageUrl?: string;
   lastFrameUrl?: string;
   consent?: boolean;
-  shareToWall?: boolean;
 }
 
 const DRAFT_KEY = 'zombie-draft';
@@ -94,6 +93,21 @@ const SAMPLE_FILM = {
   poster: '/images/showcase/zombie-sample-film.webp',
   aspect: '16 / 9',
 } as const;
+
+/** What the stage needs to play a page's own proof clip. */
+export interface StageSampleFilm {
+  video: string;
+  poster: string;
+  /** CSS `aspect-ratio` for the empty frame, e.g. `'9 / 16'`. */
+  aspect: string;
+  /**
+   * Who the second photo is inside this clip. A keyword page passes the story
+   * it is about, so the form's own toggle opens on what the proof already
+   * showed. Kept as literals rather than the block's union so the example wall
+   * does not have to import this module.
+   */
+  subject?: 'person' | 'pet';
+}
 
 function saveDraft(draft: FilmDraft) {
   try {
@@ -214,7 +228,33 @@ function OptionRow({
  * card, and the result of a render replaces the example film in the same slot
  * the example film occupied, so nothing jumps across the page when it lands.
  */
-export function Generator() {
+export function Generator({
+  variant = 'hero',
+  sample = SAMPLE_FILM,
+  pitch,
+}: {
+  /**
+   * `hero` is the homepage first screen: the pitch above the proof, the submit
+   * card beside it. `card` keeps that exact arrangement — same container, same
+   * grid, same promise column — and swaps the homepage lines for the page's own
+   * `pitch`, so a keyword page still ships exactly one H1, in the slot the
+   * homepage puts its headline.
+   */
+  variant?: 'hero' | 'card';
+  /**
+   * The clip the empty frame plays. The homepage shows the cabin film; a
+   * keyword page passes the story it is about, so the proof on screen is the
+   * proof the page promised.
+   */
+  sample?: StageSampleFilm;
+  /**
+   * The promise column for a page that is not the homepage: its title as the H1
+   * and one sentence written for the person reading it, not for a search
+   * result. Omit on the homepage, where both come from the localized copy.
+   */
+  pitch?: { title: string; lead: string };
+} = {}) {
+  const isHero = variant === 'hero';
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const signedIn = !!session?.user;
@@ -230,20 +270,33 @@ export function Generator() {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consented, setConsented] = useState(false);
-  const [shareToWall, setShareToWall] = useState(false);
-  // The example film decides how far the form sits down the page. Phones get a
-  // shorter proof than laptops.
-  const [stageBudget, setStageBudget] = useState(48);
+  // The example film decides how far the form sits down the page. Phones stack
+  // the proof above the form, so they get the short budget either way. On a
+  // wide screen the proof sits beside the form, where its height never moves
+  // the button — and a keyword page opens ~48px higher than the homepage, since
+  // nothing but the page's own padding sits above the block, so it can spend a
+  // little more of the viewport on proof.
+  const compactBudget = isHero ? 34 : 30;
+  const wideBudget = isHero ? 48 : 52;
+  const [stageBudget, setStageBudget] = useState(wideBudget);
   useEffect(() => {
     const compact = window.matchMedia('(max-width: 1023px)');
-    const apply = () => setStageBudget(compact.matches ? 34 : 48);
+    const apply = () =>
+      setStageBudget(compact.matches ? compactBudget : wideBudget);
     apply();
     compact.addEventListener('change', apply);
     return () => compact.removeEventListener('change', apply);
-  }, []);
+  }, [compactBudget, wideBudget]);
   // Gate messages stay hidden until the first click, then track live — each one
   // disappears the moment its own condition is met.
   const [attempted, setAttempted] = useState(false);
+
+  // The page's proof implies its story: a pet page shows a pet film, so the
+  // subject toggle opens on pet. A restored draft and an explicit `?subject=`
+  // are both applied by the effects below, so they outrank this default.
+  useEffect(() => {
+    if (sample.subject) setSubject(sample.subject);
+  }, [sample.subject]);
 
   // Restore draft after sign-up
   useEffect(() => {
@@ -388,7 +441,6 @@ export function Generator() {
     imageUrl: firstFrame.url,
     lastFrameUrl: lastFrame.url,
     consent: consented,
-    shareToWall,
   });
 
   const generateMutation = useMutation({
@@ -502,11 +554,12 @@ export function Generator() {
   const photosInvalid = attempted && !uploading;
 
   /**
-   * The sample film is 16:9, so the empty frame takes its shape from what it is
-   * actually showing instead of cropping it into a portrait cell. A real render
-   * always uses the ratio the user picked — that is the shape being bought.
+   * The empty frame takes its shape from the clip it is actually showing — the
+   * cabin film is 16:9, a keyword page's own proof is usually 9:16 — instead of
+   * cropping it. A real render always uses the ratio the user picked — that is
+   * the shape being bought.
    */
-  const stageAspect = activeTask ? cssAspect(aspectRatio) : SAMPLE_FILM.aspect;
+  const stageAspect = activeTask ? cssAspect(aspectRatio) : sample.aspect;
   const showingSample = !activeTask;
 
   const ctaLabel = generateMutation.isPending
@@ -522,7 +575,10 @@ export function Generator() {
   return (
     <section
       id="generator"
-      className="grain-overlay relative scroll-mt-16 overflow-hidden px-4 pt-6 pb-12 sm:pt-8 lg:pt-10 lg:pb-14"
+      className={cn(
+        'grain-overlay relative scroll-mt-16 overflow-hidden',
+        isHero ? 'px-4 pt-6 pb-12 sm:pt-8 lg:pt-10 lg:pb-14' : 'py-6 sm:py-8'
+      )}
     >
       {/* Background glow */}
       <div aria-hidden className="absolute inset-0 -z-10">
@@ -548,20 +604,25 @@ export function Generator() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,31rem)] xl:gap-14">
           {/* ── Left: the promise, then the proof ───────────────────────── */}
           <div className="flex flex-col">
-            <span className="border-primary/40 bg-primary/10 text-primary inline-flex w-fit items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide uppercase">
-              <span className="bg-primary size-1.5 animate-pulse rounded-full" />
-              {m['landing.hero.badge']()}
-            </span>
+            {(isHero || pitch) && (
+              <>
+                <span className="border-primary/40 bg-primary/10 text-primary inline-flex w-fit items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide uppercase">
+                  <span className="bg-primary size-1.5 animate-pulse rounded-full" />
+                  {m['landing.hero.badge']()}
+                </span>
 
-            <h1 className="font-display text-glow mt-4 text-3xl leading-[1.05] font-bold tracking-tight text-balance uppercase sm:text-4xl lg:text-[2.9rem]">
-              {m['landing.hero.headline']()}
-            </h1>
+                <h1 className="font-display text-glow mt-4 text-3xl leading-[1.05] font-bold tracking-tight text-balance uppercase sm:text-4xl lg:text-[2.9rem]">
+                  {pitch?.title ?? m['landing.hero.headline']()}
+                </h1>
 
-            <p className="text-muted-foreground mt-4 max-w-xl text-sm leading-relaxed sm:text-[15px]">
-              {m['landing.hero.subheadline']()}
-            </p>
+                <p className="text-muted-foreground mt-4 max-w-xl text-sm leading-relaxed sm:text-[15px]">
+                  {pitch?.lead ?? m['landing.hero.subheadline']()}
+                </p>
+              </>
+            )}
 
-            {/* The four facts a buyer checks before uploading anything. */}
+            {/* The four facts a buyer checks before uploading anything — they
+                travel with the form, whichever page the form is on. */}
             <ul className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
               {[
                 m['landing.hero.spec_photos'](),
@@ -595,8 +656,8 @@ export function Generator() {
                   error={submitError}
                   busy={generateMutation.isPending}
                   sample={{
-                    video: SAMPLE_FILM.video,
-                    poster: SAMPLE_FILM.poster,
+                    video: sample.video,
+                    poster: sample.poster,
                     alt: m['landing.generator.sample.badge'](),
                   }}
                   onRegenerate={() => generateMutation.mutate(draft())}
@@ -681,7 +742,8 @@ export function Generator() {
               </div>
             </div>
 
-            {/* Two photos, each labelled with its role in the film. */}
+            {/* Two photos, each labelled with its role in the film. The second
+                label follows the toggle above: a person turned, or the animal. */}
             <div ref={photosRef} className="mt-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -711,10 +773,14 @@ export function Generator() {
                     labels={frameLabels}
                   />
                   <p className="text-foreground mt-2 text-sm font-medium">
-                    {m['landing.generator.frame_b']()}
+                    {activeSubject === 'pet'
+                      ? m['landing.generator.frame_b_pet']()
+                      : m['landing.generator.frame_b']()}
                   </p>
                   <p className="text-muted-foreground text-[11px] leading-snug">
-                    {m['landing.generator.frame_b_hint']()}
+                    {activeSubject === 'pet'
+                      ? m['landing.generator.frame_b_pet_hint']()
+                      : m['landing.generator.frame_b_hint']()}
                   </p>
                 </div>
               </div>
@@ -923,18 +989,6 @@ export function Generator() {
             <p className="text-muted-foreground/70 mt-2 text-center text-[10px] leading-relaxed">
               {m['landing.generator.photo_rules']()}
             </p>
-
-            {/* Optional, and asked after the buyer has decided — not a second
-                question standing between them and the button. */}
-            <label className="text-muted-foreground/80 hover:text-foreground mt-3 flex cursor-pointer items-center justify-center gap-2 text-[11px] leading-snug transition-colors">
-              <input
-                type="checkbox"
-                checked={shareToWall}
-                onChange={(event) => setShareToWall(event.target.checked)}
-                className="accent-primary size-3.5 shrink-0"
-              />
-              <span>{m['landing.generator.share_body']()}</span>
-            </label>
           </div>
         </div>
       </div>
